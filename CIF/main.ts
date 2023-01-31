@@ -46,6 +46,7 @@ export namespace CIF {
         const date = new Date(); console.info("[" + date.getFullYear() + "-" + zero((date.getMonth() + 1), 2) + "-" + zero(date.getDate(), 2) + " " + zero(date.getHours(), 2) + ":" + zero(date.getMinutes(), 2) + ":" + zero(date.getSeconds(), 2) + ":" + zero(date.getMilliseconds(), 3) + " INFO] " + " [CIF] ".red + message);
     };
 
+
     /**
      * 대충 밴 함수
      * @description 현재 밴 기능 수행 X
@@ -59,7 +60,7 @@ export namespace CIF {
         const cheaterName = cheater.getNameTag()!;
         const users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 0);
         for (const member of users) {
-            member.sendMessage(`§c[CIF] ${cheaterName} was banned using ${reason}`);
+            member.sendMessage(`§6[CIF] §c${cheaterName} §6was banned using §c${reason}`);
         }
     }
 
