@@ -2,6 +2,7 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CANCEL } from "bdsx/common";
 import { bedrockServer } from "bdsx/launcher";
 import { serverProperties } from "bdsx/serverproperties";
+import { events } from "bdsx/event";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 
 if (serverProperties["server-authoritative-movement"] !== "cilent-auth") {
@@ -10,14 +11,15 @@ if (serverProperties["server-authoritative-movement"] !== "cilent-auth") {
 
 const deviceModel:Record<string, string>={};
 
-namespace CIF {
+export namespace CIF {
 
     /**
      * 대충 밴 함수
+     * @description 현재 밴 기능 수행 X
      */
     export function ban(
         ni: NetworkIdentifier,
-        reason: "string"
+        reason: string
     ) {
 
         const cheater = ni.getActor()!;
@@ -69,5 +71,4 @@ events.packetAfter(1).on((pkt, ni)=> {
 
 
 
-import "./scripts";import { events } from "bdsx/event";
-
+import "./scripts";
