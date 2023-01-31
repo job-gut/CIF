@@ -27,7 +27,6 @@ function zero(num: any, n: any) {
 
 /**
  * Date With Zero
- * @deprecated 다른 곳에서 임의로 쓰지 마세요
  */
 function dateWithZero() {
     var d = new Date();
