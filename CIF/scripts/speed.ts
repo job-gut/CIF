@@ -1,7 +1,6 @@
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { events } from "bdsx/event";
 import { bedrockServer } from "bdsx/launcher";
-import { serverProperties } from "bdsx/serverproperties";
 
 const lastpos: Record<string, number[]> = {};
 const strafestack: Record<string, number> = {};
