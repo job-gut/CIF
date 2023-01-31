@@ -47,8 +47,4 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     if (titleId === TitleId.ANDROID && brand.toUpperCase() !== brand) {
         CIF.detect(ni, "Tool Box", "You are using Tool Box");
     }
-
-    // if(model.search(/[a-z]/) !== -1){
-    //     kick(ni,"§cTool booooooooox");
-    // }
 });
