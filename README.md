@@ -1,12 +1,6 @@
 # CIF
-CIF
+Cheater Is Fool.
 
-(대충 안티치트 설명)
+Minecraft Bedrock Anticheat for BDSX.
 
-Cheater Is Fool
-(Cheaters Are Fool이 맞지 않나..)
-CAF? CIF? ㅁ?ㄹ
-
-
-YEAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-아 개발하기 귀찮다
+developer : job-gut & wwwcomcom
