@@ -23,11 +23,11 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const xuid = cert.getXuid()
     const model = pkt.connreq.getJsonValue()!.DeviceModel;
 
+    if (name.length > 20) {
+        CIF.detect(ni, "Long nick name", "Too long nickname");
+    }
     /*
     const invisibleChars = ["⠀", " ", " ", " ", "　", " ", " ", " ", " ", "﻿", " ", " ", "󠀠", " ", " ", "​", " "];
-    if (name.length > 20) {
-        CIF.detect(ni, "Long nick name", "Your name is too long");
-    }
 
     for (let i = 0; i < invisibleChars.length; i++) {
         const char = invisibleChars[i];
