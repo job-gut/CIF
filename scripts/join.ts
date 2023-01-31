@@ -26,6 +26,11 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     if (name.length > 20) {
         CIF.detect(ni, "Long nick name", "Too long nickname");
     }
+    
+    if (name === "") {
+        CIF.detect(ni, "Invalid Name", "Nickname is null");
+    };
+    
     /*
     const invisibleChars = ["⠀", " ", " ", " ", "　", " ", " ", " ", " ", "﻿", " ", " ", "󠀠", " ", " ", "​", " "];
 
