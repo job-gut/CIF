@@ -23,6 +23,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const xuid = cert.getXuid()
     const model = pkt.connreq.getJsonValue()!.DeviceModel;
 
+    /*
     const invisibleChars = ["⠀", " ", " ", " ", "　", " ", " ", " ", " ", "﻿", " ", " ", "󠀠", " ", " ", "​", " "];
     if (name.length > 20) {
         CIF.detect(ni, "Long nick name", "Your name is too long");
@@ -35,17 +36,18 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
             return;
         }
     }
-
-    console.log(`Connection ${name} \nIP=${ip}\nOS=${BuildPlatform[deviceOS]}\nDevice Model=${model.trim().length === 0 ? "null" : model}\nDeviceId=${deviceId}\nXUID=${xuid || "Guest"}`.green);
-
+    */
+    
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
     const system = pkt.connreq.getJsonValue()!["DeviceOS"];
     if (TitleId[titleId] && TitleId[BuildPlatform[system] as any] != titleId) {
-        CIF.detect(ni, "Edition Faker", "Faked Edition Detected");
+        CIF.detect(ni, "os_spoof", "Join with wrong edition");
     }
-    if (titleId === TitleId.ANDROID && brand.toUpperCase() !== brand) {
-        CIF.detect(ni, "Tool Box", "You are using Tool Box");
+    
+    //IPhone can be detected
+    if (titleId === TitleId.ANDROID /*&& brand.toUpperCase() !== brand*/) {
+        CIF.detect(ni, "toolbox", "Join with Toolbox");
     }
 
     // if(model.search(/[a-z]/) !== -1){
