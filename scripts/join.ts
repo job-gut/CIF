@@ -26,11 +26,11 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     if (name.length > 20) {
         CIF.detect(ni, "Long nick name", "Too long nickname");
     }
-    
+
     if (name === "") {
         CIF.detect(ni, "Invalid Name", "Nickname is null");
     };
-    
+
     /*
     const invisibleChars = ["⠀", " ", " ", " ", "　", " ", " ", " ", " ", "﻿", " ", " ", "󠀠", " ", " ", "​", " "];
 
@@ -42,24 +42,16 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         }
     }
     */
-    
+
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
     const system = pkt.connreq.getJsonValue()!["DeviceOS"];
     if (TitleId[titleId] && TitleId[BuildPlatform[system] as any] != titleId) {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
     }
-    
+
     //IPhone can be detected
     if (titleId === TitleId.ANDROID /*&& brand.toUpperCase() !== brand*/) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
     }
-<<<<<<< HEAD
 });
-=======
-
-    // if(model.search(/[a-z]/) !== -1){
-    //     kick(ni,"§cTool booooooooox");
-    // }
-});
->>>>>>> 4a605cb82c0fca9b4c7f6c28c785ff99f5d3bf27
