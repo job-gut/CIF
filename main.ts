@@ -5,7 +5,7 @@ import { serverProperties } from "bdsx/serverproperties";
 import { events } from "bdsx/event";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 
-if (serverProperties["server-authoritative-movement"] !== "cilent-auth") {
+if (serverProperties["server-authoritative-movement"] !== "client-auth") {
     throw new Error("CIF는 client-auth 를 필요로 합니다.");
 };
 
