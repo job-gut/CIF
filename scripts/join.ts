@@ -2,7 +2,6 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { BuildPlatform } from "bdsx/common";
 import { events } from "bdsx/event";
-import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../main";
 
 
@@ -52,12 +51,12 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
-    const system = pkt.connreq.getJsonValue()!["DeviceOS"];
-    if (TitleId[titleId] && TitleId[BuildPlatform[system] as any] != titleId) {
+
+    if (TitleId[titleId] && TitleId[BuildPlatform[deviceOS] as any] != titleId) {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
     }
 
-    if (brand.toUpperCase() !== brand && system !== 2) {
+    if (brand.toUpperCase() !== brand && deviceOS !== 2) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
     };
 });
