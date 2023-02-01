@@ -53,7 +53,6 @@ export namespace CIF {
         reason: string
     ) {
         const cheaterName = nameMap.get(ni);
-        const deviceId = deviceIdMap.get(ni);
         const users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 0);
         for (const member of users) {
             member.sendMessage(`§c§l[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`);
@@ -83,4 +82,4 @@ export namespace CIF {
 
 
 import "./scripts";
-import { deviceIdMap, nameMap } from "./scripts/join";
+import { nameMap } from "./scripts/join";
