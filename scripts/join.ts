@@ -8,6 +8,7 @@ import { CIF } from "../main";
 export const nameMap = new Map<NetworkIdentifier, string>();
 
 export const deviceModelMap = new Map<NetworkIdentifier, string>();
+export const deviceIdMap = new Map<NetworkIdentifier, string>();
 
 enum TitleId {
     ANDROID = 1739947436,
@@ -29,6 +30,8 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const model = pkt.connreq.getJsonValue()!.DeviceModel;
 
     nameMap.set(ni, name);
+    deviceModelMap.set(ni, model);
+    deviceIdMap.set(ni, deviceId);
 
     if (name.length > 20) {
         CIF.detect(ni, "long_name", "Too long nickname");
