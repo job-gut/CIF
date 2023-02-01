@@ -5,7 +5,7 @@ import { serverProperties } from "bdsx/serverproperties";
 import { events } from "bdsx/event";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 
-if (serverProperties["server-authoritative-movement"] !== "cilent-auth") {
+if (serverProperties["server-authoritative-movement"] !== "client-auth") {
     throw new Error("CIF는 client-auth 를 필요로 합니다.");
 };
 
@@ -56,7 +56,7 @@ export namespace CIF {
         const deviceId = deviceIdMap.get(ni);
         const users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 0);
         for (const member of users) {
-            member.sendMessage(`§6[CIF] §c${cheaterName} §6was banned using §c${reason}`);
+            member.sendMessage(`§c§l[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`);
         }
     }
 
@@ -71,10 +71,10 @@ export namespace CIF {
         CheatDescription: string
     ): CANCEL {
         const cheaterName = nameMap.get(ni);
-        bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§e${cheatName} Detected`);
+        bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§b${cheatName} Detected`);
         const operators = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 1);
         for (const gm of operators) {
-            gm.sendMessage(`§c[CIF] ${cheaterName} was banned using ${cheatName}(${CheatDescription})`);
+            gm.sendMessage(`§c§l[§fCIF§c] §c${cheaterName} §6was banned using §c${cheatName}§7(${CheatDescription})`);
         }
 
         return CANCEL;

@@ -2,12 +2,12 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { BuildPlatform } from "bdsx/common";
 import { events } from "bdsx/event";
-import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../main";
 
 
 export const nameMap = new Map<NetworkIdentifier, string>();
-export const deviceIdMap = new Map<NetworkIdentifier, string>();
+
+export const deviceModelMap = new Map<NetworkIdentifier, string>();
 
 enum TitleId {
     ANDROID = 1739947436,
@@ -29,7 +29,6 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const model = pkt.connreq.getJsonValue()!.DeviceModel;
 
     nameMap.set(ni, name);
-    deviceIdMap.set(ni, deviceId);
 
     if (name.length > 20) {
         CIF.detect(ni, "long_name", "Too long nickname");
@@ -51,12 +50,12 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
-    const system = pkt.connreq.getJsonValue()!["DeviceOS"];
-    if (TitleId[titleId] && TitleId[BuildPlatform[system] as any] != titleId) {
+
+    if (TitleId[titleId] && TitleId[BuildPlatform[deviceOS] as any] != titleId) {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
     }
 
-    if (brand.toUpperCase() !== brand && system !== 2) {
+    if (brand.toUpperCase() !== brand && deviceOS !== 2) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
     };
 });
