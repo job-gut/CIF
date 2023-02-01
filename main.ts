@@ -54,9 +54,7 @@ export namespace CIF {
         ni: NetworkIdentifier,
         reason: string
     ) {
-
-        const cheater = ni.getActor()!;
-        const cheaterName = cheater.getNameTag()!;
+        const cheaterName = nameMap.get(ni);
         const users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 0);
         for (const member of users) {
             member.sendMessage(`§6[CIF] §c${cheaterName} §6was banned using §c${reason}`);
