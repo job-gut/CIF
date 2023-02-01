@@ -30,11 +30,11 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     nameMap.set(ni, name);
 
     if (name.length > 20) {
-        CIF.detect(ni, "Long nick name", "Too long nickname");
+        CIF.detect(ni, "long_name", "Too long nickname");
     }
 
     if (name === "") {
-        CIF.detect(ni, "Invalid Name", "Nickname is null");
+        CIF.detect(ni, "invalid_name", "Nickname is null");
     };
 
     const invisibleChars = ["⠀", " ", " ", " ", "　", " ", " ", " ", " ", "﻿", " ", " ", "󠀠", " ", " ", "​", " "];
@@ -42,7 +42,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     for (let i = 0; i < invisibleChars.length; i++) {
         const char = invisibleChars[i];
         if (name.includes(char)) {
-            CIF.detect(ni, "Invisible nick name", "Your name has invisible characters");
+            CIF.detect(ni, "invisible_name", "Nickname includes disallowed space");
             return;
         }
     }
@@ -55,6 +55,6 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     }
 
     if (brand.toUpperCase() !== brand && system !== 2) {
-        CIF.detect(ni, "Toolbox", "Join with Toolbox");
+        CIF.detect(ni, "toolbox", "Join with Toolbox");
     };
 });
