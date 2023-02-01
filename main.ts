@@ -55,7 +55,7 @@ export namespace CIF {
         const cheaterName = nameMap.get(ni);
         const users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 0);
         for (const member of users) {
-            member.sendMessage(`§6[CIF] §c${cheaterName} §6was banned using §c${reason}`);
+            member.sendMessage(`§c§l[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`);
         }
     }
 
@@ -73,7 +73,7 @@ export namespace CIF {
         bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§b${cheatName} Detected`);
         const operators = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 1);
         for (const gm of operators) {
-            gm.sendMessage(`§c[CIF] ${cheaterName} was banned using ${cheatName}(${CheatDescription})`);
+            gm.sendMessage(`§c§l[§fCIF§c] §c${cheaterName} §6was banned using §c${cheatName}§7(${CheatDescription})`);
         }
 
         return CANCEL;
