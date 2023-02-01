@@ -49,10 +49,14 @@ events.packetBefore(123).on((pkt, ni) => {
         const plname = pl.getNameTag()!;
         PPSsound[plname] = PPSsound[plname] ? PPSsound[plname] + 1 : 1;
 
-        if (PPSsound[plname] > 49) {
+        if (PPSsound[plname] > 39) {
             PPSsound[plname] = 0;
             return CIF.detect(ni, "Sound Spam", "Spamming Sound Packets");
         };
+
+        setTimeout(async () => {
+            PPSsound[plname]--;
+        }, (1000));
     };
 });
 
@@ -61,10 +65,13 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     const plname = pl.getNameTag()!;
     PPSact[plname] = PPSact[plname] ? PPSact[plname] + 1 : 1;
 
-    if (PPSact[plname] > 49) {
+    if (PPSact[plname] > 39) {
         PPSact[plname] = 0;
         return CIF.detect(ni, "Act Spam", "Spamming ActorEvent Packets");
     };
+    setTimeout(async () => {
+        PPSact[plname]--;
+    }, (1000));
 });
 
 events.packetRaw(93).on((ptr, size, ni) => {
