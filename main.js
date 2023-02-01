@@ -4,7 +4,7 @@ exports.CIF = void 0;
 const common_1 = require("bdsx/common");
 const launcher_1 = require("bdsx/launcher");
 const serverproperties_1 = require("bdsx/serverproperties");
-if (serverproperties_1.serverProperties["server-authoritative-movement"] !== "cilent-auth") {
+if (serverproperties_1.serverProperties["server-authoritative-movement"] !== "client-auth") {
     throw new Error("CIF는 client-auth 를 필요로 합니다.");
 }
 ;
