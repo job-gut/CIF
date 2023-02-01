@@ -1,8 +1,12 @@
+import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { BuildPlatform } from "bdsx/common";
 import { events } from "bdsx/event";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../main";
+
+
+export const nameMap = new Map<NetworkIdentifier, string>();
 
 enum TitleId {
     ANDROID = 1739947436,
@@ -23,6 +27,8 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const xuid = cert.getXuid()
     const model = pkt.connreq.getJsonValue()!.DeviceModel;
 
+    nameMap.set(ni, name);
+
     if (name.length > 20) {
         CIF.detect(ni, "Long nick name", "Too long nickname");
     }
@@ -31,7 +37,6 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.detect(ni, "Invalid Name", "Nickname is null");
     };
 
-    /*
     const invisibleChars = ["⠀", " ", " ", " ", "　", " ", " ", " ", " ", "﻿", " ", " ", "󠀠", " ", " ", "​", " "];
 
     for (let i = 0; i < invisibleChars.length; i++) {
@@ -41,7 +46,6 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
             return;
         }
     }
-    */
 
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
@@ -50,8 +54,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
     }
 
-    //IPhone can be detected
-    if (titleId === TitleId.ANDROID /*&& brand.toUpperCase() !== brand*/) {
-        CIF.detect(ni, "toolbox", "Join with Toolbox");
-    }
+    if (brand.toUpperCase() !== brand && system !== 2 && !deviceId.includes("-") && deviceId.length !== 36) {
+        CIF.detect(ni, "Toolbox", "Join with Toolbox");
+    };
 });

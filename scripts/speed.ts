@@ -1,6 +1,6 @@
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
+import { Player } from "bdsx/bds/player";
 import { events } from "bdsx/event";
-import { bedrockServer } from "bdsx/launcher";
 
 const lastpos: Record<string, number[]> = {};
 const strafestack: Record<string, number> = {};
@@ -11,6 +11,12 @@ const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 const onIce: Record<string, boolean> = {};
 
-events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni)=> {
+declare module "bdsx/bds/player" {
+    interface Player {
+
+    }
+}
+
+events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
 
 });

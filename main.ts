@@ -73,9 +73,8 @@ export namespace CIF {
         cheatName: string,
         CheatDescription: string
     ): CANCEL {
-
+        const cheaterName = nameMap.get(ni);
         bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§e${cheatName} Detected`);
-        const cheaterName = ni.getActor()!.getNameTag()!;
         const operators = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 1);
         for (const gm of operators) {
             gm.sendMessage(`§c[CIF] ${cheaterName} was banned using ${cheatName}(${CheatDescription})`);
@@ -97,3 +96,4 @@ events.packetAfter(1).on((pkt, ni) => {
 
 
 import "./scripts";
+import { nameMap } from "./scripts/join";
