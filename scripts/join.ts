@@ -54,7 +54,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
     }
 
-    if (brand.toUpperCase() !== brand) {
+    if (brand.toUpperCase() !== brand && system !== 2) {
         CIF.detect(ni, "Toolbox", "Join with Toolbox");
     };
 });
