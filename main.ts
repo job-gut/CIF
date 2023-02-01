@@ -9,8 +9,6 @@ if (serverProperties["server-authoritative-movement"] !== "cilent-auth") {
     throw new Error("CIF는 client-auth 를 필요로 합니다.");
 };
 
-const deviceModel: Record<string, string> = {};
-
 /**
  * @deprecated 다른 곳에서 임의로 쓰지 마세요
  */
@@ -81,16 +79,6 @@ export namespace CIF {
         return CANCEL;
     };
 };
-
-events.packetAfter(1).on((pkt, ni) => {
-    const connreq = pkt.connreq;
-    if (!connreq) return;
-
-    const playerName = connreq.getCertificate().getId();
-    const model = connreq.getJsonValue()!.DeviceModel;
-
-    deviceModel[playerName] = model;
-});
 
 
 import "./scripts";
