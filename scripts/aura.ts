@@ -1,7 +1,7 @@
-import { CIF } from "@bdsx/CIF/main";
 import { GameType, Player } from "bdsx/bds/player";
 import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
+import { CIF } from "../main";
 
 const aruaWarn = new Map<string, number>();
 

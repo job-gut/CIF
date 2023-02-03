@@ -4,4 +4,4 @@ import "./crasher";
 import "./join";
 import "./movement";
 import "./instabreak";
-import "./killaura";
+import "./aura";
