@@ -101,10 +101,10 @@ const receivePacket = procHacker.hooking(
     if (Warns[address] > 1 || id === MinecraftPacketIds.PurchaseReceipt) {
         conn.disconnect();
         return 1;
-    }
+    };
     if (id === 0) {
         Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
-    }
+    };
     return receivePacket(conn, data, networkHandler, time_point);
 });
 events.networkDisconnected.on(ni => {
