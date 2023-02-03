@@ -1,4 +1,5 @@
 import { BlockPos } from "bdsx/bds/blockpos";
+import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { PlayerActionPacket } from "bdsx/bds/packets";
 import { Player } from "bdsx/bds/player";
@@ -6,8 +7,10 @@ import { events } from "bdsx/event";
 
 const lastBPS: Record<string, number> = {};
 const isSpinAttacking: Record<string, boolean> = {};
+const onGround: Record<string, boolean> = {};
 
-const lastpos: Record<string, number[]> = {};
+const lastpos = new Map<NetworkIdentifier, BlockPos>();
+
 const strafestack: Record<string, number> = {};
 const getDamaged: Record<string, boolean> = {};
 const isTeleported: Record<string, boolean> = {};
@@ -19,12 +22,19 @@ declare module "bdsx/bds/player" {
          * Returns if player is on ices
          */
         onIce(): boolean;
+
         isSpinAttacking(): boolean;
         /**
          * Returns player's Last Blocks per second
          * @description Just define.
          */
+
         lastBPS(): number;
+
+        /**
+         * Returns if player is not on mid-air
+         */
+        onGround(): boolean;
     }
 };
 
@@ -33,8 +43,7 @@ Player.prototype.onIce = function () {
     pos.y--;
 
     const blockName = this.getRegion().getBlock(pos).getName();
-    if (blockName.includes("ice")) return true
-    else return false;
+    if (blockName.includes("ice")) return true; else return false;
 };
 
 Player.prototype.isSpinAttacking = function () {
@@ -49,6 +58,12 @@ Player.prototype.lastBPS = function () {
     return lastBPS[plname];
 };
 
+Player.prototype.onGround = function() {
+    const plname = this.getNameTag();
+    if (!onGround[plname]) onGround[plname] = false;
+    return onGround[plname];
+};
+
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni)=> {
     const plname = ni.getActor()!.getNameTag()!;
     if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
@@ -59,5 +74,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni)=> {
 });
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
-
+    const pl = ni.getActor()!;
+    const plname = pl.getNameTag()!;
+    onGround[plname] = pkt.onGround;
 });
