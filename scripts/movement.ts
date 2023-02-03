@@ -18,11 +18,13 @@ declare module "bdsx/bds/player" {
          * Returns if player is on ices
          */
         onIce(): boolean;
-        //No JSDoc
+        /**
+         * @description Just define.
+         */
         isSpinAttacking(): boolean;
         /**
          * Returns player's Last Blocks per second
-         * @deprecated Just define.
+         * @description Just define.
          */
         lastBPS(): number;
     }
@@ -41,6 +43,12 @@ Player.prototype.isSpinAttacking = function () {
     const plname = this.getNameTag();
     if (!isSpinAttacking[plname]) isSpinAttacking[plname] = false;
     return isSpinAttacking[plname];
+};
+
+Player.prototype.lastBPS = function () {
+    const plname = this.getNameTag();
+    if (!lastBPS[plname]) lastBPS[plname] = 0;
+    return lastBPS[plname];
 };
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
