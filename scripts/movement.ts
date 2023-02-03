@@ -13,8 +13,13 @@ const onIce: Record<string, boolean> = {};
 
 declare module "bdsx/bds/player" {
     interface Player {
-
+        onIce(): boolean;
     }
+}
+Player.prototype.onIce = function () {
+    // const
+    // this.getRegion().getBlock(this.get())
+    return true;
 }
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
