@@ -39,7 +39,7 @@ export namespace CIF {
     * 콘솔에 로그를 남깁니다
     * @param message 콘솔에 남길 문자
     */
-    export function Log(message: string): void {
+    export function log(message: string): void {
         const date = new Date(); console.info("[" + date.getFullYear() + "-" + zero((date.getMonth() + 1), 2) + "-" + zero(date.getDate(), 2) + " " + zero(date.getHours(), 2) + ":" + zero(date.getMinutes(), 2) + ":" + zero(date.getSeconds(), 2) + ":" + zero(date.getMilliseconds(), 3) + " INFO] " + " [CIF] ".red + message);
     };
 
