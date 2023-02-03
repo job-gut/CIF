@@ -2,13 +2,13 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { BuildPlatform } from "bdsx/common";
 import { events } from "bdsx/event";
+import { yellow } from "colors";
 import { CIF } from "../main";
 
 
 export const nameMap = new Map<NetworkIdentifier, string>();
 
 export const deviceModelMap = new Map<NetworkIdentifier, string>();
-export const deviceIdMap = new Map<NetworkIdentifier, string>();
 
 enum TitleId {
     ANDROID = 1739947436,
@@ -20,24 +20,29 @@ enum TitleId {
 }
 
 events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
-    if (pkt.connreq === null) return;
-    const deviceId = pkt.connreq.getDeviceId();
-    const deviceOS = pkt.connreq.getDeviceOS();
-    const cert = pkt.connreq.getCertificate();
+    const req = pkt.connreq;
+    if (req === null) return;
+    const deviceId = req.getDeviceId();
+    const deviceOS = req.getDeviceOS();
+    const cert = req.getCertificate();
     const name = cert.getId();
     const ip = ni.getAddress();
     const xuid = cert.getXuid()
-    const model = pkt.connreq.getJsonValue()!.DeviceModel;
+    const model = req.getJsonValue()!.DeviceModel;
 
     nameMap.set(ni, name);
     deviceModelMap.set(ni, model);
-    deviceIdMap.set(ni, deviceId);
+
+    //TODO : 밴 된 사람 처리하는 곳 만들기 (CIF.log & OP ALERT)
+
 
     if (name.length > 20) {
+        nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "long_name", "Too long nickname");
     }
 
     if (name === "") {
+        nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "invalid_name", "Nickname is null");
     };
 
@@ -46,8 +51,8 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     for (let i = 0; i < invisibleChars.length; i++) {
         const char = invisibleChars[i];
         if (name.includes(char)) {
+            nameMap.set(ni, "Invalid_Name");
             CIF.detect(ni, "invisible_name", "Nickname includes disallowed space");
-            return;
         }
     }
 
@@ -61,4 +66,8 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     if (brand.toUpperCase() !== brand && deviceOS !== 2) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
     };
+
+    //nameMap.get(ni) -> do not log illegal names
+    CIF.Log(yellow(`${nameMap.get(ni)} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
+
 });
