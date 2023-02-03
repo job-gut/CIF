@@ -32,7 +32,7 @@ declare module "bdsx/bds/player" {
         lastBPS(): number;
 
         /**
-         * Returns if player is not on mid-air
+         * Returns if player is not on mid-air ( client-auth 버그 방지용 )
          */
         onGround(): boolean;
     }
