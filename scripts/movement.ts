@@ -1,5 +1,6 @@
 import { BlockPos } from "bdsx/bds/blockpos";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
+import { PlayerActionPacket } from "bdsx/bds/packets";
 import { Player } from "bdsx/bds/player";
 import { events } from "bdsx/event";
 
@@ -18,9 +19,6 @@ declare module "bdsx/bds/player" {
          * Returns if player is on ices
          */
         onIce(): boolean;
-        /**
-         * @description Just define.
-         */
         isSpinAttacking(): boolean;
         /**
          * Returns player's Last Blocks per second
@@ -50,6 +48,15 @@ Player.prototype.lastBPS = function () {
     if (!lastBPS[plname]) lastBPS[plname] = 0;
     return lastBPS[plname];
 };
+
+events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni)=> {
+    const plname = ni.getActor()!.getNameTag()!;
+    if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
+        isSpinAttacking[plname] = true;
+    } else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
+        isSpinAttacking[plname] = false;
+    };
+});
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
 
