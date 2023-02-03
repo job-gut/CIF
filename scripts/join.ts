@@ -17,7 +17,7 @@ enum TitleId {
     PLAYSTATION = 2044456598,
     NINTENDO = 2047319603,
     XBOX = 1828326430,
-}
+};
 
 events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const req = pkt.connreq;
@@ -39,7 +39,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     if (name.length > 20) {
         nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "long_name", "Too long nickname");
-    }
+    };
 
     if (name === "") {
         nameMap.set(ni, "Invalid_Name");
@@ -53,15 +53,15 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         if (name.includes(char)) {
             nameMap.set(ni, "Invalid_Name");
             CIF.detect(ni, "invisible_name", "Nickname includes disallowed space");
-        }
-    }
+        };
+    };
 
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
 
     if (TitleId[titleId] && TitleId[BuildPlatform[deviceOS] as any] != titleId) {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
-    }
+    };
 
     if (brand.toUpperCase() !== brand && deviceOS !== 2) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
