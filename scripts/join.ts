@@ -68,6 +68,6 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     };
 
     //nameMap.get(ni) -> do not log illegal names
-    CIF.Log(yellow(`${nameMap.get(ni)} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
+    CIF.log(yellow(`${nameMap.get(ni)} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
 
 });
