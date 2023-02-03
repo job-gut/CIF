@@ -24,11 +24,11 @@ declare module "bdsx/bds/player" {
         onIce(): boolean;
 
         isSpinAttacking(): boolean;
+        
         /**
          * Returns player's Last Blocks per second
          * @description Just define.
          */
-
         lastBPS(): number;
 
         /**
