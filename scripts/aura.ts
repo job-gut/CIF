@@ -17,7 +17,7 @@ function warn(player: Player) {
         if (aruaWarn.get(name)! < 0) aruaWarn.set(name, 0);
     }, 5000);
     if (aruaWarn.get(name)! > 5) {
-        CIF.detect(player.getNetworkIdentifier(), "killaura", "Unexpected hitting with Killaura");
+        CIF.detect(player.getNetworkIdentifier(), "aura", "Unexpected hitting with Aura");
     }
 }
 
