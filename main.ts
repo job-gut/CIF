@@ -2,8 +2,8 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CANCEL } from "bdsx/common";
 import { bedrockServer } from "bdsx/launcher";
 import { serverProperties } from "bdsx/serverproperties";
-import { events } from "bdsx/event";
-import { MinecraftPacketIds } from "bdsx/bds/packetids";
+
+import { nameMap, deviceModelMap } from "./scripts/join";
 
 if (serverProperties["server-authoritative-movement"] !== "client-auth") {
     throw new Error("CIF는 client-auth 를 필요로 합니다.");
@@ -39,7 +39,7 @@ export namespace CIF {
     * 콘솔에 로그를 남깁니다
     * @param message 콘솔에 남길 문자
     */
-    export function Log(message: string) {
+    export function Log(message: string): void {
         const date = new Date(); console.info("[" + date.getFullYear() + "-" + zero((date.getMonth() + 1), 2) + "-" + zero(date.getDate(), 2) + " " + zero(date.getHours(), 2) + ":" + zero(date.getMinutes(), 2) + ":" + zero(date.getSeconds(), 2) + ":" + zero(date.getMilliseconds(), 3) + " INFO] " + " [CIF] ".red + message);
     };
 
@@ -51,7 +51,7 @@ export namespace CIF {
     export function ban(
         ni: NetworkIdentifier,
         reason: string
-    ) {
+    ): void {
         const cheaterName = nameMap.get(ni);
         const users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 0);
         for (const member of users) {
@@ -82,4 +82,3 @@ export namespace CIF {
 
 
 import "./scripts";
-import { nameMap } from "./scripts/join";
