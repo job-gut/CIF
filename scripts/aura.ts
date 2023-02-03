@@ -10,7 +10,7 @@ function warn(player: Player) {
     if (aruaWarn.get(name) === undefined) {
         aruaWarn.set(name, 1);
         return;
-    }
+    };
     aruaWarn.set(name, aruaWarn.get(name)! + 1);
     setTimeout(async () => {
         aruaWarn.set(name, aruaWarn.get(name)! - 1);
@@ -18,8 +18,8 @@ function warn(player: Player) {
     }, 5000);
     if (aruaWarn.get(name)! > 3) {
         CIF.detect(player.getNetworkIdentifier(), "aura", "Unexpected hitting with Aura");
-    }
-}
+    };
+};
 
 events.playerAttack.on((ev) => {
     if (!ev.victim.isPlayer()) return;
@@ -32,7 +32,7 @@ events.playerAttack.on((ev) => {
     if (!ev.player.canSee(ev.victim)) {
         warn(ev.player);
         return;
-    }*/
+    };*/
 
     const victimPos = ev.victim.getFeetPos();
     victimPos.y += 0.9;
@@ -40,7 +40,7 @@ events.playerAttack.on((ev) => {
 
     if (victimPos.distance(playerPos) < 1) {
         return;
-    }
+    };
 
     let reach = playerPos.distance(victimPos);
     const viewVector = ev.player.getViewVector();
@@ -54,5 +54,5 @@ events.playerAttack.on((ev) => {
     if (hitRange > 0.81) {
         warn(ev.player);
         return CANCEL;
-    }
+    };
 });
