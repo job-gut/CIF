@@ -1,3 +1,5 @@
+import "./bug";
+
 import "./give";
 import "./xp";
 import "./crasher";
