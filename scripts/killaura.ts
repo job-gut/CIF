@@ -26,10 +26,13 @@ events.playerAttack.on((ev) => {
     if (ev.player.getGameType() === GameType.Creative) return;
     if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
 
+    /*
+        Normal user can be detected.
+    
     if (!ev.player.canSee(ev.victim)) {
         warn(ev.player);
         return;
-    }
+    }*/
 
     const victimPos = ev.victim.getFeetPos();
     victimPos.y += 0.9;
