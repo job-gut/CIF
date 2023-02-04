@@ -24,7 +24,7 @@ declare module "bdsx/bds/player" {
         onIce(): boolean;
 
         isSpinAttacking(): boolean;
-        
+
         /**
          * Returns player's Last Blocks per second
          * @description Just define.
@@ -58,13 +58,13 @@ Player.prototype.lastBPS = function () {
     return lastBPS[plname];
 };
 
-Player.prototype.onGround = function() {
+Player.prototype.onGround = function () {
     const plname = this.getNameTag();
     if (!onGround[plname]) onGround[plname] = false;
     return onGround[plname];
 };
 
-events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni)=> {
+events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
     const plname = ni.getActor()!.getNameTag()!;
     if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
         isSpinAttacking[plname] = true;
