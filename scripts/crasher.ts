@@ -85,8 +85,6 @@ events.packetRaw(93).on((ptr, size, ni) => {
     return CANCEL;
 });
 
-//Thank you Mdisprgm
-const Warns: Record<string, number> = {};
 const receivePacket = procHacker.hooking(
     "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVNetworkHandler@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
     int32_t,
@@ -96,17 +94,10 @@ const receivePacket = procHacker.hooking(
     NetworkHandler,
     VoidPointer,
 )((conn, data, networkHandler, time_point) => {
-    const address = conn.networkIdentifier.getAddress();
     const id = data.valueptr.getUint8();
-    if (Warns[address] > 1 || id === MinecraftPacketIds.PurchaseReceipt) {
+    if (id === 0) {
         conn.disconnect();
         return 1;
-    }
-    if (id === 0) {
-        Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
-    }
+    };
     return receivePacket(conn, data, networkHandler, time_point);
-});
-events.networkDisconnected.on(ni => {
-    Warns[ni.getAddress()] = 0;
 });
