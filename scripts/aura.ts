@@ -5,7 +5,7 @@ import { CIF } from "../main";
 
 const aruaWarn = new Map<string, number>();
 
-function warn(player: Player) {
+function warn(player: Player): void | CANCEL {
     const name = player.getNameTag();
     if (aruaWarn.get(name) === undefined) {
         aruaWarn.set(name, 1);
@@ -17,8 +17,10 @@ function warn(player: Player) {
         if (aruaWarn.get(name)! < 0) aruaWarn.set(name, 0);
     }, 5000);
     if (aruaWarn.get(name)! > 3) {
-        CIF.detect(player.getNetworkIdentifier(), "aura", "Unexpected hitting with Aura");
-    }
+        return CIF.detect(player.getNetworkIdentifier(), "aura", "Unexpected hitting with Aura");
+    };
+
+    return CANCEL;
 }
 
 events.playerAttack.on((ev) => {
@@ -52,7 +54,6 @@ events.playerAttack.on((ev) => {
     const distanceZ = Math.abs(viewVector.z - victimPos.z) / reach;
     const hitRange = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceZ, 2));
     if (hitRange > 0.81) {
-        warn(ev.player);
-        return CANCEL;
-    }
+        return warn(ev.player);
+    };
 });

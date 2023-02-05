@@ -64,7 +64,7 @@ events.blockDestroy.on((ev) => {
     const name = ev.player.getNameTag();
     if (destroingBlock[name] === undefined && !allowInstabreak(ev.player, ev.blockSource.getBlock(ev.blockPos))) {
         const ni = ev.player.getNetworkIdentifier();
-        CIF.detect(ni, "instabreak", "break block instantly");
+        return CIF.detect(ni, "instabreak", "break block instantly");
     }
     //console.log(`done ${ev.player.getNameTag()}`);
     //if(destroingBlock[])
