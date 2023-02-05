@@ -1,13 +1,17 @@
-import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
-import { CANCEL } from "bdsx/common";
-import { bedrockServer } from "bdsx/launcher";
 import { serverProperties } from "bdsx/serverproperties";
-
-import { nameMap, deviceModelMap } from "./scripts/join";
 
 if (serverProperties["server-authoritative-movement"] !== "client-auth") {
     throw new Error("CIF는 client-auth 를 필요로 합니다.");
 };
+
+import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
+import { CANCEL } from "bdsx/common";
+import { bedrockServer } from "bdsx/launcher";
+import { CommandPermissionLevel } from "bdsx/bds/command";
+
+import { nameMap, deviceModelMap } from "./scripts/join";
+
+import "./scripts";
 
 /**
  * @deprecated 다른 곳에서 임의로 쓰지 마세요
@@ -35,8 +39,9 @@ function dateWithZero() {
 
 export namespace CIF {
     /**
-     * 메세지 보냄
+     * Send messages to players
      * @param message 보낼 메세지
+     * @param target Permission
      */
     function announce(message: string, target: CommandPermissionLevel | "ALL" = CommandPermissionLevel.Operator) {
         let users;
@@ -44,11 +49,13 @@ export namespace CIF {
             users = bedrockServer.serverInstance.getPlayers();
         } else {
             users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === target);
-        }
+        };
         for (const member of users) {
             member.sendMessage(message);
-        }
-    }
+        };
+    };
+
+
     /**
     * 콘솔에 로그를 남깁니다
     * @param message 콘솔에 남길 문자
@@ -68,7 +75,7 @@ export namespace CIF {
     ): void {
         const cheaterName = nameMap.get(ni);
         announce(`§c§l[§fCIF§c] §c${cheaterName} §6was banned by using §c${reason}`, "ALL");
-    }
+    };
 
 
     /**
@@ -93,9 +100,5 @@ export namespace CIF {
         const ip = ni.getAddress();
         announce(`§c§l[§fCIF§c] §cIP:${ip} §6was disconnected by using §c${cheatName}§7(${CheatDescription})`);
         return CANCEL;
-    }
+    };
 };
-
-
-import "./scripts"; import { CommandPermissionLevel } from "bdsx/bds/command";
-
