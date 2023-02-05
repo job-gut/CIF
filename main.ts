@@ -34,7 +34,21 @@ function dateWithZero() {
 }
 
 export namespace CIF {
-
+    /**
+     * 메세지 보냄
+     * @param message 보낼 메세지
+     */
+    function announce(message: string, target: CommandPermissionLevel | "ALL" = CommandPermissionLevel.Operator) {
+        let users;
+        if (target === "ALL") {
+            users = bedrockServer.serverInstance.getPlayers();
+        } else {
+            users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === target);
+        }
+        for (const member of users) {
+            member.sendMessage(message);
+        }
+    }
     /**
     * 콘솔에 로그를 남깁니다
     * @param message 콘솔에 남길 문자
@@ -53,10 +67,7 @@ export namespace CIF {
         reason: string
     ): void {
         const cheaterName = nameMap.get(ni);
-        const users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 0);
-        for (const member of users) {
-            member.sendMessage(`§c§l[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`);
-        }
+        announce(`§c§l[§fCIF§c] §c${cheaterName} §6was banned by using §c${reason}`, "ALL");
     }
 
 
@@ -71,14 +82,20 @@ export namespace CIF {
     ): CANCEL {
         const cheaterName = nameMap.get(ni);
         bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§b${cheatName} Detected`);
-        const operators = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === 1);
-        for (const gm of operators) {
-            gm.sendMessage(`§c§l[§fCIF§c] §c${cheaterName} §6was banned using §c${cheatName}§7(${CheatDescription})`);
-        }
-
+        announce(`§c§l[§fCIF§c] §c${cheaterName} §6was disconnected by using §c${cheatName}§7(${CheatDescription})`);
         return CANCEL;
     };
+    /**
+     * CVE 감지 때 쓰는 함수
+     * @description CIF.ban() 은 이 함수에서 호출 안 함
+     */
+    export function ipDetect(ni: NetworkIdentifier, cheatName: string, CheatDescription: string) {
+        const ip = ni.getAddress();
+        announce(`§c§l[§fCIF§c] §cIP:${ip} §6was disconnected by using §c${cheatName}§7(${CheatDescription})`);
+        return CANCEL;
+    }
 };
 
 
-import "./scripts";
+import "./scripts"; import { CommandPermissionLevel } from "bdsx/bds/command";
+
