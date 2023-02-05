@@ -9,7 +9,7 @@ function warn(player: Player): CANCEL {
     const name = player.getNameTag();
     if (aruaWarn.get(name) === undefined) {
         aruaWarn.set(name, 1);
-        return;
+        return CANCEL;
     }
     aruaWarn.set(name, aruaWarn.get(name)! + 1);
     setTimeout(async () => {
