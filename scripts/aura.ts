@@ -5,7 +5,7 @@ import { CIF } from "../main";
 
 const aruaWarn = new Map<string, number>();
 
-function warn(player: Player): void | CANCEL {
+function warn(player: Player): CANCEL {
     const name = player.getNameTag();
     if (aruaWarn.get(name) === undefined) {
         aruaWarn.set(name, 1);
