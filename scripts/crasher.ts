@@ -64,7 +64,7 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     const pl = ni.getActor()!;
     const plname = pl.getNameTag()!;
     PPSact[plname] = PPSact[plname] ? PPSact[plname] + 1 : 1;
-    
+
     if (PPSact[plname] > 39) {
         PPSact[plname] = 0;
         return CIF.detect(ni, "Act Spam", "Spamming ActorEvent Packets");
@@ -95,8 +95,13 @@ const receivePacket = procHacker.hooking(
     VoidPointer,
 )((conn, data, networkHandler, time_point) => {
     const id = data.valueptr.getUint8();
-    if (id === 0) {
+    if (id === 0 || id === MinecraftPacketIds.PurchaseReceipt) {
         conn.disconnect();
+        if (conn.networkIdentifier.getActor()) {
+            CIF.detect(conn.networkIdentifier, "cve", "Send invalid packet");
+        } else {
+            CIF.ipDetect(conn.networkIdentifier, "cve", "Send invalid packet");
+        }
         return 1;
     };
     return receivePacket(conn, data, networkHandler, time_point);
