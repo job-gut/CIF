@@ -78,7 +78,8 @@ export namespace CIF {
         ni: NetworkIdentifier,
         reason: string
     ): void {
-        const cheaterName = nameMap.get(ni);
+        const cheaterName = nameMap.get(ni)!;
+        wasDetected[cheaterName] = true;
         announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
         log(`${cheaterName} was banned using ${reason}`);
     };
