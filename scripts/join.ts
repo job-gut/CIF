@@ -17,7 +17,10 @@ enum TitleId {
     PLAYSTATION = 2044456598,
     NINTENDO = 2047319603,
     XBOX = 1828326430,
-}
+};
+
+const firstLoginedDID: Record<string, string> = {};
+const firstLoginedOS: Record<string, number> = {};
 
 events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const req = pkt.connreq;
@@ -27,8 +30,10 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const cert = req.getCertificate();
     const name = cert.getId();
     const ip = ni.getAddress();
-    const xuid = cert.getXuid()
+    const xuid = cert.getXuid();
     const model = req.getJsonValue()!.DeviceModel;
+
+    const isXboxLogined = xuid.length > 3;
 
     nameMap.set(ni, name);
     deviceModelMap.set(ni, model);
@@ -39,11 +44,13 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     if (name.length > 20) {
         nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "long_name", "Too long nickname");
-    }
+        CIF.ban(ni, "Long_Name");
+    };
 
     if (name === "") {
         nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "invalid_name", "Nickname is null");
+        CIF.ban(ni, "Invalid_Name");
     };
 
     const invisibleChars = ["⠀", " ", " ", " ", "　", " ", " ", " ", " ", "﻿", " ", " ", "󠀠", " ", " ", "​", " "];
@@ -53,18 +60,39 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         if (name.includes(char)) {
             nameMap.set(ni, "Invalid_Name");
             CIF.detect(ni, "invisible_name", "Nickname includes disallowed space");
-        }
-    }
+            CIF.ban(ni, "Invisible_Name");
+        };
+    };
 
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
 
     if (TitleId[titleId] && TitleId[BuildPlatform[deviceOS] as any] != titleId) {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
+        CIF.ban(ni, "os-spoof");
     }
 
     if (brand.toUpperCase() !== brand && deviceOS !== 2) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
+        CIF.ban(ni, "Toolbox");
+    };
+
+    if (deviceId.length === 36) {
+        if (deviceId.includes("g") || deviceId.includes("h") || deviceId.includes("i") || deviceId.includes("j") || deviceId.includes("k") || deviceId.includes("l") || deviceId.includes("m") || deviceId.includes("n") || deviceId.includes("o") || deviceId.includes("p") || deviceId.includes("q") || deviceId.includes("r") || deviceId.includes("s") || deviceId.includes("t") || deviceId.includes("u") || deviceId.includes("v") || deviceId.includes("w") || deviceId.includes("x") || deviceId.includes("y") || deviceId.includes("z")) {
+            CIF.detect(ni, "zephyr", "Zephyr DeviceId Spoof");
+            CIF.ban(ni, "Zephyr DeviceId Spoof");
+        };
+    };
+
+    if (typeof firstLoginedDID[name] !== "string" && isXboxLogined === true) {
+        firstLoginedDID[name] = deviceId;
+        firstLoginedOS[name] = deviceOS;
+    } else if (isXboxLogined === true && firstLoginedDID[name] !== deviceId && firstLoginedOS[name] === deviceOS) {
+        CIF.ban(ni, "deviceid_spoof")
+        CIF.detect(ni, "deviceid_spoof", "Spoofs their deviceID");
+    } else {
+        firstLoginedDID[name] = deviceId;
+        firstLoginedOS[name] = deviceOS;
     };
 
     //nameMap.get(ni) -> do not log illegal names
