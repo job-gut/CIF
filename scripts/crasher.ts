@@ -1,4 +1,4 @@
-import { NetworkConnection, NetworkHandler } from "bdsx/bds/networkidentifier";
+import { NetworkConnection, NetworkHandler, NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { ActorEventPacket } from "bdsx/bds/packets";
 import { CANCEL } from "bdsx/common";
@@ -85,6 +85,9 @@ events.packetRaw(93).on((ptr, size, ni) => {
     return CANCEL;
 });
 
+const Warns: Record<string, number> = {};
+const ipBlocked: Record<string, boolean> = {};
+
 const receivePacket = procHacker.hooking(
     "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVNetworkHandler@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
     int32_t,
@@ -94,15 +97,30 @@ const receivePacket = procHacker.hooking(
     NetworkHandler,
     VoidPointer,
 )((conn, data, networkHandler, time_point) => {
-    const id = data.valueptr.getUint8();
-    if (id === 0 || id === MinecraftPacketIds.PurchaseReceipt) {
+    const address = conn.networkIdentifier.getAddress();
+    const ip = address.split("|")[0];
+
+    if (ipBlocked[ip]) {
         conn.disconnect();
-        if (conn.networkIdentifier.getActor()) {
-            CIF.detect(conn.networkIdentifier, "cve", "Send invalid packet");
-        } else {
-            CIF.ipDetect(conn.networkIdentifier, "cve", "Send invalid packet");
-        }
+        CIF.announce(`§c§l[§fCIF§c] §cIP:${ip} §6tried to connect §c(IP Blocked)`);
+        CIF.log(`${ip} tried to connect (IP Blocked)`);
         return 1;
     };
+
+    const id = data.valueptr.getUint8();
+    if (Warns[address] > 0 || id === MinecraftPacketIds.PurchaseReceipt) {
+        conn.disconnect();
+        ipBlocked[ip] = true;
+        CIF.ipDetect(conn.networkIdentifier, "crasher", "CVE: Send Invalid Packets without Minecraft Connection");
+        return 1;
+    };
+
+    if (id === 0) {
+        Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
+    };
+    
     return receivePacket(conn, data, networkHandler, time_point);
+});
+events.networkDisconnected.on(ni => {
+    Warns[ni.getAddress()] = 0;
 });

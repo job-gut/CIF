@@ -43,7 +43,7 @@ export namespace CIF {
      * @param message 보낼 메세지
      * @param target Permission
      */
-    function announce(message: string, target: CommandPermissionLevel | "ALL" = CommandPermissionLevel.Operator) {
+    export function announce(message: string, target: CommandPermissionLevel | "ALL" = CommandPermissionLevel.Operator) {
         let users;
         if (target === "ALL") {
             users = bedrockServer.serverInstance.getPlayers();
@@ -55,13 +55,16 @@ export namespace CIF {
         };
     };
 
-
     /**
     * 콘솔에 로그를 남깁니다
     * @param message 콘솔에 남길 문자
     */
     export function log(message: string): void {
-        const date = new Date(); console.info("[" + date.getFullYear() + "-" + zero((date.getMonth() + 1), 2) + "-" + zero(date.getDate(), 2) + " " + zero(date.getHours(), 2) + ":" + zero(date.getMinutes(), 2) + ":" + zero(date.getSeconds(), 2) + ":" + zero(date.getMilliseconds(), 3) + " INFO] " + " [CIF] ".red + message);
+        const date = new Date();
+        console.info(
+            "[" + date.getFullYear() + "-" + zero((date.getMonth() + 1), 2) + "-" + zero(date.getDate(), 2) +
+            " " + zero(date.getHours(), 2) + ":" + zero(date.getMinutes(), 2) + ":" + zero(date.getSeconds(), 2) + 
+            ":" + zero(date.getMilliseconds(), 3) + " INFO] " + "[CIF] ".red + message);
     };
 
 
@@ -75,6 +78,7 @@ export namespace CIF {
     ): void {
         const cheaterName = nameMap.get(ni);
         announce(`§c§l[§fCIF§c] §c${cheaterName} §6was banned by using §c${reason}`, "ALL");
+        log(`${cheaterName} was banned by using ${reason}`);
     };
 
 
@@ -85,20 +89,23 @@ export namespace CIF {
     export function detect(
         ni: NetworkIdentifier,
         cheatName: string,
-        CheatDescription: string
+        cheatDescription: string
     ): CANCEL {
         const cheaterName = nameMap.get(ni);
         bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§b${cheatName} Detected`);
-        announce(`§c§l[§fCIF§c] §c${cheaterName} §6was disconnected by using §c${cheatName}§7(${CheatDescription})`);
+        announce(`§c§l[§fCIF§c] §c${cheaterName} §6was disconnected by using §c${cheatName} §7(${cheatDescription})`);
+        log(`${cheaterName} was disconnected by using ${cheatName} (${cheatDescription})`);
         return CANCEL;
     };
+
     /**
      * CVE 감지 때 쓰는 함수
      * @description CIF.ban() 은 이 함수에서 호출 안 함
      */
-    export function ipDetect(ni: NetworkIdentifier, cheatName: string, CheatDescription: string) {
-        const ip = ni.getAddress();
-        announce(`§c§l[§fCIF§c] §cIP:${ip} §6was disconnected by using §c${cheatName}§7(${CheatDescription})`);
+    export function ipDetect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string) {
+        const ip = ni.getAddress().split("|")[0];
+        announce(`§c§l[§fCIF§c] §cIP:${ip} §6was disconnected by using §c${cheatName} §7(${cheatDescription})`);
+        log(`${ip} was disconnected by using ${cheatName} (${cheatDescription})`);
         return CANCEL;
     };
 };
