@@ -50,7 +50,9 @@ export namespace CIF {
         } else {
             users = bedrockServer.serverInstance.getPlayers().filter(p => p.getCommandPermissionLevel() === target);
         };
+
         for (const member of users) {
+            if (wasDetected[member.getNameTag()] === true) continue;
             member.sendMessage(message);
         };
     };
@@ -77,8 +79,8 @@ export namespace CIF {
         reason: string
     ): void {
         const cheaterName = nameMap.get(ni);
-        announce(`§c[§fCIF§c] §c${cheaterName} §6was banned by using §c${reason}`, "ALL");
-        log(`${cheaterName} was banned by using ${reason}`);
+        announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
+        log(`${cheaterName} was banned using ${reason}`);
     };
 
 
@@ -91,10 +93,11 @@ export namespace CIF {
         cheatName: string,
         cheatDescription: string
     ): CANCEL {
-        const cheaterName = nameMap.get(ni);
-        bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§b${cheatName} Detected`);
-        announce(`§c[§fCIF§c] §c${cheaterName} §6was disconnected by using §c${cheatName} §7(${cheatDescription})`);
-        log(`${cheaterName} was disconnected by using ${cheatName} (${cheatDescription})`);
+        const cheaterName = nameMap.get(ni)!;
+        wasDetected[cheaterName] = true;
+        // bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§b${cheatName} Detected`);
+        announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
+        log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`);
         return CANCEL;
     };
 
@@ -104,8 +107,10 @@ export namespace CIF {
      */
     export function ipDetect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string) {
         const ip = ni.getAddress().split("|")[0];
-        announce(`§c[§fCIF§c] §c${ip} §6was ip-blocked by using §c${cheatName} §7(${cheatDescription})`);
-        log(`${ip} was ip-blocked by using ${cheatName} (${cheatDescription})`);
+        announce(`§c[§fCIF§c] §c${ip} §6was ip-blocked using §c${cheatName} §7(${cheatDescription})`);
+        log(`${ip} was ip-blocked using ${cheatName} (${cheatDescription})`);
         return CANCEL;
     };
+
+    export const wasDetected: Record<string, boolean> = {};
 };
