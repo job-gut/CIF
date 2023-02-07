@@ -104,8 +104,8 @@ export namespace CIF {
      */
     export function ipDetect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string) {
         const ip = ni.getAddress().split("|")[0];
-        announce(`§c§l[§fCIF§c] §cIP:${ip} §6was disconnected by using §c${cheatName} §7(${cheatDescription})`);
-        log(`${ip} was disconnected by using ${cheatName} (${cheatDescription})`);
+        announce(`§c§l[§fCIF§c] §cIP:${ip} §6was blocked by using §c${cheatName} §7(${cheatDescription})`);
+        log(`${ip} was blocked by using ${cheatName} (${cheatDescription})`);
         return CANCEL;
     };
 };
