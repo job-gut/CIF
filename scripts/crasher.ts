@@ -102,7 +102,7 @@ const receivePacket = procHacker.hooking(
 
     if (ipBlocked[ip]) {
         conn.disconnect();
-        CIF.announce(`§c§l[§fCIF§c] §c${ip} §6tried to connect §c(IP Blocked)`);
+        CIF.announce(`§c[§fCIF§c] §c${ip} §6tried to connect §c(IP Blocked)`);
         CIF.log(`${ip} tried to connect (IP Blocked)`);
         return 1;
     };

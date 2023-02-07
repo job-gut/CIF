@@ -77,7 +77,7 @@ export namespace CIF {
         reason: string
     ): void {
         const cheaterName = nameMap.get(ni);
-        announce(`§c§l[§fCIF§c] §c${cheaterName} §6was banned by using §c${reason}`, "ALL");
+        announce(`§c[§fCIF§c] §c${cheaterName} §6was banned by using §c${reason}`, "ALL");
         log(`${cheaterName} was banned by using ${reason}`);
     };
 
@@ -93,7 +93,7 @@ export namespace CIF {
     ): CANCEL {
         const cheaterName = nameMap.get(ni);
         bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cCIF§f]\n§b${cheatName} Detected`);
-        announce(`§c§l[§fCIF§c] §c${cheaterName} §6was disconnected by using §c${cheatName} §7(${cheatDescription})`);
+        announce(`§c[§fCIF§c] §c${cheaterName} §6was disconnected by using §c${cheatName} §7(${cheatDescription})`);
         log(`${cheaterName} was disconnected by using ${cheatName} (${cheatDescription})`);
         return CANCEL;
     };
@@ -104,7 +104,7 @@ export namespace CIF {
      */
     export function ipDetect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string) {
         const ip = ni.getAddress().split("|")[0];
-        announce(`§c§l[§fCIF§c] §c${ip} §6was ip-blocked by using §c${cheatName} §7(${cheatDescription})`);
+        announce(`§c[§fCIF§c] §c${ip} §6was ip-blocked by using §c${cheatName} §7(${cheatDescription})`);
         log(`${ip} was ip-blocked by using ${cheatName} (${cheatDescription})`);
         return CANCEL;
     };
