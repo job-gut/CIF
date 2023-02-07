@@ -19,11 +19,15 @@ const getDamaged: Record<string, boolean> = {};
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 
-const isSolidBlock = procHacker.js(
+declare module "bdsx/bds/block" {
+    interface Block {
+        isSolid(): boolean;
+    }
+}
+Block.prototype.isSolid = procHacker.js(
     "?isSolid@Block@@QEBA_NXZ",
     bool_t,
-    null,
-    Block
+    { this: Block }
 );
 
 declare module "bdsx/bds/player" {
