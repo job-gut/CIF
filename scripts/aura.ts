@@ -10,13 +10,13 @@ function warn(player: Player): CANCEL {
     if (aruaWarn.get(name) === undefined) {
         aruaWarn.set(name, 1);
         return CANCEL;
-    }
+    };
     aruaWarn.set(name, aruaWarn.get(name)! + 1);
     setTimeout(async () => {
         aruaWarn.set(name, aruaWarn.get(name)! - 1);
         if (aruaWarn.get(name)! < 0) aruaWarn.set(name, 0);
     }, 5000);
-    if (aruaWarn.get(name)! > 3) {
+    if (aruaWarn.get(name)! > 1) {
         return CIF.detect(player.getNetworkIdentifier(), "aura", "Mismatch head rotation");
     };
 
