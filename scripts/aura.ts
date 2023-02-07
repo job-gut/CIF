@@ -17,7 +17,7 @@ function warn(player: Player): CANCEL {
         if (aruaWarn.get(name)! < 0) aruaWarn.set(name, 0);
     }, 5000);
     if (aruaWarn.get(name)! > 3) {
-        return CIF.detect(player.getNetworkIdentifier(), "aura", "Unexpected hitting with Aura");
+        return CIF.detect(player.getNetworkIdentifier(), "aura", "Mismatch head rotation");
     };
 
     return CANCEL;
