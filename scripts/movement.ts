@@ -22,6 +22,9 @@ const haveFished: Record<string, boolean> = {};
 
 declare module "bdsx/bds/block" {
     interface Block {
+        /**
+         * Returns if the block can be spawned mobs
+         */
         isSolid(): boolean;
     }
 };
