@@ -3,20 +3,20 @@ import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { CIF } from "../main";
 
-const aruaWarn = new Map<string, number>();
+const auraWarn = new Map<string, number>();
 
 function warn(player: Player): CANCEL {
     const name = player.getNameTag();
-    if (aruaWarn.get(name) === undefined) {
-        aruaWarn.set(name, 1);
+    if (auraWarn.get(name) === undefined) {
+        auraWarn.set(name, 1);
         return CANCEL;
     };
-    aruaWarn.set(name, aruaWarn.get(name)! + 1);
+    auraWarn.set(name, auraWarn.get(name)! + 1);
     setTimeout(async () => {
-        aruaWarn.set(name, aruaWarn.get(name)! - 1);
-        if (aruaWarn.get(name)! < 0) aruaWarn.set(name, 0);
+        auraWarn.set(name, auraWarn.get(name)! - 1);
+        if (auraWarn.get(name)! < 0) auraWarn.set(name, 0);
     }, 5000);
-    if (aruaWarn.get(name)! > 1) {
+    if (auraWarn.get(name)! > 1) {
         return CIF.detect(player.getNetworkIdentifier(), "aura", "Mismatch head rotation");
     };
 
