@@ -4,6 +4,7 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { PlayerActionPacket } from "bdsx/bds/packets";
 import { Player } from "bdsx/bds/player";
+import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { bool_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
@@ -23,7 +24,7 @@ declare module "bdsx/bds/block" {
     interface Block {
         isSolid(): boolean;
     }
-}
+};
 Block.prototype.isSolid = procHacker.js(
     "?isSolid@Block@@QEBA_NXZ",
     bool_t,
@@ -91,4 +92,14 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     const pl = ni.getActor()!;
     const plname = pl.getNameTag()!;
     onGround[plname] = pkt.onGround;
+
+    const region = pl.getRegion()!;
+    const currentPosBlock = region.getBlock(BlockPos.create(pkt.pos.x, pkt.pos.y-1.6, pkt.pos.z));
+    const currentHeadPosBlock = region.getBlock(BlockPos.create(pkt.pos.x, pkt.pos.y, pkt.pos.z));
+
+    if (currentPosBlock.isSolid() && currentHeadPosBlock.isSolid()) {
+        pl.runCommand("tp ~ ~ ~");
+        return CANCEL;
+    };
+    
 });
