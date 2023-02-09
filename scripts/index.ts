@@ -8,3 +8,4 @@ import "./movement";
 import "./instabreak";
 import "./aura";
 import "./reach";
+import "./scaffold";
