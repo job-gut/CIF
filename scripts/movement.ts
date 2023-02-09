@@ -3,7 +3,7 @@ import { BlockPos } from "bdsx/bds/blockpos";
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { PlayerActionPacket } from "bdsx/bds/packets";
-import { Player } from "bdsx/bds/player";
+import { GameType, Player } from "bdsx/bds/player";
 import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { bool_t } from "bdsx/nativetype";
@@ -100,7 +100,11 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     const currentPosBlock = region.getBlock(BlockPos.create(pkt.pos.x, pkt.pos.y-1.6, pkt.pos.z));
     const currentHeadPosBlock = region.getBlock(BlockPos.create(pkt.pos.x, pkt.pos.y, pkt.pos.z));
 
-    if (currentPosBlock.isSolid() && currentHeadPosBlock.isSolid()) {
+    if (currentPosBlock.isSolid() && currentHeadPosBlock.isSolid() && 
+    pl.getGameType() !== GameType.Spectator
+    && pl.getGameType() !== GameType.CreativeSpectator
+    && pl.getGameType() !== GameType.Creative
+    && pl.getGameType() !== GameType.SurvivalSpectator) {
         pl.runCommand("tp ~ ~ ~");
         return CANCEL;
     };
