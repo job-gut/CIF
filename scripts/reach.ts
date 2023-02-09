@@ -27,6 +27,7 @@ events.entityKnockback.on((ev)=> {
     const attacker = ev.source;
     if (!attacker) return;
     if (!attacker.isPlayer()) return;
+    if (attacker.getGameType() === 1) return;
 
     const attackerpos = attacker.getFeetPos();
     const victimpos = victim.getFeetPos();
