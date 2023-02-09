@@ -100,8 +100,9 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     const currentPosBlock = region.getBlock(BlockPos.create(pkt.pos.x, pkt.pos.y-1.6, pkt.pos.z));
     const currentHeadPosBlock = region.getBlock(BlockPos.create(pkt.pos.x, pkt.pos.y, pkt.pos.z));
 
-    if (currentPosBlock.isSolid() && currentHeadPosBlock.isSolid() && 
-    pl.getGameType() !== GameType.Spectator
+    if (currentPosBlock.isSolid() && currentHeadPosBlock.isSolid() &&
+    !currentPosBlock.getName().includes("air") && !currentHeadPosBlock.getName().includes("air")
+    && pl.getGameType() !== GameType.Spectator
     && pl.getGameType() !== GameType.CreativeSpectator
     && pl.getGameType() !== GameType.Creative
     && pl.getGameType() !== GameType.SurvivalSpectator) {
