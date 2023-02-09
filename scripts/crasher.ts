@@ -123,6 +123,7 @@ const receivePacket = procHacker.hooking(
     if (conn.networkIdentifier.getActor()) {
         const plname = conn.networkIdentifier.getActor()!.getNameTag();
         if (CIF.wasDetected[plname] === true) {
+            conn.disconnect();
             return 1;
         };
     };
