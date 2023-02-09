@@ -119,6 +119,14 @@ const receivePacket = procHacker.hooking(
         Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
     };
     
+    //Block All Packets from Detected Player
+    if (conn.networkIdentifier.getActor()) {
+        const plname = conn.networkIdentifier.getActor()!.getNameTag();
+        if (CIF.wasDetected[plname] === true) {
+            return 1;
+        };
+    };
+
     return receivePacket(conn, data, networkHandler, time_point);
 });
 events.networkDisconnected.on(ni => {
