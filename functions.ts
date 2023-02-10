@@ -32,7 +32,7 @@ function dateWithZero() {
 };
 
 
-export function announce_CIF(message: string, target: CommandPermissionLevel | "ALL" = CommandPermissionLevel.Operator): void {
+export function announce_CIF(message: string, target: CommandPermissionLevel | "ALL"): void {
     let users;
     if (target === "ALL") {
         users = bedrockServer.serverInstance.getPlayers();
