@@ -39,7 +39,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     deviceModelMap.set(ni, model);
 
     //TODO : 밴 된 사람 처리하는 곳 만들기 (CIF.log & OP ALERT)
-
+    
 
     if (name.length > 20) {
         nameMap.set(ni, "Invalid_Name");

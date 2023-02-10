@@ -1,6 +1,5 @@
 import { NetworkConnection, NetworkHandler, NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { ActorEventPacket } from "bdsx/bds/packets";
 import { CANCEL } from "bdsx/common";
 import { VoidPointer } from "bdsx/core";
 import { events } from "bdsx/event";

@@ -5,8 +5,8 @@ if (serverProperties["server-authoritative-movement"] !== "client-auth") {
 };
 
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
-import { CANCEL } from "bdsx/common";
 import { CommandPermissionLevel } from "bdsx/bds/command";
+import { CANCEL } from "bdsx/common";
 
 import { announce_CIF, ban_CIF, detect_CIF, ipDetect_CIF, log_CIF } from "./functions";
 

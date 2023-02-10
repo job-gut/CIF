@@ -5,7 +5,6 @@ import { ItemStack } from "bdsx/bds/inventory";
 import { GameType, Player } from "bdsx/bds/player";
 import { StaticPointer } from "bdsx/core";
 import { events } from "bdsx/event";
-import { bedrockServer } from "bdsx/launcher";
 import { float32_t, int32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { CIF } from "../main";
@@ -34,19 +33,19 @@ function allowInstabreak(player: Player, block: Block): boolean {
     let hasteLevel = 0;
     if (haste !== null) {
         hasteLevel = haste.amplifier;
-    }
+    };
     const destroyTime = block.getDestroySpeed();
     const destroySpeed = getDestroySpeed(player.getMainhandSlot(), block);
     const realDestroyTime = destroyTime / (destroySpeed * (1 + (0.2 * hasteLevel)));
     return realDestroyTime < 0.05;
-}
+};
 
 
 function onBlockDestructionStop(blockEventCoordinator: StaticPointer, player: Player, blockPos: BlockPos, unknown: number): void {
     delete destroingBlock[player.getNameTag()];
     //console.log(`stop ${player.getNameTag()}`);
     return blockDestructionStop(blockEventCoordinator, player, blockPos, unknown);
-}
+};
 
 const destroingBlock: { [keyof: string]: { pos: BlockPos, player: Player, time: number } } = {};
 
@@ -60,12 +59,12 @@ events.blockDestroy.on((ev) => {
     const gamemode = ev.player.getGameType();
     if (gamemode === GameType.Creative) {
         return;
-    }
+    };
     const name = ev.player.getNameTag();
     if (destroingBlock[name] === undefined && !allowInstabreak(ev.player, ev.blockSource.getBlock(ev.blockPos))) {
         const ni = ev.player.getNetworkIdentifier();
         return CIF.detect(ni, "instabreak", "break block instantly");
-    }
+    };
     //console.log(`done ${ev.player.getNameTag()}`);
     //if(destroingBlock[])
 });
