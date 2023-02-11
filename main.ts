@@ -1,27 +1,27 @@
 import { serverProperties } from "bdsx/serverproperties";
 
-if (serverProperties["server-authoritative-movement"] !== "client-auth") {
-    throw new Error("CIF는 client-auth 를 필요로 합니다.");
-};
+// if (serverProperties["server-authoritative-movement"] !== "client-auth") {
+//     throw new Error("CIF는 client-auth 를 필요로 합니다.");
+// };
 
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandPermissionLevel } from "bdsx/bds/command";
 import { CANCEL } from "bdsx/common";
-
-import { announce_CIF, ban_CIF, detect_CIF, ipDetect_CIF, log_CIF } from "./functions";
-
 import "./scripts";
+import { bedrockServer } from "bdsx/launcher";
 
+function abstractFunction(): never {
+    throw Error(`Failed to load "implements.ts"`);
+}
 
 export namespace CIF {
-
     /**
      * Send messages to players
      * @param message 보낼 메세지
      * @param target Permission
      */
     export function announce(message: string, target: CommandPermissionLevel | "ALL" = CommandPermissionLevel.Operator): void {
-        return announce_CIF(message, target);
+        abstractFunction();
     };
 
 
@@ -30,7 +30,7 @@ export namespace CIF {
     * @param message 콘솔에 남길 문자
     */
     export function log(message: string): void {
-        return log_CIF(message);
+        abstractFunction();
     };
 
 
@@ -39,7 +39,7 @@ export namespace CIF {
      * @deprecated just define
      */
     export function ban(ni: NetworkIdentifier, reason: string): void {
-        return ban_CIF(ni, reason);
+        abstractFunction();
     };
 
 
@@ -48,7 +48,7 @@ export namespace CIF {
      * @description CIF.ban() 은 이 함수에서 호출 안 함
      */
     export function detect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
-        return detect_CIF(ni, cheatName, cheatDescription);
+        abstractFunction();
     };
 
 
@@ -57,9 +57,12 @@ export namespace CIF {
      * @description CIF.ban() 은 이 함수에서 호출 안 함
      */
     export function ipDetect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string): void {
-        return ipDetect_CIF(ni, cheatName, cheatDescription);
+        abstractFunction();
     };
 
 
     export const wasDetected: Record<string, boolean> = {};
 };
+import "./implements";
+
+CIF.log("test");
