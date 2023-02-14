@@ -13,6 +13,8 @@ const UINTMAX = 0xffffffff;
 const PPSsound: Record<string, number> = {};
 const PPSact: Record<string, number> = {};
 
+const isFirstSkinPacket = new Map<NetworkIdentifier, boolean>();
+
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX) {
         CIF.ban(ni, "crasher");
@@ -79,9 +81,13 @@ events.packetRaw(93).on((ptr, size, ni) => {
 
     if (pl.hasTag("CIFcanCrash")) return;
 
-    pl.sendMessage("§l§c스킨을 적용하시려면 서버에 재접속 해주세요!");
-    pl.playSound("random.break");
-    return CANCEL;
+    if (isFirstSkinPacket.get(ni)) {
+        pl.sendMessage("§l§c스킨을 적용하시려면 서버에 재접속 해주세요!");
+        pl.playSound("random.break");
+        return CANCEL;
+    };
+
+    isFirstSkinPacket.set(ni, true);
 });
 
 const Warns: Record<string, number> = {};
@@ -117,7 +123,7 @@ const receivePacket = procHacker.hooking(
     if (id === 0) {
         Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
     };
-    
+
     //Block All Packets from Detected Player
     if (conn.networkIdentifier.getActor()) {
         const plname = conn.networkIdentifier.getActor()!.getNameTag();
