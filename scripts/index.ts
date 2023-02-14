@@ -1,6 +1,8 @@
 import "./bug";
 
-import "./give";
+//import "./give";
+//Mojang Patched Fake InventoryTransAction packet themselves
+
 import "./xp";
 import "./crasher";
 import "./join";
