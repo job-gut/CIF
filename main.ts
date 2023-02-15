@@ -1,18 +1,17 @@
 import { serverProperties } from "bdsx/serverproperties";
 
-// if (serverProperties["server-authoritative-movement"] !== "client-auth") {
-//     throw new Error("CIF는 client-auth 를 필요로 합니다.");
-// };
+if (serverProperties["server-authoritative-movement"] !== "client-auth") {
+    throw new Error("CIF는 client-auth 를 필요로 합니다.");
+};
 
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandPermissionLevel } from "bdsx/bds/command";
 import { CANCEL } from "bdsx/common";
 import "./scripts";
-import { bedrockServer } from "bdsx/launcher";
 
 function abstractFunction(): never {
     throw Error(`Failed to load "implements.ts"`);
-}
+};
 
 export namespace CIF {
     /**
@@ -63,6 +62,5 @@ export namespace CIF {
 
     export const wasDetected: Record<string, boolean> = {};
 };
-import "./implements";
 
-CIF.log("test");
+import "./implements";

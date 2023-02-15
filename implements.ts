@@ -15,7 +15,7 @@ function zero(num: any, n: any) {
     if (num2.length < n) {
         for (var i = 0; i < n - num2.length; i++)
             zero += "0";
-    }
+    };
     return zero + num;
 };
 
@@ -45,6 +45,8 @@ CIF.announce = function (message: string, target: CommandPermissionLevel | "ALL"
         member.sendMessage(message);
     };
 };
+
+
 CIF.log = function (message: string): void {
     const date = new Date();
     console.info(
