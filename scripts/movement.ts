@@ -136,7 +136,6 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
         const yDiff = (y1-y2)^2;
 
         bps = Number(Math.sqrt(xDiff + yDiff).toFixed(2));
-        lastBPS[plname] = bps;
     } else {
         bps = 0;
     };
@@ -162,6 +161,7 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
 
     };
 
+    lastBPS[plname] = bps;
     lastpos.set(ni, movePos);
 });
 
