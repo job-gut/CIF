@@ -58,7 +58,10 @@ bedrockServer.afterOpen().then(() => {
 
             if (doubleAnimateStack[plname] > 3) {
                 susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] + 1 : 1;
-                if (susPacketAuraWarn[plname] > 2) {
+                if (susPacketAuraWarn[plname] > 1) {
+                    susPacketAuraWarn[plname] = 0;
+                    doubleAnimateStack[plname] = 0;
+
                     CIF.detect(pl.getNetworkIdentifier(), "Aura-B", "Send SUS Packets while fighting");
                 };
             } else if (doubleAnimateStack[plname] < 3 && doubleAnimateStack[plname] > 0) {
