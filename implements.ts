@@ -52,7 +52,7 @@ CIF.log = function (message: string): void {
     console.info(
         "[" + date.getFullYear() + "-" + zero((date.getMonth() + 1), 2) + "-" + zero(date.getDate(), 2) +
         " " + zero(date.getHours(), 2) + ":" + zero(date.getMinutes(), 2) + ":" + zero(date.getSeconds(), 2) +
-        ":" + zero(date.getMilliseconds(), 3) + " INFO] " + "[this] ".red + message);
+        ":" + zero(date.getMilliseconds(), 3) + " INFO] " + "[CIF] ".red + message);
 };
 
 
@@ -60,7 +60,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
     // bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cthis§f]\n§b${cheatName} Detected`);
-    this.announce(`§c[§fthis§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
+    this.announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
     this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`);
     return CANCEL;
 };
@@ -68,7 +68,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
 
 CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): void {
     const ip = ni.getAddress().split("|")[0];
-    this.announce(`§c[§fthis§c] §c${ip} §6was ip-blocked using §c${cheatName} §7(${cheatDescription})`);
+    this.announce(`§c[§fCIF§c] §c${ip} §6was ip-blocked using §c${cheatName} §7(${cheatDescription})`);
     this.log(`${ip} was ip-blocked using ${cheatName} (${cheatDescription})`);
 };
 
@@ -76,6 +76,11 @@ CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescript
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
-    this.announce(`§c[§fthis§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
+    this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
     this.log(`${cheaterName} was banned using ${reason}`);
+};
+
+
+CIF.resetDetected = function (plname: string): void {
+    this.wasDetected[plname] = false;
 };

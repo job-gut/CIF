@@ -70,17 +70,19 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     if (TitleId[titleId] && TitleId[BuildPlatform[deviceOS] as any] != titleId) {
         CIF.detect(ni, "os_spoof", "Join with wrong edition");
         CIF.ban(ni, "os-spoof");
-    }
+    };
 
     if (brand.toUpperCase() !== brand && deviceOS !== 2) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
         CIF.ban(ni, "Toolbox");
     };
 
+    CIF.log(yellow(`${nameMap.get(ni)} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
+
     if (deviceId.length === 36) {
         if (deviceId.includes("g") || deviceId.includes("h") || deviceId.includes("i") || deviceId.includes("j") || deviceId.includes("k") || deviceId.includes("l") || deviceId.includes("m") || deviceId.includes("n") || deviceId.includes("o") || deviceId.includes("p") || deviceId.includes("q") || deviceId.includes("r") || deviceId.includes("s") || deviceId.includes("t") || deviceId.includes("u") || deviceId.includes("v") || deviceId.includes("w") || deviceId.includes("x") || deviceId.includes("y") || deviceId.includes("z")) {
             CIF.detect(ni, "zephyr", "Zephyr DeviceId Spoof");
-            CIF.ban(ni, "Zephyr DeviceId Spoof");
+            return CIF.ban(ni, "Zephyr DeviceId Spoof");
         };
     };
 
@@ -89,13 +91,11 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         firstLoginedOS[name] = deviceOS;
     } else if (isXboxLogined === true && firstLoginedDID[name] !== deviceId && firstLoginedOS[name] === deviceOS) {
         CIF.ban(ni, "deviceid_spoof")
-        CIF.detect(ni, "deviceid_spoof", "Spoofs their deviceID");
+        return CIF.detect(ni, "deviceid_spoof", "Spoofs their deviceID");
     } else {
         firstLoginedDID[name] = deviceId;
         firstLoginedOS[name] = deviceOS;
     };
 
     //nameMap.get(ni) -> do not log illegal names
-    CIF.log(yellow(`${nameMap.get(ni)} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
-
 });
