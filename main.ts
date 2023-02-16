@@ -1,8 +1,8 @@
 import { serverProperties } from "bdsx/serverproperties";
 
-// if (serverProperties["server-authoritative-movement"] !== "client-auth") {
-//     throw new Error("CIF는 client-auth 를 필요로 합니다.");
-// };
+if (serverProperties["server-authoritative-movement"] !== "client-auth") {
+    throw new Error("CIF는 client-auth 를 필요로 합니다.");
+};
 
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandPermissionLevel } from "bdsx/bds/command";
