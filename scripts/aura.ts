@@ -83,7 +83,7 @@ events.playerAttack.on((ev) => {
     const now = Date.now();
     const pl = ev.player;
     const plname = pl.getNameTag()!;
-    if (now - lastAnimateTime[plname]) {
+    if (now - lastAnimateTime[plname] < 2) {
         doubleAnimateStack[plname] = doubleAnimateStack[plname] ? doubleAnimateStack[plname] - 1 : 0;
         if (doubleAnimateStack[plname] < 0) doubleAnimateStack[plname] = 0;
     };
