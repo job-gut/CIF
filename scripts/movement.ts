@@ -5,7 +5,6 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
-import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { bool_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
@@ -14,9 +13,11 @@ import { CIF } from "../main";
 const lastBPS: Record<string, number> = {};
 const isSpinAttacking: Record<string, boolean> = {};
 const onGround: Record<string, boolean> = {};
+const isGlidingWithElytra: Record<string, boolean> = {};
 
-const lastpos = new Map<NetworkIdentifier, Vec3>();
+const lastpos: Record<string, number[]> = {};
 
+const jumpedTick: Record<string, number> = {};
 const strafestack: Record<string, number> = {};
 const getDamaged: Record<string, boolean> = {};
 const isTeleported: Record<string, boolean> = {};
@@ -43,6 +44,9 @@ declare module "bdsx/bds/player" {
          */
         onIce(): boolean;
 
+        /**
+         * Func from CIF
+         */
         isSpinAttacking(): boolean;
 
         /**
@@ -54,6 +58,11 @@ declare module "bdsx/bds/player" {
          * Returns if player is not on mid-air (Func from CIF)
          */
         onGround(): boolean;
+
+        /**
+         * Func from CIF
+         */
+        isGlidingWithElytra(): boolean;
     }
 };
 
@@ -83,12 +92,29 @@ Player.prototype.onGround = function () {
     return onGround[plname];
 };
 
+Player.prototype.isGlidingWithElytra = function () {
+    const plname = this.getNameTag();
+    if (!isGlidingWithElytra[plname]) isGlidingWithElytra[plname] = false;
+    return isGlidingWithElytra[plname];
+};
+
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
-    const plname = ni.getActor()!.getNameTag()!;
+    const pl = ni.getActor()!;
+    const plname = pl.getNameTag()!;
     if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
         isSpinAttacking[plname] = true;
     } else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
         isSpinAttacking[plname] = false;
+    };
+
+    if (pkt.action === PlayerActionPacket.Actions.StartGlide) {
+        isGlidingWithElytra[plname] = true;
+    } else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
+        isGlidingWithElytra[plname] = false;
+    };
+
+    if (pkt.action === PlayerActionPacket.Actions.Jump) {
+        jumpedTick[plname] = pl.getLevel().getCurrentTick();
     };
 });
 
@@ -99,6 +125,10 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
 
     const movePos = pkt.pos;
 
+    const gamemode = pl.getGameType();
+    if (gamemode !== 2 && gamemode !== 0) return;
+
+    //PHASE
     const region = pl.getRegion()!;
     const currentPosBlock = region.getBlock(BlockPos.create(movePos.x, movePos.y-1.6, movePos.z));
     const currentHeadPosBlock = region.getBlock(BlockPos.create(movePos.x, movePos.y, movePos.z));
@@ -110,15 +140,16 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     && pl.getGameType() !== GameType.Creative
     && pl.getGameType() !== GameType.SurvivalSpectator) {
         pl.runCommand("tp ~ ~ ~");
-        return CANCEL;
     };
     
+
+    //SPEED
     const torso = pl.getArmor(ArmorSlot.Torso);
     if (torso.getRawNameId() === "elytra") return;
     if (isTeleported[plname]) return;
     if (pl.isSpinAttacking()) return;
 
-    const lastPos = lastpos.get(ni)!;
+    const lastPos = lastpos[plname];
     const plSpeed = pl.getSpeed();
 
     //5.62 is max speed without any speed effects and while sprinting.
@@ -127,27 +158,27 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     let bps: number;
 
     if (lastPos) {
-        const x1 = lastPos.x;
+        const x1 = lastPos[0];
         const x2 = movePos.x;
-        const y1 = lastPos.y;
-        const y2 = movePos.y;
+        const y1 = lastPos[1];
+        const y2 = movePos.z;
 
-        const xDiff = (x1-x2)^2;
-        const yDiff = (y1-y2)^2;
+        const xDiff = Math.pow(x1 - x2, 2);
+        const yDiff = Math.pow(y1 - y2, 2);
 
-        bps = Number(Math.sqrt(xDiff + yDiff).toFixed(2));
-        lastBPS[plname] = bps;
+        bps = Number((Math.sqrt(xDiff + yDiff) * 20).toFixed(2));
     } else {
         bps = 0;
     };
-
-    if (bps > maxBPS && bps > 5.62) {
+    
+    if (bps > maxBPS && bps > 5.61) {
 
         if (pl.getLastBPS() === bps) {
             strafestack[plname] = strafestack[plname] ? strafestack[plname] + 1 : 1;
             if (strafestack[plname] > 14) {
                 strafestack[plname] = 0;
-                return CIF.detect(ni, "Speed-B", "Strafe");
+                CIF.ban(ni, "Speed-B");
+                CIF.detect(ni, "Speed-B", `Strafe (Blocks per second : ${bps})`);
             };
         };
 
@@ -162,7 +193,8 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
 
     };
 
-    lastpos.set(ni, movePos);
+    lastBPS[plname] = bps;
+    lastpos[plname] = [movePos.x, movePos.z];
 });
 
 const hasTeleport = procHacker.hooking("?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z", void_t, null, ServerPlayer, Vec3)((pl, pos) => {

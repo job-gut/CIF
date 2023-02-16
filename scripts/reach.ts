@@ -15,7 +15,7 @@ function warn(ni: NetworkIdentifier): CANCEL {
         reachWarn.set(ni, reachWarn.get(ni)! - 1);
     }, 5000);
 
-    if (reachWarn.get(ni)! > 3) {
+    if (reachWarn.get(ni)! > 2) {
         CIF.detect(ni, "reach", "Increase Reach");
     };
 
