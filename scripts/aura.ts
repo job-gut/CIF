@@ -48,7 +48,7 @@ events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni) => {
 let checkAuraB: NodeJS.Timeout;
 
 bedrockServer.afterOpen().then(() => {
-    
+
     checkAuraB = setInterval(() => {
         const players = bedrockServer.serverInstance.getPlayers();
         for (const pl of players) {
@@ -59,7 +59,7 @@ bedrockServer.afterOpen().then(() => {
             if (doubleAnimateStack[plname] > 3) {
                 susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] + 1 : 1;
                 if (susPacketAuraWarn[plname] > 2) {
-                    CIF.detect(pl.getNetworkIdentifier(), "aura-B", "Send SUS Packets while fighting");
+                    CIF.detect(pl.getNetworkIdentifier(), "Aura-B", "Send SUS Packets while fighting");
                 };
             } else if (doubleAnimateStack[plname] < 3 && doubleAnimateStack[plname] > 0) {
                 susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] - 1 : 0;
