@@ -13,9 +13,11 @@ import { CIF } from "../main";
 const lastBPS: Record<string, number> = {};
 const isSpinAttacking: Record<string, boolean> = {};
 const onGround: Record<string, boolean> = {};
+const isGlidingWithElytra: Record<string, boolean> = {};
 
 const lastpos: Record<string, number[]> = {};
 
+const jumpedTick: Record<string, number> = {};
 const strafestack: Record<string, number> = {};
 const getDamaged: Record<string, boolean> = {};
 const isTeleported: Record<string, boolean> = {};
@@ -42,6 +44,9 @@ declare module "bdsx/bds/player" {
          */
         onIce(): boolean;
 
+        /**
+         * Func from CIF
+         */
         isSpinAttacking(): boolean;
 
         /**
@@ -53,6 +58,11 @@ declare module "bdsx/bds/player" {
          * Returns if player is not on mid-air (Func from CIF)
          */
         onGround(): boolean;
+
+        /**
+         * Func from CIF
+         */
+        isGlidingWithElytra(): boolean;
     }
 };
 
@@ -82,12 +92,29 @@ Player.prototype.onGround = function () {
     return onGround[plname];
 };
 
+Player.prototype.isGlidingWithElytra = function () {
+    const plname = this.getNameTag();
+    if (!isGlidingWithElytra[plname]) isGlidingWithElytra[plname] = false;
+    return isGlidingWithElytra[plname];
+};
+
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
-    const plname = ni.getActor()!.getNameTag()!;
+    const pl = ni.getActor()!;
+    const plname = pl.getNameTag()!;
     if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
         isSpinAttacking[plname] = true;
     } else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
         isSpinAttacking[plname] = false;
+    };
+
+    if (pkt.action === PlayerActionPacket.Actions.StartGlide) {
+        isGlidingWithElytra[plname] = true;
+    } else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
+        isGlidingWithElytra[plname] = false;
+    };
+
+    if (pkt.action === PlayerActionPacket.Actions.Jump) {
+        jumpedTick[plname] = pl.getLevel().getCurrentTick();
     };
 });
 
@@ -98,6 +125,8 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
 
     const movePos = pkt.pos;
 
+    const gamemode = pl.getGameType();
+    if (gamemode !== 2 && gamemode !== 0) return;
 
     //PHASE
     const region = pl.getRegion()!;
@@ -148,7 +177,8 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
             strafestack[plname] = strafestack[plname] ? strafestack[plname] + 1 : 1;
             if (strafestack[plname] > 14) {
                 strafestack[plname] = 0;
-                CIF.detect(ni, "Speed-B", "Strafe");
+                CIF.ban(ni, "Speed-B");
+                CIF.detect(ni, "Speed-B", `Strafe (Blocks per second : ${bps})`);
             };
         };
 
