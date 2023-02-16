@@ -1,4 +1,5 @@
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
+import { AnimatePacket } from "bdsx/bds/packets";
 import { GameType, Player } from "bdsx/bds/player";
 import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
@@ -37,6 +38,7 @@ events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni) => {
     const plname = pl.getNameTag();
     const now = Date.now();
 
+    if (pkt.action !== AnimatePacket.Actions.SwingArm) return;
     if (!lastAnimateTime[plname]) lastAnimateTime[plname] = now;
     if (now - lastAnimateTime[plname] < 3) {
         doubleAnimateStack[plname] = doubleAnimateStack[plname] ? doubleAnimateStack[plname] + 1 : 1;
