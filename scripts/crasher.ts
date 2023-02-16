@@ -137,4 +137,5 @@ const receivePacket = procHacker.hooking(
 });
 events.networkDisconnected.on(ni => {
     Warns[ni.getAddress()] = 0;
+    CIF.wasDetected[ni.getActor()!.getNameTag()] = false;
 });
