@@ -23,6 +23,18 @@ const getDamaged: Record<string, boolean> = {};
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 
+export const lastRotations = new Map<string, { x: number, y: number }[]>();
+function appendRotationRecord(player: ServerPlayer, rotation: { x: number, y: number }) {
+    const name = player.getNameTag();
+    const currentRotation = lastRotations.get(name);
+    if (currentRotation === undefined) {
+        lastRotations.set(name, [rotation]);
+    } else {
+        currentRotation.unshift(rotation);
+        currentRotation.splice(3);
+        lastRotations.set(name, currentRotation);
+    }
+}
 declare module "bdsx/bds/block" {
     interface Block {
         /**
@@ -119,38 +131,47 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 });
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
-    const pl = ni.getActor()!;
-    const plname = pl.getNameTag()!;
+    const player = ni.getActor()!;
+    const plname = player.getNameTag()!;
     onGround[plname] = pkt.onGround;
+
+
+    const rotation = {
+        x: pkt.headYaw,
+        y: pkt.pitch
+    }
+    appendRotationRecord(player, rotation);
+
+
 
     const movePos = pkt.pos;
 
-    const gamemode = pl.getGameType();
+    const gamemode = player.getGameType();
     if (gamemode !== 2 && gamemode !== 0) return;
 
     //PHASE
-    const region = pl.getRegion()!;
-    const currentPosBlock = region.getBlock(BlockPos.create(movePos.x, movePos.y-1.6, movePos.z));
+    const region = player.getRegion()!;
+    const currentPosBlock = region.getBlock(BlockPos.create(movePos.x, movePos.y - 1.6, movePos.z));
     const currentHeadPosBlock = region.getBlock(BlockPos.create(movePos.x, movePos.y, movePos.z));
 
     if (currentPosBlock.isSolid() && currentHeadPosBlock.isSolid() &&
-    !currentPosBlock.getName().includes("air") && !currentHeadPosBlock.getName().includes("air")
-    && pl.getGameType() !== GameType.Spectator
-    && pl.getGameType() !== GameType.CreativeSpectator
-    && pl.getGameType() !== GameType.Creative
-    && pl.getGameType() !== GameType.SurvivalSpectator) {
-        pl.runCommand("tp ~ ~ ~");
+        !currentPosBlock.getName().includes("air") && !currentHeadPosBlock.getName().includes("air")
+        && player.getGameType() !== GameType.Spectator
+        && player.getGameType() !== GameType.CreativeSpectator
+        && player.getGameType() !== GameType.Creative
+        && player.getGameType() !== GameType.SurvivalSpectator) {
+        player.runCommand("tp ~ ~ ~");
     };
-    
+
 
     //SPEED
-    const torso = pl.getArmor(ArmorSlot.Torso);
+    const torso = player.getArmor(ArmorSlot.Torso);
     if (torso.getRawNameId() === "elytra") return;
     if (isTeleported[plname]) return;
-    if (pl.isSpinAttacking()) return;
+    if (player.isSpinAttacking()) return;
 
     const lastPos = lastpos[plname];
-    const plSpeed = pl.getSpeed();
+    const plSpeed = player.getSpeed();
 
     //5.62 is max speed without any speed effects and while sprinting.
     const maxBPS = plSpeed * 45;
@@ -170,10 +191,10 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     } else {
         bps = 0;
     };
-    
+
     if (bps > maxBPS && bps > 5.61) {
 
-        if (pl.getLastBPS() === bps) {
+        if (player.getLastBPS() === bps) {
             strafestack[plname] = strafestack[plname] ? strafestack[plname] + 1 : 1;
             if (strafestack[plname] > 14) {
                 strafestack[plname] = 0;
@@ -183,11 +204,11 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
         };
 
 
-        if (pl.onIce() && pl.isRiding()) {
+        if (player.onIce() && player.isRiding()) {
             //대충 max bps 구하기 처리하는거 만들기
-        } else if (pl.onIce() && !pl.isRiding()) {
+        } else if (player.onIce() && !player.isRiding()) {
             //대충 max bps 구해서 처리하는거 만들기
-        } else if (!pl.onIce() && pl.isRiding()) {
+        } else if (!player.onIce() && player.isRiding()) {
             //대충 max bps 구해서 처리하는거 만들기
         };
 
