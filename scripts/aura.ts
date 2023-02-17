@@ -1,5 +1,6 @@
 import { Vec3 } from "bdsx/bds/blockpos";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
+import { AnimatePacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
@@ -74,6 +75,7 @@ events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni) => {
     const plname = pl.getNameTag();
     const now = Date.now();
 
+    if (pkt.action !== AnimatePacket.Actions.SwingArm) return;
     if (!lastAnimateTime[plname]) lastAnimateTime[plname] = now;
     if (now - lastAnimateTime[plname] < 3) {
         doubleAnimateStack[plname] = doubleAnimateStack[plname] ? doubleAnimateStack[plname] + 1 : 1;
@@ -95,7 +97,10 @@ bedrockServer.afterOpen().then(() => {
 
             if (doubleAnimateStack[plname] > 3) {
                 susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] + 1 : 1;
-                if (susPacketAuraWarn[plname] > 2) {
+                if (susPacketAuraWarn[plname] > 1) {
+                    susPacketAuraWarn[plname] = 0;
+                    doubleAnimateStack[plname] = 0;
+
                     CIF.detect(pl.getNetworkIdentifier(), "Aura-B", "Send SUS Packets while fighting");
                 };
             } else if (doubleAnimateStack[plname] < 3 && doubleAnimateStack[plname] > 0) {
