@@ -37,7 +37,7 @@ events.entityKnockback.on((ev) => {
 
     const reach = Math.sqrt(result1 + result2);
     // console.log(reach); debug
-    if (reach > 5.24) {
+    if (reach > 4.75) {
         return warn(attacker.getNetworkIdentifier());
     };
 });
