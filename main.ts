@@ -1,9 +1,4 @@
 import { serverProperties } from "bdsx/serverproperties";
-
-if (serverProperties["server-authoritative-movement"] !== "client-auth") {
-    console.log("CIF는 client-auth 를 권장 합니다.");
-};
-
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandMessage, CommandPermissionLevel, PlayerCommandSelector } from "bdsx/bds/command";
 import { CANCEL } from "bdsx/common";
@@ -11,6 +6,10 @@ import "./scripts";
 
 function abstractFunction(): never {
     throw Error(`Failed to load "implements.ts"`);
+};
+
+if (serverProperties["server-authoritative-movement"] !== "client-auth") {
+    console.log("CIF는 client-auth 를 권장 합니다.");
 };
 
 export namespace CIF {

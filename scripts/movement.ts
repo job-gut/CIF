@@ -2,13 +2,17 @@ import { Block } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot } from "bdsx/bds/inventory";
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
+import { Packet } from "bdsx/bds/packet";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { PlayerActionPacket } from "bdsx/bds/packets";
+import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
 import { bool_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
+import { serverProperties } from "bdsx/serverproperties";
 import { CIF } from "../main";
+
+export const MovementType = serverProperties["server-authoritative-movement"] === "client-auth" ? MinecraftPacketIds.MovePlayer : MinecraftPacketIds.PlayerAuthInput;
 
 const lastBPS: Record<string, number> = {};
 const isSpinAttacking: Record<string, boolean> = {};
@@ -68,6 +72,7 @@ declare module "bdsx/bds/player" {
 
         /**
          * Returns if player is not on mid-air (Func from CIF)
+         * it always returns false in server-auth movement
          */
         onGround(): boolean;
 
@@ -130,10 +135,16 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
     };
 });
 
-events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
+function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
+    return (<MovePlayerPacket>pkt).onGround !== undefined;
+}
+
+events.packetBefore(MovementType).on((pkt, ni) => {
     const player = ni.getActor()!;
     const plname = player.getNameTag()!;
-    onGround[plname] = pkt.onGround;
+    if (isMovePlayerPacket(pkt)) {
+        onGround[plname] = pkt.onGround;
+    }
 
 
     const rotation = {
