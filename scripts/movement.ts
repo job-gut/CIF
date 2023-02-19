@@ -72,7 +72,7 @@ declare module "bdsx/bds/player" {
 
         /**
          * Returns if player is not on mid-air (Func from CIF)
-         * it always returns false in server-auth movement
+         * @description it always returns false in server-auth movement
          */
         onGround(): boolean;
 
