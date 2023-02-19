@@ -22,7 +22,7 @@ function warn(ni: NetworkIdentifier): CANCEL {
     return CANCEL;
 };
 
-events.entityKnockback.on((ev)=> {
+events.entityKnockback.on((ev) => {
     const victim = ev.target;
     const attacker = ev.source;
     if (!attacker) return;
@@ -36,7 +36,8 @@ events.entityKnockback.on((ev)=> {
     const result2 = Math.pow(attackerpos.z - victimpos.z, 2);
 
     const reach = Math.sqrt(result1 + result2);
-    if (reach > 4.24) {
+    // console.log(reach); debug
+    if (reach > 5.24) {
         return warn(attacker.getNetworkIdentifier());
     };
 });

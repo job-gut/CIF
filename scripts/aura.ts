@@ -35,13 +35,12 @@ function degreesToRadians(degrees: number): number {
     return degrees * Math.PI / 180;
 }
 function getVectorByRotation(rotation: { x: number, y: number }): Vec3 {
-    const x = Math.cos(degreesToRadians(rotation.x));
-
+    // const x = Math.cos(degreesToRadians(rotation.x));
+    // const y = Math.sin(degreesToRadians(rotation.y));
+    // const z = Math.sin(degreesToRadians(rotation.x));
+    const x = Math.sin(degreesToRadians(rotation.x));
     const y = Math.sin(degreesToRadians(rotation.y));
-
-    const z = Math.sin(degreesToRadians(rotation.x));
-
-    bedrockServer.executeCommand(`particle minecraft:endrod ${x} ${y} ${z}`);
+    const z = Math.cos(degreesToRadians(rotation.x));
 
     return Vec3.create(x, y, z);
 }
@@ -55,10 +54,15 @@ function isMismatchAttack(player: ServerPlayer, victim: ServerPlayer, viewVector
     };
 
     let reach = playerPos.distance(victimPos);
+    // if (viewVector.equal(player.getViewVector())) {
+    //     console.log(`${reach}`.blue);
+    // }
     viewVector.multiply(reach);
     viewVector.x += playerPos.x;
     viewVector.y += playerPos.y;
     viewVector.z += playerPos.z;
+    // console.log(viewVector.x, viewVector.y, viewVector.z);
+    // bedrockServer.executeCommand(`particle minecraft:endrod ${viewVector.x} ${viewVector.x} ${viewVector.z}`);
     const distanceX = Math.abs(viewVector.x - victimPos.x) / reach;
     const distanceZ = Math.abs(viewVector.z - victimPos.z) / reach;
     const hitRange = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceZ, 2));
