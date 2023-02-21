@@ -9,7 +9,7 @@ function abstractFunction(): never {
 };
 
 if (serverProperties["server-authoritative-movement"] !== "client-auth") {
-    console.log("CIF는 client-auth 를 권장 합니다.");
+    console.log("CIF는 client-auth 를 권장 합니다.".red);
 };
 
 export namespace CIF {
