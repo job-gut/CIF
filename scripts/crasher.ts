@@ -135,7 +135,10 @@ const receivePacket = procHacker.hooking(
 
     return receivePacket(conn, data, networkHandler, time_point);
 });
+
 events.networkDisconnected.on(ni => {
-    Warns[ni.getAddress()] = 0;
-    CIF.resetDetected(ni.getActor()!.getNameTag());
+    if (ni) {
+        Warns[ni.getAddress()] = 0;
+        CIF.resetDetected(ni.getActor()?.getNameTag()!);
+    };
 });
