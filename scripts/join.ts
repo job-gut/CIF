@@ -72,7 +72,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.ban(ni, "os-spoof");
     };
 
-    if (brand.toUpperCase() !== brand && deviceOS !== 2 && brand !== "To Be Filled By O.E.M. To Be Filled By O.E.M.") {
+    if (brand.toUpperCase() !== brand && deviceOS !== 2 && brand !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && brand !== "System Product Name ASUS") {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
         CIF.ban(ni, "Toolbox");
     };
