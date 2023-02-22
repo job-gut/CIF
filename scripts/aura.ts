@@ -6,7 +6,7 @@ import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../main";
-import { lastRotations } from "./movement";
+import { lastRotations, MovementType } from "./movement";
 
 const MismatchAuraWarn = new Map<string, number>();
 const susPacketAuraWarn: Record<string, number> = {};
@@ -74,52 +74,56 @@ function isMismatchAttack(player: ServerPlayer, victim: ServerPlayer, viewVector
 
 //Animate Packet -> playerAttack Event
 
-events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni) => {
-    const pl = ni.getActor()!;
-    const plname = pl.getNameTag();
-    const now = Date.now();
+if (MovementType === MinecraftPacketIds.MovePlayer) {
 
-    if (pkt.action !== AnimatePacket.Actions.SwingArm) return;
-    if (!lastAnimateTime[plname]) lastAnimateTime[plname] = now;
-    if (now - lastAnimateTime[plname] < 3) {
-        doubleAnimateStack[plname] = doubleAnimateStack[plname] ? doubleAnimateStack[plname] + 1 : 1;
-    };
+    events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni) => {
+        const pl = ni.getActor()!;
+        const plname = pl.getNameTag();
+        const now = Date.now();
 
-    lastAnimateTime[plname] = now;
-});
-
-let checkAuraB: NodeJS.Timeout;
-
-bedrockServer.afterOpen().then(() => {
-
-    checkAuraB = setInterval(() => {
-        const players = bedrockServer.serverInstance.getPlayers();
-        for (const pl of players) {
-            const plname = pl.getNameTag();
-            const gamemode = pl.getGameType();
-            if (gamemode !== 2 && gamemode !== 0) continue;
-
-            if (doubleAnimateStack[plname] > 3) {
-                susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] + 1 : 1;
-                if (susPacketAuraWarn[plname] > 1) {
-                    susPacketAuraWarn[plname] = 0;
-                    doubleAnimateStack[plname] = 0;
-
-                    CIF.detect(pl.getNetworkIdentifier(), "Aura-B", "Send SUS Packets while fighting");
-                };
-            } else if (doubleAnimateStack[plname] < 3 && doubleAnimateStack[plname] > 0) {
-                susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] - 1 : 0;
-                if (susPacketAuraWarn[plname] < 0) susPacketAuraWarn[plname] = 0;
-            };
-            doubleAnimateStack[plname] = 0;
+        if (pkt.action !== AnimatePacket.Actions.SwingArm) return;
+        if (!lastAnimateTime[plname]) lastAnimateTime[plname] = now;
+        if (now - lastAnimateTime[plname] < 3) {
+            doubleAnimateStack[plname] = doubleAnimateStack[plname] ? doubleAnimateStack[plname] + 1 : 1;
         };
-    }, 1000);
 
-});
+        lastAnimateTime[plname] = now;
+    });
 
-events.serverLeave.on(() => {
-    clearInterval(checkAuraB);
-});
+    let checkAuraB: NodeJS.Timeout;
+
+    bedrockServer.afterOpen().then(() => {
+
+        checkAuraB = setInterval(() => {
+            const players = bedrockServer.serverInstance.getPlayers();
+            for (const pl of players) {
+                const plname = pl.getNameTag();
+                const gamemode = pl.getGameType();
+                if (gamemode !== 2 && gamemode !== 0) continue;
+
+                if (doubleAnimateStack[plname] > 3) {
+                    susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] + 1 : 1;
+                    if (susPacketAuraWarn[plname] > 1) {
+                        susPacketAuraWarn[plname] = 0;
+                        doubleAnimateStack[plname] = 0;
+
+                        CIF.detect(pl.getNetworkIdentifier(), "Aura-B", "Send SUS Packets while fighting");
+                    };
+                } else if (doubleAnimateStack[plname] < 3 && doubleAnimateStack[plname] > 0) {
+                    susPacketAuraWarn[plname] = susPacketAuraWarn[plname] ? susPacketAuraWarn[plname] - 1 : 0;
+                    if (susPacketAuraWarn[plname] < 0) susPacketAuraWarn[plname] = 0;
+                };
+                doubleAnimateStack[plname] = 0;
+            };
+        }, 1000);
+
+    });
+
+    events.serverLeave.on(() => {
+        clearInterval(checkAuraB);
+    });
+
+};
 
 events.playerAttack.on((ev) => {
     if (!ev.victim.isPlayer()) return;
@@ -129,9 +133,11 @@ events.playerAttack.on((ev) => {
     const now = Date.now();
     const player = ev.player as ServerPlayer;
     const name = player.getNameTag()!;
-    if (now - lastAnimateTime[name] < 2) {
-        doubleAnimateStack[name] = doubleAnimateStack[name] ? doubleAnimateStack[name] - 1 : 0;
-        if (doubleAnimateStack[name] < 0) doubleAnimateStack[name] = 0;
+    if(MovementType === MinecraftPacketIds.MovePlayer) {
+        if (now - lastAnimateTime[name] < 2) {
+            doubleAnimateStack[name] = doubleAnimateStack[name] ? doubleAnimateStack[name] - 1 : 0;
+            if (doubleAnimateStack[name] < 0) doubleAnimateStack[name] = 0;
+        };
     };
     const prevRotations = lastRotations.get(name);
     if (prevRotations === undefined || prevRotations.length !== 3) return;
@@ -144,5 +150,5 @@ events.playerAttack.on((ev) => {
     } else if (check1) {
         // 전부다 감지하지 않더라도 비정상적인 카메라 무빙으로 인한 것이기 때문에, 캔슬만.
         return CANCEL;
-    }
+    };
 });
