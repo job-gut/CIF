@@ -37,8 +37,9 @@ function appendRotationRecord(player: ServerPlayer, rotation: { x: number, y: nu
         currentRotation.unshift(rotation);
         currentRotation.splice(3);
         lastRotations.set(name, currentRotation);
-    }
-}
+    };
+};
+
 declare module "bdsx/bds/block" {
     interface Block {
         /**
@@ -137,20 +138,21 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 
 function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
     return (<MovePlayerPacket>pkt).onGround !== undefined;
-}
+};
 
 events.packetBefore(MovementType).on((pkt, ni) => {
     const player = ni.getActor()!;
     const plname = player.getNameTag()!;
     if (isMovePlayerPacket(pkt)) {
         onGround[plname] = pkt.onGround;
-    }
+    };
 
 
     const rotation = {
         x: pkt.headYaw,
         y: pkt.pitch
-    }
+    };
+
     appendRotationRecord(player, rotation);
 
 
@@ -176,6 +178,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 
     //SPEED
+    if (MovementType === MinecraftPacketIds.PlayerAuthInput) return;
+    
     const torso = player.getArmor(ArmorSlot.Torso);
     if (torso.getRawNameId() === "elytra") return;
     if (isTeleported[plname]) return;
