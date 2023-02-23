@@ -1,5 +1,7 @@
 import "./bug";
 
+import "./log";
+
 //import "./give";
 //Mojang Patched Fake InventoryTransAction packet themselves
 
