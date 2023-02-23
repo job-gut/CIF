@@ -20,12 +20,22 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
         CIF.ban(ni, "crasher");
         return CIF.detect(ni, "crasher", "Illegal Position");
     };
+
+    if(isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
+        CIF.ban(ni, "Crasher");
+        return CIF.detect(ni, "crasher", "Illegal Head Pos");
+    };
 });
 
 events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
     if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX || pkt.moveX > UINTMAX || pkt.moveZ > UINTMAX) {
         CIF.ban(ni, "crasher");
         return CIF.detect(ni, "crasher", "Illegal Position");
+    };
+
+    if(isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
+        CIF.ban(ni, "Crasher");
+        return CIF.detect(ni, "crasher", "Illegal Head Pos");
     };
 });
 
