@@ -43,7 +43,7 @@ CIF.announce = function (message: string, target: CommandPermissionLevel | "ALL"
     };
 
     for (const member of users) {
-        if (this.wasDetected[member.getNameTag()] === true) continue;
+        if (this.wasDetected[member.getName()] === true) continue;
         member.sendMessage(message);
     };
 };
@@ -64,7 +64,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
     if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
         bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cthis§f]\n§b${cheatName} Detected`);
     };
-    
+
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
     this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`);
     return CANCEL;
