@@ -29,7 +29,7 @@ const haveFished: Record<string, boolean> = {};
 
 export const lastRotations = new Map<string, { x: number, y: number }[]>();
 function appendRotationRecord(player: ServerPlayer, rotation: { x: number, y: number }) {
-    const name = player.getNameTag();
+    const name = player.getName();
     const currentRotation = lastRotations.get(name);
     if (currentRotation === undefined) {
         lastRotations.set(name, [rotation]);
@@ -93,32 +93,32 @@ Player.prototype.onIce = function () {
 };
 
 Player.prototype.isSpinAttacking = function () {
-    const plname = this.getNameTag();
+    const plname = this.getName();
     if (!isSpinAttacking[plname]) isSpinAttacking[plname] = false;
     return isSpinAttacking[plname];
 };
 
 Player.prototype.getLastBPS = function () {
-    const plname = this.getNameTag();
+    const plname = this.getName();
     if (!lastBPS[plname]) lastBPS[plname] = 0;
     return lastBPS[plname];
 };
 
 Player.prototype.onGround = function () {
-    const plname = this.getNameTag();
+    const plname = this.getName();
     if (!onGround[plname]) onGround[plname] = false;
     return onGround[plname];
 };
 
 Player.prototype.isGlidingWithElytra = function () {
-    const plname = this.getNameTag();
+    const plname = this.getName();
     if (!isGlidingWithElytra[plname]) isGlidingWithElytra[plname] = false;
     return isGlidingWithElytra[plname];
 };
 
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
     const pl = ni.getActor()!;
-    const plname = pl.getNameTag()!;
+    const plname = pl.getName()!;
     if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
         isSpinAttacking[plname] = true;
     } else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
@@ -142,7 +142,7 @@ function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
 
 events.packetBefore(MovementType).on((pkt, ni) => {
     const player = ni.getActor()!;
-    const plname = player.getNameTag()!;
+    const plname = player.getName()!;
     if (isMovePlayerPacket(pkt)) {
         onGround[plname] = pkt.onGround;
     };
@@ -179,7 +179,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
     //SPEED
     if (MovementType === MinecraftPacketIds.PlayerAuthInput) return;
-    
+
     const torso = player.getArmor(ArmorSlot.Torso);
     if (torso.getRawNameId() === "elytra") return;
     if (isTeleported[plname]) return;
@@ -234,7 +234,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 });
 
 const hasTeleport = procHacker.hooking("?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z", void_t, null, ServerPlayer, Vec3)((pl, pos) => {
-    const plname = pl.getNameTag()!;
+    const plname = pl.getName()!;
     isTeleported[plname] = true;
     setTimeout(async () => {
         isTeleported[plname] = false;

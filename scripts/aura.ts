@@ -15,7 +15,7 @@ const lastAnimateTime: Record<string, number> = {};
 const doubleAnimateStack: Record<string, number> = {};
 
 function mismatchWarn(player: Player): CANCEL {
-    const name = player.getNameTag();
+    const name = player.getName();
     if (MismatchAuraWarn.get(name) === undefined) {
         MismatchAuraWarn.set(name, 1);
         return CANCEL;
@@ -78,7 +78,7 @@ if (MovementType === MinecraftPacketIds.MovePlayer) {
 
     events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni) => {
         const pl = ni.getActor()!;
-        const plname = pl.getNameTag();
+        const plname = pl.getName();
         const now = Date.now();
 
         if (pkt.action !== AnimatePacket.Actions.SwingArm) return;
@@ -97,7 +97,7 @@ if (MovementType === MinecraftPacketIds.MovePlayer) {
         checkAuraB = setInterval(() => {
             const players = bedrockServer.serverInstance.getPlayers();
             for (const pl of players) {
-                const plname = pl.getNameTag();
+                const plname = pl.getName();
                 const gamemode = pl.getGameType();
                 if (gamemode !== 2 && gamemode !== 0) continue;
 
@@ -132,8 +132,8 @@ events.playerAttack.on((ev) => {
 
     const now = Date.now();
     const player = ev.player as ServerPlayer;
-    const name = player.getNameTag()!;
-    if(MovementType === MinecraftPacketIds.MovePlayer) {
+    const name = player.getName()!;
+    if (MovementType === MinecraftPacketIds.MovePlayer) {
         if (now - lastAnimateTime[name] < 2) {
             doubleAnimateStack[name] = doubleAnimateStack[name] ? doubleAnimateStack[name] - 1 : 0;
             if (doubleAnimateStack[name] < 0) doubleAnimateStack[name] = 0;

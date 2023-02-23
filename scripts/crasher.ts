@@ -21,7 +21,7 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
         return CIF.detect(ni, "crasher", "Illegal Position");
     };
 
-    if(isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
+    if (isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
         CIF.ban(ni, "Crasher");
         return CIF.detect(ni, "crasher", "Illegal Head Pos");
     };
@@ -33,7 +33,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
         return CIF.detect(ni, "crasher", "Illegal Position");
     };
 
-    if(isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
+    if (isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
         CIF.ban(ni, "Crasher");
         return CIF.detect(ni, "crasher", "Illegal Head Pos");
     };
@@ -57,7 +57,7 @@ events.packetBefore(123).on((pkt, ni) => {
 
     if (sound !== 42 && sound !== 43) {
         const pl = ni.getActor()!;
-        const plname = pl.getNameTag()!;
+        const plname = pl.getName()!;
         PPSsound[plname] = PPSsound[plname] ? PPSsound[plname] + 1 : 1;
 
         if (PPSsound[plname] > 39) {
@@ -73,7 +73,7 @@ events.packetBefore(123).on((pkt, ni) => {
 
 events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     const pl = ni.getActor()!;
-    const plname = pl.getNameTag()!;
+    const plname = pl.getName()!;
     PPSact[plname] = PPSact[plname] ? PPSact[plname] + 1 : 1;
 
     if (PPSact[plname] > 39) {
@@ -136,7 +136,7 @@ const receivePacket = procHacker.hooking(
 
     //Block All Packets from Detected Player
     if (conn.networkIdentifier.getActor()) {
-        const plname = conn.networkIdentifier.getActor()!.getNameTag();
+        const plname = conn.networkIdentifier.getActor()!.getName();
         if (CIF.wasDetected[plname] === true) {
             conn.disconnect();
             return 1;
@@ -149,6 +149,6 @@ const receivePacket = procHacker.hooking(
 events.networkDisconnected.on(ni => {
     if (ni) {
         Warns[ni.getAddress()] = 0;
-        CIF.resetDetected(ni.getActor()?.getNameTag()!);
+        CIF.resetDetected(ni.getActor()?.getName()!);
     };
 });

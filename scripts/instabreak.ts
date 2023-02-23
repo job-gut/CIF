@@ -42,8 +42,8 @@ function allowInstabreak(player: Player, block: Block): boolean {
 
 
 function onBlockDestructionStop(blockEventCoordinator: StaticPointer, player: Player, blockPos: BlockPos, unknown: number): void {
-    delete destroingBlock[player.getNameTag()];
-    //console.log(`stop ${player.getNameTag()}`);
+    delete destroingBlock[player.getName()];
+    //console.log(`stop ${player.getName()}`);
     return blockDestructionStop(blockEventCoordinator, player, blockPos, unknown);
 };
 
@@ -51,8 +51,8 @@ const destroingBlock: { [keyof: string]: { pos: BlockPos, player: Player, time: 
 
 
 events.blockDestructionStart.on((ev) => {
-    //console.log(`start ${ev.player.getNameTag()}`);
-    destroingBlock[ev.player.getNameTag()] = { pos: ev.blockPos, player: ev.player, time: Date.now() };
+    //console.log(`start ${ev.player.getName()}`);
+    destroingBlock[ev.player.getName()] = { pos: ev.blockPos, player: ev.player, time: Date.now() };
 });
 events.blockDestroy.on((ev) => {
     ///console.log(`${allowInstabreak(ev.player,ev.blockSource.getBlock(ev.blockPos))}`);
@@ -60,12 +60,12 @@ events.blockDestroy.on((ev) => {
     if (gamemode === GameType.Creative) {
         return;
     };
-    const name = ev.player.getNameTag();
+    const name = ev.player.getName();
     if (destroingBlock[name] === undefined && !allowInstabreak(ev.player, ev.blockSource.getBlock(ev.blockPos))) {
         const ni = ev.player.getNetworkIdentifier();
         return CIF.detect(ni, "instabreak", "break block instantly");
     };
-    //console.log(`done ${ev.player.getNameTag()}`);
+    //console.log(`done ${ev.player.getName()}`);
     //if(destroingBlock[])
 });
 

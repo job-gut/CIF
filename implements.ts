@@ -9,7 +9,7 @@ import { nameMap } from "./scripts/join";
 /**
  * @description 다른 곳에서 임의로 쓰지 마세요
  */
-function zero(num: any, n: any) {
+export function zero(num: any, n: any) {
     let zero = "";
     let num2 = num.toString();
     if (num2.length < n) {
@@ -24,7 +24,7 @@ function zero(num: any, n: any) {
  * Date With Zero
  * @description Use for ban
  */
-function dateWithZero() {
+export function dateWithZero() {
     var d = new Date();
     return (d.getFullYear() + "-" + zero((d.getMonth() + 1), 2) + "-"
         + zero(d.getDate(), 2) + ", " + zero(d.getHours(), 2) + "시 "

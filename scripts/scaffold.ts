@@ -16,7 +16,7 @@ events.blockPlace.on((ev) => {
     if (!pl.isPlayer()) return;
     const blockpos = ev.blockPos;
     const plpos = pl.getFeetPos()!;
-    const plname = pl.getNameTag()!;
+    const plname = pl.getName()!;
     const plposy = Math.floor(plpos.y);
     const blockposy = Math.floor(blockpos.y);
     const gm = pl.getGameType();
