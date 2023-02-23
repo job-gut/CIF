@@ -1,15 +1,17 @@
 import { CommandPermissionLevel } from "bdsx/bds/command";
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
+import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { CANCEL } from "bdsx/common";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "./main";
 import { nameMap } from "./scripts/join";
+import { MovementType } from "./scripts/movement";
 
 
 /**
  * @description 다른 곳에서 임의로 쓰지 마세요
  */
-export function zero(num: any, n: any) {
+function zero(num: any, n: any) {
     let zero = "";
     let num2 = num.toString();
     if (num2.length < n) {
@@ -24,7 +26,7 @@ export function zero(num: any, n: any) {
  * Date With Zero
  * @description Use for ban
  */
-export function dateWithZero() {
+function dateWithZero() {
     var d = new Date();
     return (d.getFullYear() + "-" + zero((d.getMonth() + 1), 2) + "-"
         + zero(d.getDate(), 2) + ", " + zero(d.getHours(), 2) + "시 "
@@ -59,7 +61,10 @@ CIF.log = function (message: string): void {
 CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
-    // bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cthis§f]\n§b${cheatName} Detected`);
+    if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
+        bedrockServer.serverInstance.disconnectClient(ni, `§l§f[§cthis§f]\n§b${cheatName} Detected`);
+    };
+    
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
     this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`);
     return CANCEL;
