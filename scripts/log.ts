@@ -7,5 +7,5 @@ events.packetAfter(MinecraftPacketIds.Text).on((pkt, ni) => {
 });
 
 events.packetAfter(MinecraftPacketIds.CommandRequest).on((pkt, ni) => {
-    CIF.log(`<${ni.getActor()!.getName()}> ${pkt.command}`);
+    CIF.log(`${ni.getActor()!.getName()} : ${pkt.command}`);
 });
