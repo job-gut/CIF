@@ -115,6 +115,8 @@ const receivePacket = procHacker.hooking(
     const address = conn.networkIdentifier.getAddress();
     const ip = address.split("|")[0];
 
+    if (ip === "10.10.10.10") return receivePacket(conn, data, networkHandler, time_point);
+
     if (ipBlocked[ip]) {
         conn.disconnect();
         CIF.announce(`§c[§fCIF§c] §c${ip} §6tried to connect §c(IP Blocked)`);
