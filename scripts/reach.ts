@@ -22,9 +22,9 @@ function warn(ni: NetworkIdentifier): CANCEL {
     return CANCEL;
 };
 
-events.entityKnockback.on((ev) => {
-    const victim = ev.target;
-    const attacker = ev.source;
+events.entityHurt.on((ev) => {
+    const victim = ev.entity;
+    const attacker = ev.damageSource.getDamagingEntity();
     if (!attacker) return;
     if (!attacker.isPlayer()) return;
     if (attacker.getGameType() === 1) return;
