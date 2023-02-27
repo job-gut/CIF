@@ -85,7 +85,7 @@ const instabreakwarn: Record<string, number> = {};
 
 function instabreakWarn(player: ServerPlayer): CANCEL {
 
-    const playerName = player.getNameTag()!;
+    const playerName = player.getName()!;
     instabreakwarn[playerName] = instabreakwarn[playerName] ? instabreakwarn[playerName] + 1 : 1;
 
     if (instabreakwarn[playerName] > 1) {
