@@ -23,10 +23,16 @@ const isGlidingWithElytra: Record<string, boolean> = {};
 const lastpos: Record<string, number[]> = {};
 
 const jumpedTick: Record<string, number> = {};
+
 const strafestack: Record<string, number> = {};
+const tooFastStack: Record<string, number> = {};
+
 const getDamaged: Record<string, boolean> = {};
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
+const isKnockbacking: Record<string, boolean> = {};
+
+
 
 export const lastRotations = new Map<string, { x: number, y: number }[]>();
 function appendRotationRecord(player: ServerPlayer, rotation: { x: number, y: number }) {
@@ -241,6 +247,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
                 CIF.ban(ni, "Speed-B");
                 CIF.detect(ni, "Speed-B", `Strafe (Blocks per second : ${bps})`);
             };
+        } else {
+            strafestack[plname] = strafestack[plname] ? strafestack[plname] - 1 : 0;
+            if (strafestack[plname] < 0) strafestack[plname] = 0;
         };
 
 
@@ -252,6 +261,15 @@ events.packetBefore(MovementType).on((pkt, ni) => {
             //대충 max bps 구해서 처리하는거 만들기
         };
 
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && bps >= 14) {
+            tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] + 1 : 1;
+            if (tooFastStack[plname] > 4) {
+                CIF.detect(ni, "Speed-A", `Too Fast (Blocks per second : ${bps})`);
+            };
+        } else {
+            tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] - 1 : 0;
+            if (tooFastStack[plname] < 0) tooFastStack[plname] = 0;
+        };
     };
 
     lastBPS[plname] = bps;
@@ -266,4 +284,13 @@ const hasTeleport = procHacker.hooking("?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1
     }, 1000);
 
     return hasTeleport(pl, pos);
+});
+
+events.entityKnockback.on((ev)=> {
+    const pl = ev.target as ServerPlayer;
+    const plname = pl.getName();
+    isKnockbacking[plname] = true;
+    setTimeout(() => {
+        isKnockbacking[plname] = false;
+    }, 1500);
 });
