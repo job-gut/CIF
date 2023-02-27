@@ -116,6 +116,7 @@ Player.prototype.isGlidingWithElytra = function () {
     return isGlidingWithElytra[plname];
 };
 
+
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
     const pl = ni.getActor()!;
     const plname = pl.getName()!;
@@ -156,9 +157,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
     };
 
     appendRotationRecord(player, rotation);
-
-
-
+    
     const movePos = pkt.pos;
 
     const gamemode = player.getGameType();
@@ -178,12 +177,15 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         player.runCommand("tp ~ ~ ~");
     };
 
+    const torso = player.getArmor(ArmorSlot.Torso);
+    
+    if (torso.getRawNameId() !== "elytra" && isGlidingWithElytra[plname]) {
+        CIF.detect(ni, "Fly-E", "Send Glide Packet without Elytra");
+    };
 
     //SPEED
     if (MovementType === MinecraftPacketIds.PlayerAuthInput) return;
 
-    const torso = player.getArmor(ArmorSlot.Torso);
-    if (torso.getRawNameId() === "elytra") return;
     if (isTeleported[plname]) return;
     if (player.isSpinAttacking()) return;
 
