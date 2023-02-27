@@ -232,7 +232,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         bps = 0;
     };
 
-    if (bps > maxBPS && bps > 5.61) {
+    if (bps > maxBPS && bps > 5.61 && !isTeleported[plname]) {
 
         if (player.getLastBPS() === bps) {
             strafestack[plname] = strafestack[plname] ? strafestack[plname] + 1 : 1;
