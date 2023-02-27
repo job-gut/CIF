@@ -107,6 +107,11 @@ declare module "bdsx/bds/player" {
          * Func from CIF
          */
         isGlidingWithElytra(): boolean;
+
+        /**
+         * Returns if player is under any blocks (Func from CIF)
+         */
+        isUnderAnyBlock(): boolean;
     }
 };
 
@@ -115,7 +120,22 @@ Player.prototype.onIce = function () {
     pos.y--;
 
     const blockName = this.getRegion().getBlock(pos).getName();
-    if (blockName.includes("ice")) return true; else return false;
+    return blockName.includes("ice");
+};
+
+Player.prototype.isUnderAnyBlock = function () {
+    const pos = BlockPos.create(this.getPosition());
+
+    pos.y++;
+    const blockName1 = this.getRegion().getBlock(pos).getName();
+
+    pos.y--;
+    const blockName2 = this.getRegion().getBlock(pos).getName();
+    if (blockName1 !== "minecraft:air" || blockName2 !== "minecraft:air") {
+        return true;
+    };
+
+    return false;
 };
 
 Player.prototype.isSpinAttacking = function () {
@@ -145,7 +165,8 @@ Player.prototype.isGlidingWithElytra = function () {
 
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
     const pl = ni.getActor()!;
-    const plname = pl.getName()!;
+    if (!pl) return;
+    const plname = pl.getName();
     if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
         isSpinAttacking[plname] = true;
     } else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
@@ -214,6 +235,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
     if (isTeleported[plname]) return;
     if (player.isSpinAttacking()) return;
+    if (torso.getRawNameId() === "elytra") return;
 
     const lastPos = lastpos[plname];
     const plSpeed = player.getSpeed();
@@ -244,7 +266,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
             if (strafestack[plname] > 14) {
                 strafestack[plname] = 0;
                 CIF.ban(ni, "Speed-B");
-                CIF.detect(ni, "Speed-B", `Strafe (Blocks per second : ${bps})`);
+                CIF.detect(ni, "Speed-B", `Strafe | Blocks per second : ${bps}`);
             };
         } else {
             strafestack[plname] = strafestack[plname] ? strafestack[plname] - 1 : 0;
@@ -260,11 +282,12 @@ events.packetBefore(MovementType).on((pkt, ni) => {
             //대충 max bps 구해서 처리하는거 만들기
         };
 
-        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= maxBPS * 100) {
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= plSpeed * 100) {
             tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] + 1 : 1;
 
             if (tooFastStack[plname] > 4) {
-                CIF.detect(ni, "Speed-A", `Too Fast (Blocks per second : ${bps})`);
+                tooFastStack[plname] = 0;
+                CIF.detect(ni, "Speed-A", `Too Fast | Blocks per second : ${bps}`);
             };
 
         } else {
@@ -272,16 +295,16 @@ events.packetBefore(MovementType).on((pkt, ni) => {
             if (tooFastStack[plname] < 0) tooFastStack[plname] = 0;
         };
 
-        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= maxBPS * 61.6) {
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps > plSpeed * 61.5 && !player.isUnderAnyBlock()) {
             littleFastStack[plname] = littleFastStack[plname] ? littleFastStack[plname] + 1 : 1;
 
             if (littleFastStack[plname] > 9) {
-                CIF.detect(ni, "Speed-C", `little Fast (Blocks per second : ${bps})`);
+                littleFastStack[plname] = 0;
+                CIF.detect(ni, "Speed-C", `little Fast | Blocks per second : ${bps}`);
             };
 
         } else {
-            littleFastStack[plname] = littleFastStack[plname] ? littleFastStack[plname] - 1 : 0;
-            if (littleFastStack[plname] < 0) littleFastStack[plname] = 0;
+            littleFastStack[plname] = 0;
         };
     };
 
