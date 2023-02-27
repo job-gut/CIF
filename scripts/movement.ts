@@ -25,6 +25,7 @@ const jumpedTick: Record<string, number> = {};
 
 const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
+const littleFastStack: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
@@ -259,7 +260,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
             //대충 max bps 구해서 처리하는거 만들기
         };
 
-        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= 14) {
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= maxBPS * 100) {
             tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] + 1 : 1;
 
             if (tooFastStack[plname] > 4) {
@@ -269,6 +270,18 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         } else {
             tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] - 1 : 0;
             if (tooFastStack[plname] < 0) tooFastStack[plname] = 0;
+        };
+
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= maxBPS * 61.6) {
+            littleFastStack[plname] = littleFastStack[plname] ? littleFastStack[plname] + 1 : 1;
+
+            if (littleFastStack[plname] > 9) {
+                CIF.detect(ni, "Speed-C", `little Fast (Blocks per second : ${bps})`);
+            };
+
+        } else {
+            littleFastStack[plname] = littleFastStack[plname] ? littleFastStack[plname] - 1 : 0;
+            if (littleFastStack[plname] < 0) littleFastStack[plname] = 0;
         };
     };
 
