@@ -262,9 +262,11 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
         if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && bps >= 14) {
             tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] + 1 : 1;
+            
             if (tooFastStack[plname] > 4) {
                 CIF.detect(ni, "Speed-A", `Too Fast (Blocks per second : ${bps})`);
             };
+
         } else {
             tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] - 1 : 0;
             if (tooFastStack[plname] < 0) tooFastStack[plname] = 0;
