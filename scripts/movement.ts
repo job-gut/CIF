@@ -1,13 +1,13 @@
+import { Actor } from "bdsx/bds/actor";
 import { Block } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot } from "bdsx/bds/inventory";
-import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { Packet } from "bdsx/bds/packet";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
-import { bool_t, void_t } from "bdsx/nativetype";
+import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
 import { CIF } from "../main";
@@ -22,10 +22,17 @@ const isGlidingWithElytra: Record<string, boolean> = {};
 const lastpos: Record<string, number[]> = {};
 
 const jumpedTick: Record<string, number> = {};
+
 const strafestack: Record<string, number> = {};
-const getDamaged: Record<string, boolean> = {};
+const tooFastStack: Record<string, number> = {};
+const littleFastStack: Record<string, number> = {};
+const littleFastWarn: Record<string, number> = {};
+
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
+const isKnockbacking: Record<string, boolean> = {};
+
+
 
 export const lastRotations = new Map<string, { x: number, y: number }[]>();
 function appendRotationRecord(player: ServerPlayer, rotation: { x: number, y: number }) {
@@ -48,11 +55,31 @@ declare module "bdsx/bds/block" {
         isSolid(): boolean;
     }
 };
+
 Block.prototype.isSolid = procHacker.js(
     "?isSolid@Block@@QEBA_NXZ",
     bool_t,
     { this: Block }
 );
+
+
+declare module "bdsx/bds/actor" {
+    interface Actor {
+        /**
+         * Func from CIF
+         */
+        getFallDistance(): number;
+
+        /**
+         * Func from CIF
+         */
+        setFallDistance(): void;
+    }
+};
+
+Actor.prototype.getFallDistance = procHacker.js("?getFallDistance@Actor@@QEBAMXZ", float32_t, { this: Actor });
+Actor.prototype.setFallDistance = procHacker.js("?setFallDistance@Actor@@QEAAXM@Z", void_t, { this: Actor });
+
 
 declare module "bdsx/bds/player" {
     interface Player {
@@ -81,15 +108,33 @@ declare module "bdsx/bds/player" {
          * Func from CIF
          */
         isGlidingWithElytra(): boolean;
+
+        /**
+         * Returns if player is under any blocks (Func from CIF)
+         */
+        isUnderAnyBlock(): boolean;
     }
 };
 
 Player.prototype.onIce = function () {
     const pos = BlockPos.create(this.getFeetPos());
     pos.y--;
+    const blockName1 = this.getRegion().getBlock(pos).getName();
 
-    const blockName = this.getRegion().getBlock(pos).getName();
-    if (blockName.includes("ice")) return true; else return false;
+    pos.y--;
+    const blockName2 = this.getRegion().getBlock(pos).getName();
+    return blockName1.includes("ice") || blockName2.includes("ice");
+};
+
+Player.prototype.isUnderAnyBlock = function () {
+    const pos = BlockPos.create(this.getPosition());
+
+    pos.y++;
+    const blockName1 = this.getRegion().getBlock(pos).getName();
+
+    pos.y--;
+    const blockName2 = this.getRegion().getBlock(pos).getName();
+    return blockName1 !== "minecraft:air" || blockName2 !== "minecraft:air";
 };
 
 Player.prototype.isSpinAttacking = function () {
@@ -116,9 +161,11 @@ Player.prototype.isGlidingWithElytra = function () {
     return isGlidingWithElytra[plname];
 };
 
+
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
     const pl = ni.getActor()!;
-    const plname = pl.getName()!;
+    if (!pl) return;
+    const plname = pl.getName();
     if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
         isSpinAttacking[plname] = true;
     } else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
@@ -156,9 +203,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
     };
 
     appendRotationRecord(player, rotation);
-
-
-
+    
     const movePos = pkt.pos;
 
     const gamemode = player.getGameType();
@@ -178,14 +223,18 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         player.runCommand("tp ~ ~ ~");
     };
 
+    const torso = player.getArmor(ArmorSlot.Torso);
+    
+    if (torso.getRawNameId() !== "elytra" && isGlidingWithElytra[plname]) {
+        CIF.detect(ni, "Fly-E", "Send Glide Packet without Elytra");
+    };
 
     //SPEED
     if (MovementType === MinecraftPacketIds.PlayerAuthInput) return;
 
-    const torso = player.getArmor(ArmorSlot.Torso);
-    if (torso.getRawNameId() === "elytra") return;
     if (isTeleported[plname]) return;
     if (player.isSpinAttacking()) return;
+    if (torso.getRawNameId() === "elytra") return;
 
     const lastPos = lastpos[plname];
     const plSpeed = player.getSpeed();
@@ -216,17 +265,55 @@ events.packetBefore(MovementType).on((pkt, ni) => {
             if (strafestack[plname] > 14) {
                 strafestack[plname] = 0;
                 CIF.ban(ni, "Speed-B");
-                CIF.detect(ni, "Speed-B", `Strafe (Blocks per second : ${bps})`);
+                CIF.detect(ni, "Speed-B", `Strafe | Blocks per second : ${bps}`);
             };
+        } else {
+            strafestack[plname] = strafestack[plname] ? strafestack[plname] - 1 : 0;
+            if (strafestack[plname] < 0) strafestack[plname] = 0;
         };
 
 
         if (player.onIce() && player.isRiding()) {
-            //대충 max bps 구하기 처리하는거 만들기
+            //이거는 그냥 의미 없는 짓거리
         } else if (player.onIce() && !player.isRiding()) {
             //대충 max bps 구해서 처리하는거 만들기
         } else if (!player.onIce() && player.isRiding()) {
             //대충 max bps 구해서 처리하는거 만들기
+        };
+
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= plSpeed * 100) {
+            tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] + 1 : 1;
+
+            if (tooFastStack[plname] > 4) {
+                tooFastStack[plname] = 0;
+                CIF.detect(ni, "Speed-A", `Too Fast | Blocks per second : ${bps}`);
+            };
+
+        } else {
+            tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] - 1 : 0;
+            if (tooFastStack[plname] < 0) tooFastStack[plname] = 0;
+        };
+
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps > plSpeed * 61.5 && !player.isUnderAnyBlock()) {
+            littleFastStack[plname] = littleFastStack[plname] ? littleFastStack[plname] + 1 : 1;
+
+            if (littleFastStack[plname] > 5) {
+                littleFastWarn[plname] = littleFastWarn[plname] ? littleFastWarn[plname] + 1 : 1;
+                littleFastStack[plname] = 0;
+
+                if (littleFastWarn[plname] > 2) {
+                    littleFastWarn[plname] = 0;
+                    CIF.detect(ni, "Speed-C", `little Fast | Blocks per second : ${bps}`);
+                };
+
+                setTimeout(() => {
+                    littleFastWarn[plname]--;
+                    if (littleFastWarn[plname] < 0) littleFastWarn[plname] = 0;
+                }, 3000);
+            };
+
+        } else {
+            littleFastStack[plname] = 0;
         };
 
     };
@@ -243,4 +330,13 @@ const hasTeleport = procHacker.hooking("?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1
     }, 1000);
 
     return hasTeleport(pl, pos);
+});
+
+events.entityKnockback.on((ev)=> {
+    const pl = ev.target as ServerPlayer;
+    const plname = pl.getName();
+    isKnockbacking[plname] = true;
+    setTimeout(() => {
+        isKnockbacking[plname] = false;
+    }, 1500);
 });
