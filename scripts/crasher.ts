@@ -13,7 +13,7 @@ const UINTMAX = 0xffffffff;
 const PPSsound: Record<string, number> = {};
 const PPSact: Record<string, number> = {};
 
-const isFirstSkinPacket = new Map<NetworkIdentifier, boolean>();
+const wasSendSkinPacket = new Map<NetworkIdentifier, boolean>();
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX) {
@@ -48,7 +48,7 @@ events.packetRaw(MinecraftPacketIds.ClientCacheBlobStatus).on((ptr, size, ni) =>
 });
 
 
-events.packetBefore(123).on((pkt, ni) => {
+events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
     const sound = pkt.sound;
     if (sound === 0) {
         CIF.ban(ni, "crasher");
@@ -56,8 +56,10 @@ events.packetBefore(123).on((pkt, ni) => {
     };
 
     if (sound !== 42 && sound !== 43) {
-        const pl = ni.getActor()!;
-        const plname = pl.getName()!;
+        const pl = ni.getActor();
+        if (!pl) return;
+        
+        const plname = pl.getName();
         PPSsound[plname] = PPSsound[plname] ? PPSsound[plname] + 1 : 1;
 
         if (PPSsound[plname] > 39) {
@@ -85,19 +87,19 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     }, (1000));
 });
 
-events.packetRaw(93).on((ptr, size, ni) => {
+events.packetRaw(MinecraftPacketIds.PlayerSkin).on((ptr, size, ni) => {
     const pl = ni.getActor()!;
     if (!pl) return CANCEL;
 
     if (pl.hasTag("CIFcanCrash")) return;
 
-    if (isFirstSkinPacket.get(ni)) {
+    if (wasSendSkinPacket.get(ni)) {
         pl.sendMessage("§l§c스킨을 적용하시려면 서버에 재접속 해주세요!");
         pl.playSound("random.break");
         return CANCEL;
     };
 
-    isFirstSkinPacket.set(ni, true);
+    wasSendSkinPacket.set(ni, true);
 });
 
 const Warns: Record<string, number> = {};
@@ -113,8 +115,17 @@ const receivePacket = procHacker.hooking(
     VoidPointer,
 )((conn, data, networkHandler, time_point) => {
     const address = conn.networkIdentifier.getAddress();
-    const ip = address.split("|")[0];
 
+    //Block All Packets from Detected Player
+    if (conn.networkIdentifier.getActor()) {
+        const plname = conn.networkIdentifier.getActor()!.getName();
+        if (CIF.wasDetected[plname] === true) {
+            conn.disconnect();
+            return 1;
+        };
+    };
+
+    const ip = address.split("|")[0];
     if (ip === "10.10.10.10") return receivePacket(conn, data, networkHandler, time_point);
 
     if (ipBlocked[ip]) {
@@ -134,15 +145,6 @@ const receivePacket = procHacker.hooking(
 
     if (id === 0) {
         Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
-    };
-
-    //Block All Packets from Detected Player
-    if (conn.networkIdentifier.getActor()) {
-        const plname = conn.networkIdentifier.getActor()!.getName();
-        if (CIF.wasDetected[plname] === true) {
-            conn.disconnect();
-            return 1;
-        };
     };
 
     return receivePacket(conn, data, networkHandler, time_point);
