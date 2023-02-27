@@ -141,8 +141,10 @@ function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
 };
 
 events.packetBefore(MovementType).on((pkt, ni) => {
-    const player = ni.getActor()!;
-    const plname = player.getName()!;
+    const player = ni.getActor();
+    if (!player) return;
+    
+    const plname = player.getName();
     if (isMovePlayerPacket(pkt)) {
         onGround[plname] = pkt.onGround;
     };
