@@ -26,6 +26,7 @@ const jumpedTick: Record<string, number> = {};
 const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 const littleFastStack: Record<string, number> = {};
+const littleFastWarn: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
@@ -118,9 +119,11 @@ declare module "bdsx/bds/player" {
 Player.prototype.onIce = function () {
     const pos = BlockPos.create(this.getFeetPos());
     pos.y--;
+    const blockName1 = this.getRegion().getBlock(pos).getName();
 
-    const blockName = this.getRegion().getBlock(pos).getName();
-    return blockName.includes("ice");
+    pos.y--;
+    const blockName2 = this.getRegion().getBlock(pos).getName();
+    return blockName1.includes("ice") || blockName2.includes("ice");
 };
 
 Player.prototype.isUnderAnyBlock = function () {
@@ -131,11 +134,7 @@ Player.prototype.isUnderAnyBlock = function () {
 
     pos.y--;
     const blockName2 = this.getRegion().getBlock(pos).getName();
-    if (blockName1 !== "minecraft:air" || blockName2 !== "minecraft:air") {
-        return true;
-    };
-
-    return false;
+    return blockName1 !== "minecraft:air" || blockName2 !== "minecraft:air";
 };
 
 Player.prototype.isSpinAttacking = function () {
@@ -298,14 +297,25 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps > plSpeed * 61.5 && !player.isUnderAnyBlock()) {
             littleFastStack[plname] = littleFastStack[plname] ? littleFastStack[plname] + 1 : 1;
 
-            if (littleFastStack[plname] > 9) {
+            if (littleFastStack[plname] > 5) {
+                littleFastWarn[plname] = littleFastWarn[plname] ? littleFastWarn[plname] + 1 : 1;
                 littleFastStack[plname] = 0;
-                CIF.detect(ni, "Speed-C", `little Fast | Blocks per second : ${bps}`);
+
+                if (littleFastWarn[plname] > 2) {
+                    littleFastWarn[plname] = 0;
+                    CIF.detect(ni, "Speed-C", `little Fast | Blocks per second : ${bps}`);
+                };
+
+                setTimeout(() => {
+                    littleFastWarn[plname]--;
+                    if (littleFastWarn[plname] < 0) littleFastWarn[plname] = 0;
+                }, 3000);
             };
 
         } else {
             littleFastStack[plname] = 0;
         };
+
     };
 
     lastBPS[plname] = bps;
