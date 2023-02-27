@@ -26,7 +26,6 @@ const jumpedTick: Record<string, number> = {};
 const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 
-const getDamaged: Record<string, boolean> = {};
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
@@ -260,9 +259,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
             //대충 max bps 구해서 처리하는거 만들기
         };
 
-        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && bps >= 14) {
+        if (!player.onIce() && !player.isRiding() && !isKnockbacking[plname] && !haveFished[plname] && bps >= 14) {
             tooFastStack[plname] = tooFastStack[plname] ? tooFastStack[plname] + 1 : 1;
-            
+
             if (tooFastStack[plname] > 4) {
                 CIF.detect(ni, "Speed-A", `Too Fast (Blocks per second : ${bps})`);
             };
