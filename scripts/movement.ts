@@ -1,3 +1,4 @@
+import { Actor } from "bdsx/bds/actor";
 import { Block } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot } from "bdsx/bds/inventory";
@@ -7,7 +8,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
-import { bool_t, void_t } from "bdsx/nativetype";
+import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
 import { CIF } from "../main";
@@ -48,11 +49,31 @@ declare module "bdsx/bds/block" {
         isSolid(): boolean;
     }
 };
+
 Block.prototype.isSolid = procHacker.js(
     "?isSolid@Block@@QEBA_NXZ",
     bool_t,
     { this: Block }
 );
+
+
+declare module "bdsx/bds/actor" {
+    interface Actor {
+        /**
+         * Func from CIF
+         */
+        getFallDistance(): number;
+
+        /**
+         * Func from CIF
+         */
+        setFallDistance(): void;
+    }
+};
+
+Actor.prototype.getFallDistance = procHacker.js("?getFallDistance@Actor@@QEBAMXZ", float32_t, { this: Actor });
+Actor.prototype.setFallDistance = procHacker.js("?setFallDistance@Actor@@QEAAXM@Z", void_t, { this: Actor });
+
 
 declare module "bdsx/bds/player" {
     interface Player {
@@ -224,7 +245,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 
         if (player.onIce() && player.isRiding()) {
-            //대충 max bps 구하기 처리하는거 만들기
+            //이거는 그냥 의미 없는 짓거리
         } else if (player.onIce() && !player.isRiding()) {
             //대충 max bps 구해서 처리하는거 만들기
         } else if (!player.onIce() && player.isRiding()) {
