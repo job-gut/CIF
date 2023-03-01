@@ -1,1 +1,2 @@
+import "./configManager";
 import "./main";
