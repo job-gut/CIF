@@ -2,7 +2,6 @@ import { serverProperties } from "bdsx/serverproperties";
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandPermissionLevel } from "bdsx/bds/command";
 import { CANCEL } from "bdsx/common";
-import "./scripts";
 
 function abstractFunction(): never {
     throw Error(`Failed to load "implements.ts"`);
@@ -58,7 +57,7 @@ export namespace CIF {
         abstractFunction();
     };
 
-    
+
     export function resetDetected(playerName: string): void {
         abstractFunction();
     };
@@ -68,3 +67,5 @@ export namespace CIF {
 
 
 import "./implements";
+
+import "./scripts";
