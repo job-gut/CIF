@@ -58,11 +58,13 @@ export namespace CIF {
         abstractFunction();
     };
 
+    
     export function resetDetected(playerName: string): void {
         abstractFunction();
     };
 
     export const wasDetected: Record<string, boolean> = {};
 };
+
 
 import "./implements";
