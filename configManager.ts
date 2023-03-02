@@ -4,7 +4,6 @@ import { CIF } from "./main";
 export namespace CIFconfig {
     export const Modules: ConfigType = {
         Debug: false,
-        bug: true,
         combat: true,
         crasher: true,
         give: true,
@@ -27,7 +26,6 @@ export namespace CIFconfig {
 function createNewFile(): void {
     fs.writeFileSync("../plugins/CIF/options.txt",
         `Debug = false
-    bug = true
     combat = true
     crasher = true
     give = true
@@ -58,7 +56,6 @@ function stringToBoolean(str: string): boolean {
 
 interface IConfiguration {
     "Debug": boolean
-    "bug": boolean
     "combat": boolean
     "crasher": boolean
     "give": boolean
