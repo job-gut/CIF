@@ -6,7 +6,6 @@ export namespace CIFconfig {
         Debug: false,
         combat: true,
         crasher: true,
-        give: true,
         instabreak: true,
         join: true,
         log: true,
@@ -28,7 +27,6 @@ function createNewFile(): void {
         `Debug = false
     combat = true
     crasher = true
-    give = true
     instabreak = true
     join = true
     log = true
@@ -58,7 +56,6 @@ interface IConfiguration {
     "Debug": boolean
     "combat": boolean
     "crasher": boolean
-    "give": boolean
     "instabreak": boolean
     "join": boolean
     "log": boolean
