@@ -10,6 +10,7 @@ import { events } from "bdsx/event";
 import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
+import { CIFconfig } from "../configManager";
 import { CIF } from "../main";
 
 export const MovementType = serverProperties["server-authoritative-movement"] === "client-auth" ? MinecraftPacketIds.MovePlayer : MinecraftPacketIds.PlayerAuthInput;
@@ -219,7 +220,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         && player.getGameType() !== GameType.Spectator
         && player.getGameType() !== GameType.CreativeSpectator
         && player.getGameType() !== GameType.Creative
-        && player.getGameType() !== GameType.SurvivalSpectator) {
+        && player.getGameType() !== GameType.SurvivalSpectator
+        && CIFconfig.Modules.movement === true) {
         player.runCommand("tp ~ ~ ~");
     };
 
@@ -258,7 +260,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         bps = 0;
     };
 
-    if (bps > maxBPS && bps > 5.61) {
+    if (bps > maxBPS && bps > 5.61 && CIFconfig.Modules.movement === true) {
 
         if (player.getLastBPS() === bps) {
             strafestack[plname] = strafestack[plname] ? strafestack[plname] + 1 : 1;
