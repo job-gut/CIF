@@ -70,7 +70,7 @@ try {
     const optionFile = "../plugins/CIF/options.txt";
     const options = fs.readFileSync(optionFile, "utf8");
     const matcher = /^\s*([^=#]+)\s*=\s*(.*)\s*$/gm;
-    for (; ;) {
+    while (true) {
         const matched = matcher.exec(options);
         if (matched === null) break;
         config[matched[1] as keyof IConfiguration] = stringToBoolean(matched[2]);
