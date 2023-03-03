@@ -1,5 +1,4 @@
 import * as fs from "fs";
-import { CIF } from "./main";
 
 export namespace CIFconfig {
     export const Modules: ConfigType = {
@@ -20,7 +19,7 @@ export namespace CIFconfig {
         send_to_member: true
     };
 };
-
+import { CIF } from "./main";
 
 function createNewFile(): void {
     fs.writeFileSync("../plugins/CIF/options.txt",
