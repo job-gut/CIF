@@ -9,35 +9,35 @@ import { CIF } from "../main";
 
 if (CIFconfig.Modules.combat) {
     require("./combat");
-    CIF.log("Successfully Loaded Combat Modules".green);
+    CIF.log(`Successfully Loaded ${"Combat".magenta} Modules`.green);
 };
 
 if (CIFconfig.Modules.crasher) {
     require("./crasher");
-    CIF.log("Successfully Loaded Crasher Modules".green);
+    CIF.log(`Successfully Loaded ${"Crasher".magenta} Modules`.green);
 };
 
 if (CIFconfig.Modules.instabreak) {
     require("./instabreak");
-    CIF.log("Successfully Loaded Instabreak Modules".green);
+    CIF.log(`Successfully Loaded ${"Instabreak".magenta} Modules`.green);
 };
 
 if (CIFconfig.Modules.join) {
     require("./join");
-    CIF.log("Successfully Loaded Join Modules".green);
+    CIF.log(`Successfully Loaded ${"Join".magenta} Modules`.green);
 };
 
 if (CIFconfig.Modules.movement) {
     require("./movement");
-    CIF.log("Successfully Loaded Movement Modules".green);
+    CIF.log(`Successfully Loaded ${"Movement".magenta} Modules`.green);
 };
 
 if (CIFconfig.Modules.scaffold) {
     require("./scaffold");
-    CIF.log("Successfully Loaded Scaffold Modules".green);
+    CIF.log(`Successfully Loaded ${"Scaffold".magenta} Modules`.green);
 };
 
 if (CIFconfig.Modules.xp) {
     require("./xp");
-    CIF.log("Successfully Loaded XP Modules".green);
+    CIF.log(`Successfully Loaded ${"XP".magenta} Modules`.green);
 };
