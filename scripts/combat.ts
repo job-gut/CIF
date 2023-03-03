@@ -223,14 +223,14 @@ if (CIFconfig.Modules.combat === true) {
             reach > 4.49 &&
             !isMismatchAttack(player, victim, player.getViewVector(), reach)
         ) {
-            return ReachWarn(player.getNetworkIdentifier());
+            return ReachWarn(player.getNetworkIdentifier(), reach);
         };
     });
 
 
     const reachWarn = new Map<NetworkIdentifier, number>();
 
-    function ReachWarn(ni: NetworkIdentifier): CANCEL {
+    function ReachWarn(ni: NetworkIdentifier, reach: number): CANCEL {
         if (!reachWarn.get(ni)) reachWarn.set(ni, 0);
 
         reachWarn.set(ni, reachWarn.get(ni)! + 1);
@@ -240,7 +240,7 @@ if (CIFconfig.Modules.combat === true) {
         }, 5000);
 
         if (reachWarn.get(ni)! > 2) {
-            CIF.detect(ni, "reach", "Increase Reach");
+            CIF.detect(ni, "reach", `Increase Reach | Reach : ${reach}`);
         };
 
         return CANCEL;
