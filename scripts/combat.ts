@@ -9,6 +9,7 @@ import { CIF } from "../main";
 import { lastRotations, MovementType } from "./movement";
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CIFconfig } from "../configManager";
+import { ActorDamageCause } from "bdsx/bds/actor";
 
 if (CIFconfig.Modules.combat === true) {
     const MismatchAuraWarn = new Map<string, number>();
@@ -23,7 +24,7 @@ if (CIFconfig.Modules.combat === true) {
         if (MismatchAuraWarn.get(name) === undefined) {
             MismatchAuraWarn.set(name, 1);
             return CANCEL;
-        }
+        };
 
         MismatchAuraWarn.set(name, MismatchAuraWarn.get(name)! + 1);
 
@@ -39,14 +40,14 @@ if (CIFconfig.Modules.combat === true) {
                 "aura-A",
                 "Mismatch head rotation"
             );
-        }
+        };
 
         return CANCEL;
-    }
+    };
 
     function degreesToRadians(degrees: number): number {
         return (degrees * Math.PI) / 180;
-    }
+    };
 
     function getVectorByRotation(rotation: { x: number; y: number }): Vec3 {
         // const x = Math.cos(degreesToRadians(rotation.x));
@@ -57,7 +58,7 @@ if (CIFconfig.Modules.combat === true) {
         const z = Math.cos(degreesToRadians(rotation.x));
 
         return Vec3.create(x, y, z);
-    }
+    };
 
     function isMismatchAttack(
         player: ServerPlayer,
@@ -72,7 +73,7 @@ if (CIFconfig.Modules.combat === true) {
 
         if (victimPos.distance(playerPos) < 1) {
             return false;
-        }
+        };
 
         let reach = playerPos.distance(victimPos);
 
@@ -91,10 +92,10 @@ if (CIFconfig.Modules.combat === true) {
 
         if (hitRange > 1) {
             return true;
-        }
+        };
 
         return false;
-    }
+    };
 
     //Animate Packet -> playerAttack Event
 
@@ -111,7 +112,7 @@ if (CIFconfig.Modules.combat === true) {
                 doubleAnimateStack[plname] = doubleAnimateStack[plname]
                     ? doubleAnimateStack[plname] + 1
                     : 1;
-            }
+            };
 
             lastAnimateTime[plname] = now;
         });
@@ -146,16 +147,16 @@ if (CIFconfig.Modules.combat === true) {
                             : 0;
                         if (susPacketAuraWarn[plname] < 0)
                             susPacketAuraWarn[plname] = 0;
-                    }
+                    };
                     doubleAnimateStack[plname] = 0;
-                }
+                };
             }, 1000);
         });
 
         events.serverLeave.on(() => {
             clearInterval(checkAuraB);
         });
-    }
+    };
 
     events.playerAttack.on((ev) => {
         const victim = ev.victim;
@@ -173,8 +174,8 @@ if (CIFconfig.Modules.combat === true) {
                     ? doubleAnimateStack[name] - 1
                     : 0;
                 if (doubleAnimateStack[name] < 0) doubleAnimateStack[name] = 0;
-            }
-        }
+            };
+        };
 
         const prevRotations = lastRotations.get(name);
 
@@ -186,6 +187,7 @@ if (CIFconfig.Modules.combat === true) {
             victim,
             getVectorByRotation(prevRotations[1])
         );
+
         const check3 = isMismatchAttack(
             player,
             victim,
@@ -196,7 +198,18 @@ if (CIFconfig.Modules.combat === true) {
             return mismatchWarn(player);
         } else if (check1) {
             return CANCEL;
-        }
+        };
+    });
+
+    events.entityHurt.on((ev)=> {
+        const cuz = ev.damageSource.cause;
+        if (cuz !== ActorDamageCause.EntityAttack) return;
+
+        const player = ev.damageSource.getDamagingEntity()!;
+        const victim = ev.entity;
+
+        if (!victim.isPlayer()) return;
+        if (!player.isPlayer()) return;
 
         const playerpos = player.getFeetPos();
         const victimpos = victim.getFeetPos();
@@ -207,12 +220,13 @@ if (CIFconfig.Modules.combat === true) {
         const reach = Math.sqrt(result1 + result2);
 
         if (
-            reach > 4.24 &&
+            reach > 4.49 &&
             !isMismatchAttack(player, victim, player.getViewVector(), reach)
         ) {
             return ReachWarn(player.getNetworkIdentifier());
-        }
+        };
     });
+
 
     const reachWarn = new Map<NetworkIdentifier, number>();
 
@@ -227,8 +241,8 @@ if (CIFconfig.Modules.combat === true) {
 
         if (reachWarn.get(ni)! > 2) {
             CIF.detect(ni, "reach", "Increase Reach");
-        }
+        };
 
         return CANCEL;
-    }
-}
+    };
+};
