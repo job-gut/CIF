@@ -96,3 +96,5 @@ for (const [key, value] of Object.entries(config)) {
 if (CIFconfig.Modules.Debug === true) {
     require("./debug/debug");
 };
+
+import "./scripts";

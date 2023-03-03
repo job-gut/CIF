@@ -67,5 +67,3 @@ export namespace CIF {
 
 
 import "./implements";
-
-import "./scripts";
