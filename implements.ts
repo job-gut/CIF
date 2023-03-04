@@ -66,7 +66,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
     };
 
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`);
+    this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`.yellow);
     return CANCEL;
 };
 
