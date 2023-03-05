@@ -24,7 +24,6 @@ import { CIF } from "./main";
 function createNewFile(): void {
     fs.writeFileSync("../plugins/CIF/options.txt",
         `Debug = false
-<<<<<<< HEAD
 bug = true
 combat = true
 crasher = true
@@ -38,19 +37,6 @@ xp = true
 ban = true
 kick = true
 send_to_member = true`
-=======
-    combat = true
-    crasher = true
-    instabreak = true
-    join = true
-    log = true
-    movement = true
-    scaffold = true
-    xp = true
-    ban = true
-    kick = true
-    send_to_member = true`
->>>>>>> 18d3adcac083b85a03b4abea1768a54431ff37af
     );
 
     CIF.log("Generated new config file");
