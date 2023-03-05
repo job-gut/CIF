@@ -27,19 +27,19 @@ export namespace CIFconfig {
 function createNewFile(): void {
     fs.writeFileSync("../plugins/CIF/options.txt",
         `Debug = false
-    bug = true
-    combat = true
-    crasher = true
-    give = true
-    instabreak = true
-    join = true
-    log = true
-    movement = true
-    scaffold = true
-    xp = true
-    ban = true
-    kick = true
-    send_to_member = true`
+bug = true
+combat = true
+crasher = true
+give = true
+instabreak = true
+join = true
+log = true
+movement = true
+scaffold = true
+xp = true
+ban = true
+kick = true
+send_to_member = true`
     );
 
     CIF.log("Generated new config file");
