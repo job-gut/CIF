@@ -1,13 +1,10 @@
 import * as fs from "fs";
-import { CIF } from "./main";
 
 export namespace CIFconfig {
     export const Modules: ConfigType = {
         Debug: false,
-        bug: true,
         combat: true,
         crasher: true,
-        give: true,
         instabreak: true,
         join: true,
         log: true,
@@ -22,11 +19,12 @@ export namespace CIFconfig {
         send_to_member: true
     };
 };
-
+import { CIF } from "./main";
 
 function createNewFile(): void {
     fs.writeFileSync("../plugins/CIF/options.txt",
         `Debug = false
+<<<<<<< HEAD
 bug = true
 combat = true
 crasher = true
@@ -40,6 +38,19 @@ xp = true
 ban = true
 kick = true
 send_to_member = true`
+=======
+    combat = true
+    crasher = true
+    instabreak = true
+    join = true
+    log = true
+    movement = true
+    scaffold = true
+    xp = true
+    ban = true
+    kick = true
+    send_to_member = true`
+>>>>>>> 18d3adcac083b85a03b4abea1768a54431ff37af
     );
 
     CIF.log("Generated new config file");
@@ -58,10 +69,8 @@ function stringToBoolean(str: string): boolean {
 
 interface IConfiguration {
     "Debug": boolean
-    "bug": boolean
     "combat": boolean
     "crasher": boolean
-    "give": boolean
     "instabreak": boolean
     "join": boolean
     "log": boolean
@@ -99,6 +108,9 @@ for (const [key, value] of Object.entries(config)) {
 };
 
 
+
 if (CIFconfig.Modules.Debug === true) {
     require("./debug/debug");
 };
+
+import "./scripts";
