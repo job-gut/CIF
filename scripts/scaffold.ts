@@ -1,64 +1,81 @@
 import { CANCEL } from "bdsx/common";
-import {
-    events
-} from "bdsx/event";
-import { isNumber } from "util";
-import {
-    CIF
-} from "../main";
+import { events } from "bdsx/event";
+import { CIF } from "../main";
 
 const lastplacedblockposY: any = {};
-const scaffoldwarn: Record<string, number> = {};
+const scaffoldWarn: Record<string, number> = {};
+
+function warn(name: string) {
+    if (typeof scaffoldWarn[name] !== "number") scaffoldWarn[name] = 0;
+    scaffoldWarn[name]++;
+
+    setTimeout(() => {
+        scaffoldWarn[name]--;
+        if (scaffoldWarn[name] < 0) {
+            scaffoldWarn[name] = 0;
+        };
+    }, 5000);
+}
 
 events.blockPlace.on((ev) => {
-    const pl = ev.player;
-    if (!pl) return CANCEL;
-    if (!pl.isPlayer()) return;
-    const blockpos = ev.blockPos;
-    const plpos = pl.getFeetPos()!;
-    const plname = pl.getName()!;
-    const plposy = Math.floor(plpos.y);
-    const blockposy = Math.floor(blockpos.y);
-    const gm = pl.getGameType();
+    const player = ev.player;
+    if (!player) return CANCEL;
+    if (!player.isPlayer()) return;
+    const blockPos = ev.blockPos;
+    const playerPos = player.getFeetPos()!;
+    const name = player.getName()!;
+    const plposy = Math.floor(playerPos.y);
+    const blockposy = Math.floor(blockPos.y);
+    const gm = player.getGameType();
     if (gm === 1) return;
 
     if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
-        lastplacedblockposY[plname] = blockposy;
+        lastplacedblockposY[name] = blockposy;
 
-        const headrotation = pl.getRotation();
-        const ni = pl.getNetworkIdentifier()!;
+        const headrotation = player.getRotation();
+        const ni = player.getNetworkIdentifier()!;
         if (headrotation.x < 0) {
 
-            if (!isNumber(scaffoldwarn[plname])) scaffoldwarn[plname] = 0;
-            scaffoldwarn[plname]++;
+            warn(name);
 
-            if (scaffoldwarn[plname] > 2) {
-                return CIF.detect(ni, "scaffold", "Mismatch Head Rotation");
+            if (scaffoldWarn[name] > 2) {
+                return CIF.detect(ni, "scaffold-A", "Mismatch Head Rotation (x)");
             };
 
             setTimeout(async () => {
-                scaffoldwarn[plname]--;
-                if (scaffoldwarn[plname] < 0) scaffoldwarn[plname] = 0;
+                scaffoldWarn[name]--;
+                if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
             }, 15000);
 
             return CANCEL;
         };
 
         if (headrotation.x < 30) {
-            if (lastplacedblockposY[plname] + 1 === blockposy) {
-                if (!isNumber(scaffoldwarn[plname])) scaffoldwarn[plname] = 0;
-                scaffoldwarn[plname]++;
+            if (lastplacedblockposY[name] + 1 === blockposy) {
+                warn(name);
 
-                if (scaffoldwarn[plname] > 1) {
-                    return CIF.detect(ni, "scaffold", "Tower : Mismatch Head Rotation");
+                if (scaffoldWarn[name] > 1) {
+                    return CIF.detect(ni, "scaffold-B", "Tower : Mismatch Head Rotation");
                 };
 
                 setTimeout(() => {
-                    scaffoldwarn[plname]--;
-                    if (scaffoldwarn[plname] < 0) scaffoldwarn[plname] = 0;
+                    scaffoldWarn[name]--;
+                    if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
                 }, 15000);
                 return CANCEL;
             };
         };
+
+        const distanceX = Math.abs(blockPos.x - playerPos.x);
+        const distanceY = Math.abs(blockPos.y - playerPos.y);
+        const viewVector = player.getViewVector();
+        const vectorX = viewVector.x;
+        const vectorY = viewVector.y;
+        if (distanceX < distanceY !== vectorX > vectorY) {
+            warn(name);
+            if (scaffoldWarn[name] > 1) {
+                return CIF.detect(ni, "scaffold-C", "Mismatch Head Rotation (x, z)");
+            };
+        }
     };
 });
