@@ -233,7 +233,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
     //SPEED
     if (MovementType === MinecraftPacketIds.PlayerAuthInput) return;
-
+    
     if (isTeleported[plname]) return;
     if (player.isSpinAttacking()) return;
     if (torso.getRawNameId() === "elytra") return;
