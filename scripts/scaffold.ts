@@ -8,6 +8,13 @@ const scaffoldWarn: Record<string, number> = {};
 function warn(name: string) {
     if (typeof scaffoldWarn[name] !== "number") scaffoldWarn[name] = 0;
     scaffoldWarn[name]++;
+
+    setTimeout(() => {
+        scaffoldWarn[name]--;
+        if (scaffoldWarn[name] < 0) {
+            scaffoldWarn[name] = 0;
+        };
+    }, 5000);
 }
 
 events.blockPlace.on((ev) => {
@@ -32,7 +39,7 @@ events.blockPlace.on((ev) => {
             warn(name);
 
             if (scaffoldWarn[name] > 2) {
-                return CIF.detect(ni, "scaffold", "Mismatch Head Rotation");
+                return CIF.detect(ni, "scaffold-A", "Mismatch Head Rotation (x)");
             };
 
             setTimeout(async () => {
@@ -48,7 +55,7 @@ events.blockPlace.on((ev) => {
                 warn(name);
 
                 if (scaffoldWarn[name] > 1) {
-                    return CIF.detect(ni, "scaffold", "Tower : Mismatch Head Rotation");
+                    return CIF.detect(ni, "scaffold-B", "Tower : Mismatch Head Rotation");
                 };
 
                 setTimeout(() => {
@@ -58,6 +65,7 @@ events.blockPlace.on((ev) => {
                 return CANCEL;
             };
         };
+
         const distanceX = Math.abs(blockPos.x - playerPos.x);
         const distanceY = Math.abs(blockPos.y - playerPos.y);
         const viewVector = player.getViewVector();
@@ -66,7 +74,7 @@ events.blockPlace.on((ev) => {
         if (distanceX < distanceY !== vectorX > vectorY) {
             warn(name);
             if (scaffoldWarn[name] > 1) {
-                return CIF.detect(ni, "scaffold", "Mismatch Head Rotation");
+                return CIF.detect(ni, "scaffold-C", "Mismatch Head Rotation (x, z)");
             };
         }
     };
