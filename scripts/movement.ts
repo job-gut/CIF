@@ -33,6 +33,8 @@ const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
 
+const susToTeleport: Record<string, boolean> = {};
+
 
 
 export const lastRotations = new Map<string, { x: number, y: number }[]>();
@@ -254,6 +256,20 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
         const xDiff = Math.pow(x1 - x2, 2);
         const yDiff = Math.pow(y1 - y2, 2);
+
+        if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 7.5 && !isTeleported[plname]) {
+            if (susToTeleport[plname] === true) {
+                susToTeleport[plname] = false;
+                return;
+            };
+
+            susToTeleport[plname] = true;
+            return;
+        };
+
+        if (susToTeleport[plname] === true) {
+            CIF.detect(ni, "teleport", "Teleport and Moved");
+        };
 
         bps = Number((Math.sqrt(xDiff + yDiff) * 20).toFixed(2));
     } else {
