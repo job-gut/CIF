@@ -217,32 +217,14 @@ if (CIFconfig.Modules.combat === true) {
         const result1 = Math.pow(playerpos.x - victimpos.x, 2);
         const result2 = Math.pow(playerpos.z - victimpos.z, 2);
 
-        const reach = Math.sqrt(result1 + result2);
+        const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
         if (
-            reach > 4.49 &&
+            reach >= 4.25 &&
             !isMismatchAttack(player, victim, player.getViewVector(), reach)
         ) {
-            return ReachWarn(player.getNetworkIdentifier(), reach);
+            CIF.announce(`§c[§fCIF§c] §c${player.getName()} §6has failed to using §cReach §7(Increase Reach)`);
+            return CANCEL;
         };
     });
-
-
-    const reachWarn = new Map<NetworkIdentifier, number>();
-
-    function ReachWarn(ni: NetworkIdentifier, reach: number): CANCEL {
-        if (!reachWarn.get(ni)) reachWarn.set(ni, 0);
-
-        reachWarn.set(ni, reachWarn.get(ni)! + 1);
-
-        setTimeout(() => {
-            reachWarn.set(ni, reachWarn.get(ni)! - 1);
-        }, 5000);
-
-        if (reachWarn.get(ni)! > 2) {
-            CIF.detect(ni, "reach", `Increase Reach | Reach : ${reach}`);
-        };
-
-        return CANCEL;
-    };
 };
