@@ -223,7 +223,7 @@ if (CIFconfig.Modules.combat === true) {
             reach >= 4.25 &&
             !isMismatchAttack(player, victim, player.getViewVector(), reach)
         ) {
-            CIF.announce(`§c[§fCIF§c] §c${player.getName()} §6has failed to using §cReach §7(Increase Reach)`);
+            CIF.announce(`§c[§fCIF§c] §c${player.getName()} §6has failed to using §cReach §7(Increase Reach | ${reach})`);
             return CANCEL;
         };
     });
