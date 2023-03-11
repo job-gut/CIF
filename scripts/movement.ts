@@ -7,6 +7,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
+import { bedrockServer } from "bdsx/launcher";
 import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
@@ -211,12 +212,19 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
 	if (!player) return;
 
-	player.setFallDistance(player.getFallDistance() - 0.5);
+	const movePos = pkt.pos;
+	movePos.y -= 1.62001190185547;
+
 	const plname = player.getName();
 	if (isMovePlayerPacket(pkt)) {
 		onGround[plname] = pkt.onGround;
-		if (player.onGround()) {
-			player.setFallDistance(0);
+
+		//respawn
+		if (pkt.mode === 1) {
+			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+			movePos.y += 1.62001190185547;
+			player.setFallDistance(3);
+			return;
 		};
 	};
 
@@ -226,9 +234,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	};
 
 	appendRotationRecord(player, rotation);
-
-	const movePos = pkt.pos;
-	movePos.y -= 1.62001190185547;
 
 	const gamemode = player.getGameType();
 	if (gamemode !== 2 && gamemode !== 0) {
@@ -300,7 +305,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		const xDiff = Math.pow(x1 - x2, 2);
 		const yDiff = Math.pow(y1 - y2, 2);
 
-		if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 7.5) {
+		if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 8) {
 			if (susToTeleport[plname] === true) {
 				susToTeleport[plname] = false;
 				movePos.y += 1.62001190185547;
@@ -473,6 +478,7 @@ const hasTeleport = procHacker.hooking(
 	setTimeout(async () => {
 		isTeleported[plname] = false;
 	}, 1000);
+	pl.setFallDistance(3);
 
 	return hasTeleport(pl, pos);
 });
