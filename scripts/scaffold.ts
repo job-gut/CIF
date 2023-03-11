@@ -19,7 +19,7 @@ function warn(name: string) {
 
 events.blockPlace.on((ev) => {
     const player = ev.player;
-    if (!player) return CANCEL;
+    if (!player) return;
     if (!player.isPlayer()) return;
     const blockPos = ev.blockPos;
     const playerPos = player.getFeetPos()!;
