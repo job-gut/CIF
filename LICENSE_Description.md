@@ -1,6 +1,6 @@
 LICENSE BILL
 
-This License Bill ("Bill") is a legal agreement between you ("User") and [CIF-developers] ("Team") for the use of the software ("Software") provided by the Team. By using the Software, the User agrees to be bound by the terms and conditions of this Bill.
+This License Bill ("Bill") is a legal agreement between you ("User") and [CIF-Developers] ("Team") for the use of the software ("Software") provided by the Team. By using the Software, the User agrees to be bound by the terms and conditions of this Bill.
 
 1. LICENSE GRANT
 The Team grants the User a non-deployable, non-transferable, single-user license to use the Software on a single device owned or controlled by the User for personal or business purposes.
