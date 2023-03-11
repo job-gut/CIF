@@ -7,7 +7,6 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
-import { bedrockServer } from "bdsx/launcher";
 import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
@@ -38,6 +37,7 @@ const Fly_bStack: Record<string, number> = {};
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
+const damagedTime: Record<string, number> = {};
 
 const susToTeleport: Record<string, boolean> = {};
 
@@ -195,6 +195,11 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 
 	if (pkt.action === PlayerActionPacket.Actions.StartGlide) {
 		isGlidingWithElytra[plname] = true;
+
+		if (pl.getArmor(ArmorSlot.Torso).getRawNameId() !== "elytra") {
+			return CIF.detect(ni, "Fly-E", "Glide Without Elytra")	;
+		};
+
 	} else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
 		isGlidingWithElytra[plname] = false;
 	};
@@ -267,10 +272,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	const torso = player.getArmor(ArmorSlot.Torso);
 
-	if (torso.getRawNameId() !== "elytra" && isGlidingWithElytra[plname]) {
-		CIF.detect(ni, "Fly-E", "Send Glide Packet without Elytra");
-	};
-
 	//SPEED
 	if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
 		movePos.y += 1.62001190185547;
@@ -284,6 +285,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		isKnockbacking[plname]
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		susToTeleport[plname] = false;
+		lastBPS[plname] = 0;
 		movePos.y += 1.62001190185547;
 		return;
 	};
@@ -490,10 +493,14 @@ const hasTeleport = procHacker.hooking(
 });
 
 events.entityKnockback.on((ev) => {
+	if (!ev.target.isPlayer()) return;
+
 	const pl = ev.target as ServerPlayer;
 	const plname = pl.getName();
 	isKnockbacking[plname] = true;
+	damagedTime[plname] = Date.now();
 	setTimeout(() => {
-		isKnockbacking[plname] = false;
-	}, 1500);
+		const now = Date.now();
+		if (now - damagedTime[plname] > 1800) isKnockbacking[plname] = false;
+	}, 2000);
 });
