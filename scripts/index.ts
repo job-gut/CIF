@@ -1,5 +1,3 @@
-import "./bug";
-
 import "./log";
 
 //import "./give";
