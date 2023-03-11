@@ -39,7 +39,7 @@ events.blockPlace.on((ev) => {
             warn(name);
 
             if (scaffoldWarn[name] > 2) {
-                return CIF.detect(ni, "scaffold-A", "Mismatch Head Rotation (x)");
+                return CIF.detect(ni, "scaffold-A", "Mismatch Head Rotation | Up/Down");
             };
 
             setTimeout(async () => {
