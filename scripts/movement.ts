@@ -270,7 +270,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	};
 
 	//SPEED
-	if (MovementType === MinecraftPacketIds.PlayerAuthInput) return;
+	if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
+		movePos.y += 1.62001190185547;
+		return;
+	};
 
 	if (
 		isTeleported[plname] ||
@@ -452,7 +455,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	lastBPS[plname] = bps;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-	movePos.y += 1.62001190185547;
 });
 
 const hasTeleport = procHacker.hooking(
