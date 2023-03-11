@@ -460,6 +460,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	lastBPS[plname] = bps;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+	movePos.y += 1.62001190185547;
 });
 
 const hasTeleport = procHacker.hooking(
