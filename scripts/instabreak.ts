@@ -13,7 +13,7 @@ import { CIFconfig } from "../configManager";
 
 if (CIFconfig.Modules.instabreak === true) {
 
-	const destructionstarttick: Record<string, number> = {};
+	const destructionstarttick: Record<string, number | undefined> = {};
 	const getDestroySpeed = procHacker.js(
 		"?getDestroySpeed@ItemStack@@QEBAMAEBVBlock@@@Z",
 		float32_t,
@@ -60,12 +60,19 @@ if (CIFconfig.Modules.instabreak === true) {
 		};
 
 		const name = player.getName();
+
+		if (typeof destructionstarttick[name] !== "number") {
+			return instabreakWarn(player);
+		};
+
 		if (
-			currenttick - destructionstarttick[name] < 1 &&
+			currenttick - destructionstarttick[name]! < 1 &&
 			!allowInstabreak(player, block)
 		) {
 			return instabreakWarn(player);
 		};
+
+		destructionstarttick[name] = undefined;
 	});
 
 	const instabreakwarn: Record<string, number> = {};
