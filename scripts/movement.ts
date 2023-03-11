@@ -327,6 +327,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 
 		if (susToTeleport[plname] === true) {
+			susToTeleport[plname] = false;
 			CIF.detect(ni, "teleport", "Teleport and Moved");
 		};
 
