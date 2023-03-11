@@ -369,10 +369,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
         Fly_bStack[plname]++;
 
-        if (Fly_bStack[plname] > 14) {
+        if (Fly_bStack[plname] > 9) {
             Fly_bStack[plname] = 0;
             CIF.ban(ni, "Fly-B");
-            return CIF.detect(ni, "Fly-B", "No Vertical Fly on Air");
+            return CIF.detect(ni, "Fly-B", "Non-Vertical Fly on Air");
         };
     } else {
         Fly_bStack[plname]--;
