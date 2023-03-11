@@ -278,7 +278,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
-		torso.getRawNameId() === "elytra"
+		torso.getRawNameId() === "elytra" ||
+		isKnockbacking[plname]
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		movePos.y += 1.62001190185547;
