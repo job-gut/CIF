@@ -219,7 +219,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (
 			player.onGround() &&
 			wasFalled[plname] === true &&
-			player.getFallDistance() > 0
+			player.getFallDistance() > 5
 		) {
 			CIF.detect(ni, "NoFall", "Do not trigger Fall Event");
 		}
