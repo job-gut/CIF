@@ -30,7 +30,6 @@ events.blockPlace.on((ev) => {
     if (gm === 1) return;
 
     if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
-        lastplacedblockposY[name] = blockposy;
 
         const headrotation = player.getRotation();
         const ni = player.getNetworkIdentifier()!;
@@ -39,7 +38,7 @@ events.blockPlace.on((ev) => {
             warn(name);
 
             if (scaffoldWarn[name] > 2) {
-                return CIF.detect(ni, "scaffold-A", "Mismatch Head Rotation (x)");
+                return CIF.detect(ni, "scaffold-A", "Mismatch Head Rotation | Up/Down");
             };
 
             setTimeout(async () => {
@@ -66,16 +65,6 @@ events.blockPlace.on((ev) => {
             };
         };
 
-        const distanceX = Math.abs(blockPos.x - playerPos.x);
-        const distanceY = Math.abs(blockPos.y - playerPos.y);
-        const viewVector = player.getViewVector();
-        const vectorX = viewVector.x;
-        const vectorY = viewVector.y;
-        if (distanceX < distanceY !== vectorX > vectorY) {
-            warn(name);
-            if (scaffoldWarn[name] > 1) {
-                return CIF.detect(ni, "scaffold-C", "Mismatch Head Rotation (x, z)");
-            };
-        }
+		lastplacedblockposY[name] = blockposy;
     };
 });
