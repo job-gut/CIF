@@ -7,6 +7,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
+import { bedrockServer } from "bdsx/launcher";
 import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
@@ -216,7 +217,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (isMovePlayerPacket(pkt)) {
 		onGround[plname] = pkt.onGround;
 		if (player.onGround()) {
-			player.setFallDistance(0);
+			bedrockServer.serverInstance.nextTick().then(()=> {
+				player.setFallDistance(0);
+			});
 		};
 	};
 
