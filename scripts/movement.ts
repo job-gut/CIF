@@ -281,6 +281,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		torso.getRawNameId() === "elytra"
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		movePos.y += 1.62001190185547;
 		return;
 	};
 
@@ -304,10 +305,12 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 7.5) {
 			if (susToTeleport[plname] === true) {
 				susToTeleport[plname] = false;
+				movePos.y += 1.62001190185547;
 				return;
 			};
 
 			susToTeleport[plname] = true;
+			movePos.y += 1.62001190185547;
 			return;
 		};
 
@@ -320,6 +323,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		bps = 0;
 		lastBPS[plname] = bps;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		movePos.y += 1.62001190185547;
 		return;
 	};
 
@@ -432,6 +436,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 					Fly_bStack[plname] = 0;
 
+					movePos.y += 1.62001190185547;
 					return;
 				};
 			};
