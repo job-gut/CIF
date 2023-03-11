@@ -34,8 +34,6 @@ const littleFastWarn: Record<string, number> = {};
 
 const Fly_bStack: Record<string, number> = {};
 
-const wasFalled: Record<string, boolean> = {};
-
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
@@ -81,7 +79,7 @@ declare module "bdsx/bds/actor" {
 		/**
 		 * Func from CIF
 		 */
-		setFallDistance(): void;
+		setFallDistance(distance: number): void;
 	}
 };
 
@@ -213,18 +211,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
 	if (!player) return;
 
+	player.setFallDistance(player.getFallDistance() - 0.5);
 	const plname = player.getName();
 	if (isMovePlayerPacket(pkt)) {
 		onGround[plname] = pkt.onGround;
-		if (
-			player.onGround() &&
-			wasFalled[plname] === true &&
-			player.getFallDistance() > 5
-		) {
-			CIF.detect(ni, "NoFall", "Do not trigger Fall Event");
-		}
-
-		wasFalled[plname] = player.onGround();
+		if (player.onGround()) {
+			player.setFallDistance(0);
+		};
 	};
 
 	const rotation = {
