@@ -243,10 +243,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	//PHASE
 	const region = player.getRegion()!;
 	const currentPosBlock = region.getBlock(
-		BlockPos.create(movePos.x, movePos.y - 1.6, movePos.z)
+		BlockPos.create(movePos.x, movePos.y, movePos.z)
 	);
 	const currentHeadPosBlock = region.getBlock(
-		BlockPos.create(movePos.x, movePos.y, movePos.z)
+		BlockPos.create(movePos.x, movePos.y + 1.62001190185547, movePos.z)
 	);
 
 	if (
