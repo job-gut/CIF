@@ -282,7 +282,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
 		torso.getRawNameId() === "elytra" ||
-		isKnockbacking[plname]
+		isKnockbacking[plname] ||
+		isSpinAttacking[plname]
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		susToTeleport[plname] = false;
