@@ -6,6 +6,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "jobgutworlds, Just_Human(wwwcomcomcom)",
-  "license": "NOLICENSE"
+  "author": "jobgutworlds, wwwcomcomcom",
+  "license": "CIF Cloud License"
 }
