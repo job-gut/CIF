@@ -342,6 +342,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
     };
 
+    if (typeof Fly_bStack[plname] !== "number") {
+        Fly_bStack[plname] = 0;
+    };
+
     for (let x = lastpos[plname][0] - 1; x <= lastpos[plname][0] + 1; x++) {
         for (let y = lastpos[plname][1] - 1; y <= lastpos[plname][1] + 1; y++) {
             for (let z = lastpos[plname][2] - 1; z <= lastpos[plname][2] + 1; z++) {
@@ -350,6 +354,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
                 if (blockName !== "minecraft:air") {
                     lastBPS[plname] = bps;
                     lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+
+                    Fly_bStack[plname] = 0;
 
                     return;
                 };
@@ -360,16 +366,17 @@ events.packetBefore(MovementType).on((pkt, ni) => {
     const lastY = lastpos[plname][1];
 
     if (lastY === movePos.y) {
-        if (typeof Fly_bStack[plname] !== "number") {
-            Fly_bStack[plname] = 0;
-        };
 
         Fly_bStack[plname]++;
 
         if (Fly_bStack[plname] > 14) {
+            Fly_bStack[plname] = 0;
             CIF.ban(ni, "Fly-B");
-            CIF.detect(ni, "Fly-B", "No Vertical Fly on Air");
+            return CIF.detect(ni, "Fly-B", "No Vertical Fly on Air");
         };
+    } else {
+        Fly_bStack[plname]--;
+        if (Fly_bStack[plname] < 0) Fly_bStack[plname] = 0;
     };
 
     lastBPS[plname] = bps;
