@@ -52,7 +52,7 @@ if (CIFconfig.Modules.instabreak === true) {
             return;
         };
 
-		const block = ev.blockSource.getBlock(ev.blockPos)
+		const block = ev.blockSource.getBlock(ev.blockPos);
 		const blockName = block.getName();
 		if (blockName === "minecraft:fire") {
 			CIF.ban(player.getNetworkIdentifier(), "Extinguisher")
