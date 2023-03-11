@@ -13,83 +13,90 @@ import { CIFconfig } from "../configManager";
 
 if (CIFconfig.Modules.instabreak === true) {
 
-    const destructionstarttick: Record<string, number> = {};
-    const getDestroySpeed = procHacker.js(
-        "?getDestroySpeed@ItemStack@@QEBAMAEBVBlock@@@Z",
-        float32_t,
-        null,
-        ItemStack,
-        Block
-    );
+	const destructionstarttick: Record<string, number | undefined> = {};
+	const getDestroySpeed = procHacker.js(
+		"?getDestroySpeed@ItemStack@@QEBAMAEBVBlock@@@Z",
+		float32_t,
+		null,
+		ItemStack,
+		Block
+	);
 
-    function allowInstabreak(player: Player, block: Block): boolean {
-        const haste = player.getEffect(MobEffectIds.Haste);
-        let hasteLevel = 0;
-        if (haste !== null) {
-            hasteLevel = haste.amplifier;
-        };
-        const destroyTime = block.getDestroySpeed();
-        const destroySpeed = getDestroySpeed(player.getMainhandSlot(), block);
-        const realDestroyTime =
-            destroyTime / (destroySpeed * (1 + 0.2 * hasteLevel));
-        return realDestroyTime < 0.05;
-    };
+	function allowInstabreak(player: Player, block: Block): boolean {
+		const haste = player.getEffect(MobEffectIds.Haste);
+		let hasteLevel = 0;
+		if (haste !== null) {
+			hasteLevel = haste.amplifier;
+		};
+		const destroyTime = block.getDestroySpeed();
+		const destroySpeed = getDestroySpeed(player.getMainhandSlot(), block);
+		const realDestroyTime =
+			destroyTime / (destroySpeed * (1 + 0.2 * hasteLevel));
+		return realDestroyTime < 0.05;
+	};
 
-    events.attackBlock.on(async (ev) => {
-        const now = bedrockServer.level.getCurrentTick();
-        const pl = ev.player!;
-        const plname = pl.getNameTag();
-        destructionstarttick[plname] = now;
-    });
+	events.attackBlock.on(async (ev) => {
+		const now = bedrockServer.level.getCurrentTick();
+		const pl = ev.player!;
+		const plname = pl.getNameTag();
+		destructionstarttick[plname] = now;
+	});
 
-    events.blockDestroy.on((ev) => {
-        const currenttick = bedrockServer.level.getCurrentTick();
+	events.blockDestroy.on((ev) => {
+		const currenttick = bedrockServer.level.getCurrentTick();
 
-        const player = ev.player;
+		const player = ev.player;
 
-        const gamemode = player.getGameType();
-        if (gamemode === GameType.Creative) {
-            return;
-        };
+		const gamemode = player.getGameType();
+		if (gamemode === GameType.Creative) {
+			return;
+		};
 
-		const block = ev.blockSource.getBlock(ev.blockPos)
+		const block = ev.blockSource.getBlock(ev.blockPos);
 		const blockName = block.getName();
 		if (blockName === "minecraft:fire") {
 			CIF.ban(player.getNetworkIdentifier(), "Extinguisher")
 			CIF.detect(player.getNetworkIdentifier(), "Extinguisher", "Destroy Fire Block");
 		};
 
-        const name = player.getName();
-        if (
-            currenttick - destructionstarttick[name] < 1 &&
-            !allowInstabreak(player, block)
-        ) {
-            return instabreakWarn(player);
-        };
-    });
+		const name = player.getName();
 
-    const instabreakwarn: Record<string, number> = {};
+		if (typeof destructionstarttick[name] !== "number") {
+			return instabreakWarn(player);
+		};
 
-    function instabreakWarn(player: ServerPlayer): CANCEL {
-        const playerName = player.getName()!;
-        instabreakwarn[playerName] = instabreakwarn[playerName]
-            ? instabreakwarn[playerName] + 1
-            : 1;
+		if (
+			currenttick - destructionstarttick[name]! < 1 &&
+			!allowInstabreak(player, block)
+		) {
+			return instabreakWarn(player);
+		};
 
-        if (instabreakwarn[playerName] > 1) {
-            const ni = player.getNetworkIdentifier();
-            CIF.ban(ni, "Instabreak");
-            CIF.detect(ni, "instabreak", "Break block instantly");
-            instabreakwarn[playerName] = 0;
-        }
+		destructionstarttick[name] = undefined;
+	});
 
-        setTimeout(() => {
-            instabreakwarn[playerName]--;
-            if (instabreakwarn[playerName] < 0) {
-                instabreakwarn[playerName] = 0;
-            }
-        }, 5000);
+	const instabreakwarn: Record<string, number> = {};
 
-        return CANCEL;
-    }
+	function instabreakWarn(player: ServerPlayer): CANCEL {
+		const playerName = player.getName()!;
+		instabreakwarn[playerName] = instabreakwarn[playerName]
+			? instabreakwarn[playerName] + 1
+			: 1;
+
+		if (instabreakwarn[playerName] > 1) {
+			const ni = player.getNetworkIdentifier();
+			CIF.ban(ni, "Instabreak");
+			CIF.detect(ni, "instabreak", "Break block instantly");
+			instabreakwarn[playerName] = 0;
+		}
+
+		setTimeout(() => {
+			instabreakwarn[playerName]--;
+			if (instabreakwarn[playerName] < 0) {
+				instabreakwarn[playerName] = 0;
+			}
+		}, 5000);
+
+		return CANCEL;
+	}
 };
