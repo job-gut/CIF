@@ -342,9 +342,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
     };
 
-    for (let x = lastpos[plname][0] - 1; x === lastpos[plname][0] + 1; x++) {
-        for (let y = lastpos[plname][1] - 1; y === lastpos[plname][1] + 1; y++) {
-            for (let z = lastpos[plname][2] - 1; z === lastpos[plname][2] + 1; z++) {
+    for (let x = lastpos[plname][0] - 1; x <= lastpos[plname][0] + 1; x++) {
+        for (let y = lastpos[plname][1] - 1; y <= lastpos[plname][1] + 1; y++) {
+            for (let z = lastpos[plname][2] - 1; z <= lastpos[plname][2] + 1; z++) {
                 const block = region.getBlock(BlockPos.create({x: x, y: y, z: z}));
                 const blockName = block.getName();
                 if (blockName !== "minecraft:air") {
