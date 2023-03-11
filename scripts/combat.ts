@@ -1,22 +1,14 @@
 import { Vec3 } from "bdsx/bds/blockpos";
-import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { AnimatePacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
-import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../main";
 import { lastRotations, MovementType } from "./movement";
-import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CIFconfig } from "../configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
 
 if (CIFconfig.Modules.combat === true) {
     const MismatchAuraWarn = new Map<string, number>();
-    const susPacketAuraWarn: Record<string, number> = {};
-
-    const lastAnimateTime: Record<string, number> = {};
-    const doubleAnimateStack: Record<string, number> = {};
 
     function mismatchWarn(player: Player): CANCEL {
         const name = player.getName();
@@ -97,66 +89,6 @@ if (CIFconfig.Modules.combat === true) {
         return false;
     };
 
-    //Animate Packet -> playerAttack Event
-
-    if (MovementType === MinecraftPacketIds.MovePlayer) {
-        events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni) => {
-            const pl = ni.getActor()!;
-            const plname = pl.getName();
-            const now = Date.now();
-
-            if (pkt.action !== AnimatePacket.Actions.SwingArm) return;
-            if (!lastAnimateTime[plname]) lastAnimateTime[plname] = now;
-
-            if (now - lastAnimateTime[plname] < 3) {
-                doubleAnimateStack[plname] = doubleAnimateStack[plname]
-                    ? doubleAnimateStack[plname] + 1
-                    : 1;
-            };
-
-            lastAnimateTime[plname] = now;
-        });
-
-        let checkAuraB: NodeJS.Timeout;
-
-        bedrockServer.afterOpen().then(() => {
-            checkAuraB = setInterval(() => {
-                const players = bedrockServer.serverInstance.getPlayers();
-                for (const pl of players) {
-                    const plname = pl.getName();
-                    const gamemode = pl.getGameType();
-                    if (gamemode !== 2 && gamemode !== 0) continue;
-
-                    if (doubleAnimateStack[plname] > 3) {
-                        susPacketAuraWarn[plname] = susPacketAuraWarn[plname]
-                            ? susPacketAuraWarn[plname] + 1
-                            : 1;
-                        if (susPacketAuraWarn[plname] > 2) {
-                            susPacketAuraWarn[plname] = 0;
-                            doubleAnimateStack[plname] = 0;
-
-                            CIF.detect(
-                                pl.getNetworkIdentifier(),
-                                "Aura-B",
-                                "Send SUS Packets while fighting"
-                            );
-                        }
-                    } else if (doubleAnimateStack[plname] < 3) {
-                        susPacketAuraWarn[plname] = susPacketAuraWarn[plname]
-                            ? susPacketAuraWarn[plname] - 1
-                            : 0;
-                        if (susPacketAuraWarn[plname] < 0)
-                            susPacketAuraWarn[plname] = 0;
-                    };
-                    doubleAnimateStack[plname] = 0;
-                };
-            }, 1000);
-        });
-
-        events.serverLeave.on(() => {
-            clearInterval(checkAuraB);
-        });
-    };
 
     events.playerAttack.on((ev) => {
         const victim = ev.victim;
@@ -167,15 +99,6 @@ if (CIFconfig.Modules.combat === true) {
         const now = Date.now();
         const player = ev.player as ServerPlayer;
         const name = player.getName()!;
-
-        if (MovementType === MinecraftPacketIds.MovePlayer) {
-            if (now - lastAnimateTime[name] < 2) {
-                doubleAnimateStack[name] = doubleAnimateStack[name]
-                    ? doubleAnimateStack[name] - 1
-                    : 0;
-                if (doubleAnimateStack[name] < 0) doubleAnimateStack[name] = 0;
-            };
-        };
 
         const prevRotations = lastRotations.get(name);
 
@@ -220,10 +143,10 @@ if (CIFconfig.Modules.combat === true) {
         const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
         if (
-            reach >= 4.25 &&
+            reach >= 4.5 &&
             !isMismatchAttack(player, victim, player.getViewVector(), reach)
         ) {
-            CIF.announce(`§c[§fCIF§c] §c${player.getName()} §6has failed to using §cReach §7(Increase Reach)`);
+            CIF.announce(`§c[§fCIF§c] §c${player.getName()} §6has failed to using §cReach §7(Increase Reach | ${reach})`);
             return CANCEL;
         };
     });

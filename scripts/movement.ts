@@ -238,7 +238,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	movePos.y -= 1.62001190185547;
 
 	const gamemode = player.getGameType();
-	if (gamemode !== 2 && gamemode !== 0) return;
+	if (gamemode !== 2 && gamemode !== 0) {
+		movePos.y += 1.62001190185547;
+		return;
+	};
 
 	//PHASE
 	const region = player.getRegion()!;
@@ -278,7 +281,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
-		torso.getRawNameId() === "elytra"
+		torso.getRawNameId() === "elytra" ||
+		isKnockbacking[plname]
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		movePos.y += 1.62001190185547;
