@@ -7,6 +7,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
+import { bedrockServer } from "bdsx/launcher";
 import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
@@ -28,6 +29,10 @@ const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 const littleFastStack: Record<string, number> = {};
 const littleFastWarn: Record<string, number> = {};
+
+const Fly_bStack: Record<string, number> = {};
+
+const wasFalled: Record<string, boolean> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
@@ -64,7 +69,6 @@ Block.prototype.isSolid = procHacker.js(
     bool_t,
     { this: Block }
 );
-
 
 declare module "bdsx/bds/actor" {
     interface Actor {
@@ -116,8 +120,16 @@ declare module "bdsx/bds/player" {
          * Returns if player is under any blocks (Func from CIF)
          */
         isUnderAnyBlock(): boolean;
+
+        sendPlayerOnGround(): void;
     }
 };
+
+
+Player.prototype.sendPlayerOnGround = function () {
+    procHacker.js("?sendPlayerOnGround@ServerPlayer@@QEAAXXZ", void_t, {this: ServerPlayer});
+};
+
 
 Player.prototype.onIce = function () {
     const pos = BlockPos.create(this.getFeetPos());
@@ -197,6 +209,11 @@ events.packetBefore(MovementType).on((pkt, ni) => {
     const plname = player.getName();
     if (isMovePlayerPacket(pkt)) {
         onGround[plname] = pkt.onGround;
+        if (player.onGround() && wasFalled[plname] === true && player.getFallDistance() > 0) {
+            CIF.detect(ni, "NoFall", "Do not trigger Fall Event");
+        };
+
+        wasFalled[plname] = player.onGround();
     };
 
 
@@ -208,6 +225,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
     appendRotationRecord(player, rotation);
     
     const movePos = pkt.pos;
+    movePos.y -= 1.62001190185547;
 
     const gamemode = player.getGameType();
     if (gamemode !== 2 && gamemode !== 0) return;
@@ -236,9 +254,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
     //SPEED
     if (MovementType === MinecraftPacketIds.PlayerAuthInput) return;
     
-    if (isTeleported[plname]) return;
-    if (player.isSpinAttacking()) return;
-    if (torso.getRawNameId() === "elytra") return;
+    if (isTeleported[plname] || player.isSpinAttacking() || torso.getRawNameId() === "elytra") {
+        lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+        return;
+    };
 
     const lastPos = lastpos[plname];
     const plSpeed = player.getSpeed();
@@ -251,13 +270,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
     if (lastPos) {
         const x1 = lastPos[0];
         const x2 = movePos.x;
-        const y1 = lastPos[1];
+        const y1 = lastPos[2];
         const y2 = movePos.z;
 
         const xDiff = Math.pow(x1 - x2, 2);
         const yDiff = Math.pow(y1 - y2, 2);
 
-        if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 7.5 && !isTeleported[plname]) {
+        if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 7.5) {
             if (susToTeleport[plname] === true) {
                 susToTeleport[plname] = false;
                 return;
@@ -274,6 +293,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
         bps = Number((Math.sqrt(xDiff + yDiff) * 20).toFixed(2));
     } else {
         bps = 0;
+        lastBPS[plname] = bps;
+        lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+        return;
     };
 
     if (bps > maxBPS && bps > 5.61 && CIFconfig.Modules.movement === true) {
@@ -336,8 +358,48 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
     };
 
+    if (typeof Fly_bStack[plname] !== "number") {
+        Fly_bStack[plname] = 0;
+    };
+
+    
+    for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
+        for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
+            for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
+                const block = region.getBlock(BlockPos.create({x: x, y: y, z: z}));
+                const blockName = block.getName();
+                if (blockName !== "minecraft:air") {
+                    lastBPS[plname] = bps;
+                    lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+
+                    Fly_bStack[plname] = 0;
+
+                    return;
+                };
+            };  
+        };
+    };
+
+    const lastY = lastPos[1];
+
+    if (lastY === movePos.y) {
+
+        Fly_bStack[plname]++;
+
+        if (Fly_bStack[plname] > 9) {
+            Fly_bStack[plname] = 0;
+            CIF.ban(ni, "Fly-B");
+            CIF.detect(ni, "Fly-B", "Non-Vertical Fly on Air");
+        };
+
+    } else {
+        Fly_bStack[plname]--;
+        if (Fly_bStack[plname] < 0) Fly_bStack[plname] = 0;
+    };
+
     lastBPS[plname] = bps;
-    lastpos[plname] = [movePos.x, movePos.z];
+    lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+    movePos.y += 1.62001190185547;
 });
 
 const hasTeleport = procHacker.hooking("?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z", void_t, null, ServerPlayer, Vec3)((pl, pos) => {
