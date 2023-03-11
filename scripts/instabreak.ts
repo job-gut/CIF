@@ -27,13 +27,13 @@ if (CIFconfig.Modules.instabreak === true) {
         let hasteLevel = 0;
         if (haste !== null) {
             hasteLevel = haste.amplifier;
-        }
+        };
         const destroyTime = block.getDestroySpeed();
         const destroySpeed = getDestroySpeed(player.getMainhandSlot(), block);
         const realDestroyTime =
             destroyTime / (destroySpeed * (1 + 0.2 * hasteLevel));
         return realDestroyTime < 0.05;
-    }
+    };
 
     events.attackBlock.on(async (ev) => {
         const now = bedrockServer.level.getCurrentTick();
@@ -50,15 +50,22 @@ if (CIFconfig.Modules.instabreak === true) {
         const gamemode = player.getGameType();
         if (gamemode === GameType.Creative) {
             return;
-        }
+        };
+
+		const block = ev.blockSource.getBlock(ev.blockPos)
+		const blockName = block.getName();
+		if (blockName === "minecraft:fire") {
+			CIF.ban(player.getNetworkIdentifier(), "Extinguisher")
+			CIF.detect(player.getNetworkIdentifier(), "Extinguisher", "Destroy Fire Block");
+		};
 
         const name = player.getName();
         if (
             currenttick - destructionstarttick[name] < 1 &&
-            !allowInstabreak(player, ev.blockSource.getBlock(ev.blockPos))
+            !allowInstabreak(player, block)
         ) {
             return instabreakWarn(player);
-        }
+        };
     });
 
     const instabreakwarn: Record<string, number> = {};
