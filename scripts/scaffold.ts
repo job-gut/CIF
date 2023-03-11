@@ -30,7 +30,6 @@ events.blockPlace.on((ev) => {
     if (gm === 1) return;
 
     if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
-        lastplacedblockposY[name] = blockposy;
 
         const headrotation = player.getRotation();
         const ni = player.getNetworkIdentifier()!;
@@ -65,5 +64,7 @@ events.blockPlace.on((ev) => {
                 return CANCEL;
             };
         };
+
+		lastplacedblockposY[name] = blockposy;
     };
 });
