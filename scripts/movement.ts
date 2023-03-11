@@ -209,27 +209,6 @@ function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
     return (<MovePlayerPacket>pkt).onGround !== undefined;
 }
 
-if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
-    events.packetBefore(MovementType).on((pkt, ni) => {
-        const player = ni.getActor();
-        if (!player) return;
-
-        const plname = player.getName();
-        if (isMovePlayerPacket(pkt)) {
-            onGround[plname] = pkt.onGround;
-            if (
-                player.onGround() &&
-                wasFalled[plname] === true &&
-                player.getFallDistance() > 0
-            ) {
-                CIF.detect(ni, "NoFall", "Do not trigger Fall Event");
-            }
-
-            wasFalled[plname] = player.onGround();
-        }
-    });
-}
-
 events.packetBefore(MovementType).on((pkt, ni) => {
     const player = ni.getActor();
     if (!player) return;
