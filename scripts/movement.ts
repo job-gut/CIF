@@ -240,6 +240,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const gamemode = player.getGameType();
 	if (gamemode !== 2 && gamemode !== 0) {
 		movePos.y += 1.62001190185547;
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		return;
 	};
 
