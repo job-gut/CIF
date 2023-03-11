@@ -3,10 +3,9 @@ import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { CIF } from "../main";
-import { lastRotations, MovementType } from "./movement";
+import { lastRotations } from "./movement";
 import { CIFconfig } from "../configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
-import { bedrockServer } from "bdsx/launcher";
 
 if (CIFconfig.Modules.combat === true) {
     const MismatchAuraWarn = new Map<string, number>();
@@ -96,8 +95,7 @@ if (CIFconfig.Modules.combat === true) {
         if (!victim.isPlayer()) return;
         if (ev.player.getGameType() === GameType.Creative) return;
         //if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
-
-        const now = Date.now();
+		
         const player = ev.player as ServerPlayer;
         const name = player.getName()!;
 
