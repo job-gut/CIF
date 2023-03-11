@@ -65,17 +65,5 @@ events.blockPlace.on((ev) => {
                 return CANCEL;
             };
         };
-
-        const distanceX = Math.abs(blockPos.x - playerPos.x);
-        const distanceY = Math.abs(blockPos.y - playerPos.y);
-        const viewVector = player.getViewVector();
-        const vectorX = viewVector.x;
-        const vectorY = viewVector.y;
-        if (distanceX < distanceY !== vectorX > vectorY) {
-            warn(name);
-            if (scaffoldWarn[name] > 1) {
-                return CIF.detect(ni, "scaffold-C", "Mismatch Head Rotation (x, z)");
-            };
-        }
     };
 });
