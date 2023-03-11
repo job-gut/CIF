@@ -220,7 +220,7 @@ if (CIFconfig.Modules.combat === true) {
         const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
         if (
-            reach >= 4.25 &&
+            reach >= 4.5 &&
             !isMismatchAttack(player, victim, player.getViewVector(), reach)
         ) {
             CIF.announce(`§c[§fCIF§c] §c${player.getName()} §6has failed to using §cReach §7(Increase Reach | ${reach})`);
