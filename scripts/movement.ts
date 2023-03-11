@@ -308,11 +308,17 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 8) {
 			if (susToTeleport[plname] === true) {
 				susToTeleport[plname] = false;
+				bps = 0;
+				lastBPS[plname] = bps;
+				lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 				movePos.y += 1.62001190185547;
 				return;
 			};
 
 			susToTeleport[plname] = true;
+			bps = 0;
+			lastBPS[plname] = bps;
+			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 			movePos.y += 1.62001190185547;
 			return;
 		};
