@@ -83,7 +83,7 @@ if (CIFconfig.Modules.instabreak === true) {
 			? instabreakwarn[playerName] + 1
 			: 1;
 
-		if (instabreakwarn[playerName] > 1) {
+		if (instabreakwarn[playerName] > 2) {
 			const ni = player.getNetworkIdentifier();
 			CIF.ban(ni, "Instabreak");
 			CIF.detect(ni, "instabreak", "Break block instantly");
