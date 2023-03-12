@@ -38,6 +38,7 @@ const isTeleported: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
+const wasJoined: Record<string, boolean> = {};
 
 const susToTeleport: Record<string, boolean> = {};
 
@@ -205,6 +206,17 @@ function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
 	return (<MovePlayerPacket>pkt).onGround !== undefined;
 };
 
+events.playerJoin.on((ev)=> {
+	const pl = ev.player;
+	if (ev.isSimulated) return;
+
+	const plname = pl.getName();
+	wasJoined[plname] = true;
+	setTimeout(() => {
+		wasJoined[plname] = false;
+	}, 5000);
+});
+
 events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
 	if (!player) return;
@@ -269,7 +281,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		player.isSpinAttacking() ||
 		torso.getRawNameId() === "elytra" ||
 		isKnockbacking[plname] ||
-		isSpinAttacking[plname]
+		isSpinAttacking[plname] ||
+		wasJoined[plname]
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		susToTeleport[plname] = false;
