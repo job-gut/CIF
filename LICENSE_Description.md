@@ -25,7 +25,7 @@ The Software is provided "as is" without warranty of any kind, either express or
 In no event shall the Team be liable for any damages whatsoever arising out of the use or inability to use the Software, including but not limited to direct, indirect, incidental, consequential, or punitive damages.
 
 7.GOVERNING LAW AND JURISDICTION
-This Bill shall be governed by and construed in accordance with the laws of the [State/Country]. Any dispute arising out of or in connection with this Bill shall be resolved in the [City/State/Country] courts.
+This Bill shall be governed by and construed in accordance with the laws of the [SouthKorea/Seoul]. Any dispute arising out of or in connection with this Bill shall be resolved in the [SouthKorea/Seoul] courts.
 
 8. ENTIRE AGREEMENT
 This Bill constitutes the entire agreement between the User and the Team regarding the use of the Software and supersedes all prior or contemporaneous agreements, understandings, or communications, whether written or oral.
