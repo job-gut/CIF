@@ -1,3 +1,4 @@
+import { AbilitiesIndex } from "bdsx/bds/abilities";
 import { Actor } from "bdsx/bds/actor";
 import { Block } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
@@ -272,7 +273,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		isKnockbacking[plname] ||
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
-		player.isFlying()
+		player.isFlying() ||
+		player.getAbilities().getAbility(AbilitiesIndex.MayFly)
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		susToTeleport[plname] = false;
