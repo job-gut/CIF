@@ -116,7 +116,7 @@ declare module "bdsx/bds/player" {
 
 		/**
 		 * Returns if player is not on mid-air (Func from CIF)
-		 * @description it always returns false in server-auth movement
+		 * @description in Client-Auth, onGround May Results client-side OnGround
 		 */
 		onGround(): boolean;
 
@@ -207,6 +207,10 @@ function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
 	return (<MovePlayerPacket>pkt).onGround !== undefined;
 };
 
+function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
+	return (<PlayerAuthInputPacket>pkt).moveX !== undefined;
+};
+
 events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
 	if (!player) return;
@@ -225,6 +229,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			player.setFallDistance(3);
 			return;
 		};
+	} else if (isPlayerAuthInputPacket(pkt)) {
+		onGround[plname] = pkt.headYaw === -0.07840000092983246;
 	};
 
 	const rotation = {
