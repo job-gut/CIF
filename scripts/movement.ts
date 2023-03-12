@@ -271,7 +271,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		torso.getRawNameId() === "elytra" ||
 		isKnockbacking[plname] ||
 		isSpinAttacking[plname] ||
-		wasJoinedIn15seconds.get(ni)
+		wasJoinedIn15seconds.get(ni) ||
+		player.isFlying()
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		susToTeleport[plname] = false;
@@ -476,7 +477,7 @@ const hasTeleport = procHacker.hooking(
 	isTeleported[plname] = true;
 	setTimeout(async () => {
 		isTeleported[plname] = false;
-	}, 1500);
+	}, 2500);
 	pl.setFallDistance(3);
 
 	return hasTeleport(pl, pos);
@@ -492,5 +493,5 @@ events.entityKnockback.on((ev) => {
 	setTimeout(() => {
 		const now = Date.now();
 		if (now - damagedTime[plname] > 1800) isKnockbacking[plname] = false;
-	}, 2000);
+	}, 2500);
 });
