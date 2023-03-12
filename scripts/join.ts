@@ -10,6 +10,8 @@ export const nameMap = new Map<NetworkIdentifier, string>();
 
 export const deviceModelMap = new Map<NetworkIdentifier, string>();
 
+export const wasJoinedIn15seconds = new Map<NetworkIdentifier, boolean>();
+
 enum TitleId {
     ANDROID = 1739947436,
     IOS = 1810924247,
@@ -37,6 +39,10 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     nameMap.set(ni, name);
     deviceModelMap.set(ni, model);
+	wasJoinedIn15seconds.set(ni, true);
+	setTimeout(() => {
+		wasJoinedIn15seconds.set(ni, false);
+	}, 15000);
 
     //TODO : 밴 된 사람 처리하는 곳 만들기 (CIF.log & OP ALERT)
     
