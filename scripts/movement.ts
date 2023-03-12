@@ -476,7 +476,7 @@ const hasTeleport = procHacker.hooking(
 	isTeleported[plname] = true;
 	setTimeout(async () => {
 		isTeleported[plname] = false;
-	}, 1500);
+	}, 2500);
 	pl.setFallDistance(3);
 
 	return hasTeleport(pl, pos);
@@ -492,5 +492,5 @@ events.entityKnockback.on((ev) => {
 	setTimeout(() => {
 		const now = Date.now();
 		if (now - damagedTime[plname] > 1800) isKnockbacking[plname] = false;
-	}, 2000);
+	}, 2500);
 });
