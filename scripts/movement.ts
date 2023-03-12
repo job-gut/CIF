@@ -264,12 +264,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	const torso = player.getArmor(ArmorSlot.Torso);
 
-	//SPEED
-	if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
-		movePos.y += 1.62001190185547;
-		return;
-	};
-
 	if (
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||

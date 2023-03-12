@@ -1,5 +1,4 @@
 Debug = false
-bug = true
 combat = true
 crasher = true
 give = true
