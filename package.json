@@ -1,5 +1,5 @@
 {
-  "name": "@bdsx/CIF",
+  "name": "@bdsx/cif",
   "version": "1.0.0",
   "description": "Cheater Is Fool",
   "main": "index.js",
@@ -7,5 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "jobgutworlds, wwwcomcomcom",
-  "license": "CIF Cloud License"
+  "license": "CIF Cloud License",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/job-gut/CIF.git"
+  },
+  "bugs": {
+    "url": "https://github.com/job-gut/CIF/issues"
+  },
+  "homepage": "https://github.com/job-gut/CIF#readme"
 }

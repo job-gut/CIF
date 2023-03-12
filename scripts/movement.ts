@@ -127,15 +127,7 @@ declare module "bdsx/bds/player" {
 		 * Returns if player is under any blocks (Func from CIF)
 		 */
 		isUnderAnyBlock(): boolean;
-
-		sendPlayerOnGround(): void;
 	}
-};
-
-Player.prototype.sendPlayerOnGround = function () {
-	procHacker.js("?sendPlayerOnGround@ServerPlayer@@QEAAXXZ", void_t, {
-		this: ServerPlayer,
-	});
 };
 
 Player.prototype.onIce = function () {
@@ -419,7 +411,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					CIF.detect(
 						ni,
 						"Speed-C",
-						`little Fast | Blocks per second : ${bps}`
+						`Little Fast | Blocks per second : ${bps}`
 					);
 				};
 
