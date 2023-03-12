@@ -116,7 +116,7 @@ declare module "bdsx/bds/player" {
 
 		/**
 		 * Returns if player is not on mid-air (Func from CIF)
-		 * @description in Client-Auth, onGround May Results client-side OnGround
+		 * @description In client-auth, onGround May Results client-side OnGround
 		 */
 		onGround(): boolean;
 
