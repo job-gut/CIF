@@ -4,7 +4,7 @@ import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot } from "bdsx/bds/inventory";
 import { Packet } from "bdsx/bds/packet";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { MovePlayerPacket, PlayerActionPacket } from "bdsx/bds/packets";
+import { MovePlayerPacket, PlayerActionPacket, PlayerAuthInputPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
 import { bool_t, float32_t, void_t } from "bdsx/nativetype";
@@ -458,7 +458,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	const lastY = lastPos[1];
 
-	if (lastY === movePos.y) {
+	if (lastY === movePos.y && !isTeleported[plname]) {
 		Fly_bStack[plname]++;
 
 		if (Fly_bStack[plname] > 9) {
@@ -487,7 +487,7 @@ const hasTeleport = procHacker.hooking(
 	isTeleported[plname] = true;
 	setTimeout(async () => {
 		isTeleported[plname] = false;
-	}, 1000);
+	}, 1500);
 	pl.setFallDistance(3);
 
 	return hasTeleport(pl, pos);
