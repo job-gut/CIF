@@ -152,5 +152,3 @@ if (serverProperties["server-authoritative-movement"] !== "client-auth") {
 		}, 2000);
 	};
 };
-
-import "../scripts";
