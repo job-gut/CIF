@@ -155,3 +155,10 @@ events.networkDisconnected.on(ni => {
         CIF.resetDetected(ni.getActor()?.getName()!);
     };
 });
+
+events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
+	if (ni) {
+		Warns[ni.getAddress()] = 0;
+        CIF.resetDetected(ni.getActor()?.getName()!);
+	};
+});
