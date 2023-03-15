@@ -1,6 +1,6 @@
 import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
-import { CIF } from "../main";
+import { CIF } from "../../main";
 
 const lastplacedblockposY: any = {};
 const scaffoldWarn: Record<string, number> = {};

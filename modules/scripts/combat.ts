@@ -2,9 +2,9 @@ import { Vec3 } from "bdsx/bds/blockpos";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
-import { CIF } from "../main";
+import { CIF } from "../../main";
 import { lastRotations } from "./movement";
-import { CIFconfig } from "../configManager";
+import { CIFconfig } from "../util/configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
 
 if (CIFconfig.Modules.combat === true) {

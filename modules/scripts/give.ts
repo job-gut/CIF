@@ -1,6 +1,6 @@
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { events } from "bdsx/event";
-import { CIF } from "../main";
+import { CIF } from "../../main";
 
 events.packetRaw(MinecraftPacketIds.InventoryTransaction).on((ptr, size, ni)=> {
     ptr.move(1);
