@@ -66,4 +66,4 @@ export namespace CIF {
 };
 
 
-import "./implements";
+import "./modules/util/implements";

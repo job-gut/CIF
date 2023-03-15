@@ -1,2 +1,2 @@
-import "./configManager";
+import "./modules/util/configManager";
 import "./main";
