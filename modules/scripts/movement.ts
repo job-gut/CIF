@@ -11,8 +11,8 @@ import { events } from "bdsx/event";
 import { bool_t, float32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
-import { CIFconfig } from "../configManager";
-import { CIF } from "../main";
+import { CIFconfig } from "../util/configManager";
+import { CIF } from "../../main";
 import { wasJoinedIn15seconds } from "./join";
 
 export const MovementType =

@@ -7,9 +7,9 @@ import { events } from "bdsx/event";
 import { bedrockServer } from "bdsx/launcher";
 import { float32_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
-import { CIF } from "../main";
+import { CIF } from "../../main";
 
-import { CIFconfig } from "../configManager";
+import { CIFconfig } from "../util/configManager";
 
 if (CIFconfig.Modules.instabreak === true) {
 

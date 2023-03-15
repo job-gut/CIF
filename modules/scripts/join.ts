@@ -3,7 +3,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { BuildPlatform } from "bdsx/common";
 import { events } from "bdsx/event";
 import { yellow } from "colors";
-import { CIF } from "../main";
+import { CIF } from "../../main";
 
 
 export const nameMap = new Map<NetworkIdentifier, string>();

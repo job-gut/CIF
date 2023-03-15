@@ -6,7 +6,7 @@ import { events } from "bdsx/event";
 import { int32_t } from "bdsx/nativetype";
 import { CxxStringWrapper } from "bdsx/pointer";
 import { procHacker } from "bdsx/prochacker";
-import { CIF } from "../main";
+import { CIF } from "../../main";
 
 const UINTMAX = 0xffffffff;
 
