@@ -280,7 +280,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
-		player.getAbilities().getAbility(AbilitiesIndex.MayFly)
+		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		susToTeleport[plname] = false;
@@ -296,6 +296,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const maxBPS = plSpeed * 45;
 
 	let bps: number;
+	let distance: number;
 
 	if (lastPos) {
 		const x1 = lastPos[0];
@@ -305,29 +306,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 		const xDiff = Math.pow(x1 - x2, 2);
 		const yDiff = Math.pow(y1 - y2, 2);
-
-		if (Number(Math.sqrt(xDiff + yDiff).toFixed(2)) >= 8) {
-			if (susToTeleport[plname] === true) {
-				susToTeleport[plname] = false;
-				bps = 0;
-				lastBPS[plname] = bps;
-				lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-				movePos.y += 1.62001190185547;
-				return;
-			};
-
-			susToTeleport[plname] = true;
-			bps = 0;
-			lastBPS[plname] = bps;
-			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-			movePos.y += 1.62001190185547;
-			return;
-		};
-
-		if (susToTeleport[plname] === true) {
-			susToTeleport[plname] = false;
-			CIF.detect(ni, "teleport", "Teleport and Moved");
-		};
+		distance = Math.sqrt(xDiff + yDiff);
 
 		bps = Number((Math.sqrt(xDiff + yDiff) * 20).toFixed(2));
 	} else {
@@ -432,6 +411,29 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	if (typeof Fly_bStack[plname] !== "number") {
 		Fly_bStack[plname] = 0;
+	};
+
+	if (Number(distance.toFixed(2)) >= 8) {
+		if (susToTeleport[plname] === true) {
+			susToTeleport[plname] = false;
+			bps = 0;
+			lastBPS[plname] = bps;
+			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+			movePos.y += 1.62001190185547;
+			return;
+		};
+
+		susToTeleport[plname] = true;
+		bps = 0;
+		lastBPS[plname] = bps;
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		movePos.y += 1.62001190185547;
+		return;
+	};
+
+	if (susToTeleport[plname] === true) {
+		susToTeleport[plname] = false;
+		CIF.detect(ni, "teleport", "Teleport and Moved");
 	};
 
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
