@@ -2,8 +2,8 @@ import "./log";
 
 //import "./give";
 //Mojang Patched Fake InventoryTransAction packets themselves
-import { CIFconfig } from "../configManager";
-import { CIF } from "../main";
+import { CIFconfig } from "../util/configManager";
+import { CIF } from "../../main";
 
 if (CIFconfig.Modules.combat) {
     require("./combat");
