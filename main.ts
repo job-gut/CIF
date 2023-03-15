@@ -1,4 +1,3 @@
-import { serverProperties } from "bdsx/serverproperties";
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandPermissionLevel } from "bdsx/bds/command";
 import { CANCEL } from "bdsx/common";
@@ -7,8 +6,8 @@ function abstractFunction(): never {
     throw Error(`Failed to load "implements.ts"`);
 };
 
-if (serverProperties["server-authoritative-movement"] !== "client-auth") {
-    console.log("CIF는 client-auth 를 권장 합니다.".red);
+if (serverProperties["server-authoritative-movement"] === "server-auth-with-rewind") {
+	throw new Error("server-auth 또는 client-auth 를 사용해주세요");
 };
 
 export namespace CIF {
@@ -67,3 +66,10 @@ export namespace CIF {
 
 
 import "./modules/util/implements";
+import "../scripts";
+
+import { serverProperties } from "bdsx/serverproperties";
+
+if (serverProperties["server-authoritative-movement"] === "client-auth") {
+	CIF.log("CIF는 server-auth 를 추천합니다");
+};
