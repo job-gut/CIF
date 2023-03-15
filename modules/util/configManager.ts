@@ -49,13 +49,16 @@ send_to_member = true`
 	);
 	CIF.log("Generated new config file");
 };
+
 if (!fs.existsSync("./options.txt")) {
 	createNewFile();
 };
+
 function stringToBoolean(str: string): boolean {
 	if (str === "true") return true;
 	else return false;
 };
+
 interface IConfiguration {
 	"Debug": boolean
 	"combat": boolean
@@ -70,8 +73,11 @@ interface IConfiguration {
 	"kick": boolean
 	"send_to_member": boolean
 };
+
 type ConfigType = { [key in keyof IConfiguration]?: boolean };
+
 const config: ConfigType = {};
+
 try {
 	const optionFile = "../plugins/CIF/options.txt";
 	const options = fs.readFileSync(optionFile, "utf8");
@@ -84,6 +90,7 @@ try {
 } catch (err) {
 	throw err;
 };
+
 for (const [key, value] of Object.entries(config)) {
 	if (key === "ban" || key === "kick" || key === "send_to_member") {
 		CIFconfig.Penalties[key] = value;
@@ -91,6 +98,7 @@ for (const [key, value] of Object.entries(config)) {
 		CIFconfig.Modules[key as keyof IConfiguration] = value;
 	};
 };
+
 if (CIFconfig.Modules.Debug === true) {
 	require("./debug/debug");
 };
@@ -112,10 +120,7 @@ if (serverProperties["server-authoritative-movement"] !== "client-auth") {
 	while (true) {
 		const matched = matcher.exec(properties);
 		if (matched === null) break;
-		// console.log(matched[1], matched[2]);
 		const matchedIndex = properties.indexOf(`${matched[1]}=`);
-		// const matchedProperty = properties.substring(matchedIndex, matchedIndex + matched[1].length + matched[2].length + 1);
-		// console.log(matchedProperty);
 
 		const targetProperties: { [keyof: string]: string } = {
 			"player-movement-score-threshold": "0",
@@ -135,13 +140,11 @@ if (serverProperties["server-authoritative-movement"] !== "client-auth") {
 				break;
 			};
 		};
-
-		// serverProperties[matched[1] as keyof ServerProperties] = matched[2];
 	};
 
 	if (hasbeenChanged) {
 		fs.writeFileSync(propertyPath, properties);
-		// console.log(properties);
+
 		CIF.log('ServerProperties Saved'.cyan);
 		CIF.log('Please restart the server.'.red);
 		setTimeout(() => {
