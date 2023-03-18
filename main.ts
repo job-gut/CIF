@@ -8,7 +8,9 @@ function abstractFunction(): never {
 };
 
 if (serverProperties["server-authoritative-movement"] === "server-auth-with-rewind") {
-	throw new Error("server-auth 또는 client-auth 를 사용해주세요");
+	console.error(new Error("server-auth 또는 client-auth 를 사용해주세요"));
+	exec("pause");
+	throw "";
 };
 
 export namespace CIF {
@@ -68,6 +70,7 @@ export namespace CIF {
 
 import "./modules/util/implements";
 import "./modules/scripts";
+import { exec } from "child_process";
 
 if (serverProperties["server-authoritative-movement"] === "client-auth") {
 	CIF.log("CIF는 server-auth 를 추천합니다");
