@@ -38,6 +38,8 @@ const Fly_bStack: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
+const respawnedPos: Record<string, Vec3> = {};
+
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
@@ -414,7 +416,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		Fly_bStack[plname] = 0;
 	};
 
-	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname]) {
+	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2) {
 		if (susToTeleport[plname] === true) {
 			susToTeleport[plname] = false;
 			bps = 0;
@@ -432,7 +434,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (susToTeleport[plname] === true && !isRespawned[plname]) {
+	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2) {
 		susToTeleport[plname] = false;
 		CIF.detect(ni, "teleport", "Teleport and Moved");
 	};
@@ -512,7 +514,9 @@ events.playerRespawn.on((ev)=> {
 	const plname = pl.getName();
 
 	isRespawned[plname] = true;
+	respawnedPos[plname] = pl.getFeetPos();
 	setTimeout(() => {
 		isRespawned[plname] = false;
-	}, 1000);
+		respawnedPos[plname] = Vec3.create({x: 99999, y:99999, z:99999});
+	}, 2500);
 });
