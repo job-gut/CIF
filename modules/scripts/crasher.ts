@@ -87,20 +87,20 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     }, (1000));
 });
 
-events.packetRaw(MinecraftPacketIds.PlayerSkin).on((ptr, size, ni) => {
-    const pl = ni.getActor()!;
-    if (!pl) return CANCEL;
+// events.packetRaw(MinecraftPacketIds.PlayerSkin).on((ptr, size, ni) => {
+//     const pl = ni.getActor()!;
+//     if (!pl) return CANCEL;
 
-    if (pl.hasTag("CIFcanCrash")) return;
+//     if (pl.hasTag("CIFcanCrash")) return;
 
-    if (wasSendSkinPacket.get(ni)) {
-        pl.sendMessage("§l§c스킨을 적용하시려면 서버에 재접속 해주세요!");
-        pl.playSound("random.break");
-        return CANCEL;
-    };
+//     if (wasSendSkinPacket.get(ni)) {
+//         pl.sendMessage("§l§c스킨을 적용하시려면 서버에 재접속 해주세요!");
+//         pl.playSound("random.break");
+//         return CANCEL;
+//     };
 
-    wasSendSkinPacket.set(ni, true);
-});
+//     wasSendSkinPacket.set(ni, true);
+// });
 
 const Warns: Record<string, number> = {};
 const ipBlocked: Record<string, boolean> = {};
