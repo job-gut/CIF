@@ -29,7 +29,7 @@ async function update() {
 		if (err) throw err;
 	}));
 
-	await exec("cmd /c tsc", ((err, stdout, stderr)=> {
+	await exec("cmd /c tsc", ((err, stdout, stderr) => {
 		if (err) throw err;
 		import("./modules/util/configManager");
 		import("./main");
@@ -59,13 +59,8 @@ setTimeout(() => {
 	if (config.auto_update) {
 		update();
 	} else {
-<<<<<<< HEAD
 		console.log("CIF auto update is disabled".yellow);
-	}
-=======
-		CIF.log("Auto update is disabled".yellow);
 		import("./modules/util/configManager");
 		import("./main");
-	};
->>>>>>> 77974a56468cd12d5960af9e5a0b9dd24ef953ff
+	}
 }, 1000);
