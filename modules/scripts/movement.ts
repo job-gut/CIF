@@ -37,6 +37,7 @@ const littleFastWarn: Record<string, number> = {};
 const Fly_bStack: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
+const isRespawned: Record<string, boolean> = {};
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
@@ -412,8 +413,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (typeof Fly_bStack[plname] !== "number") {
 		Fly_bStack[plname] = 0;
 	};
-
-	if (Number(distance.toFixed(2)) >= 8) {
+	
+	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname]) {
 		if (susToTeleport[plname] === true) {
 			susToTeleport[plname] = false;
 			bps = 0;
@@ -504,4 +505,14 @@ events.entityKnockback.on((ev) => {
 		const now = Date.now();
 		if (now - damagedTime[plname] > 1800) isKnockbacking[plname] = false;
 	}, 2500);
+});
+
+events.playerRespawn.on((ev)=> {
+	const pl = ev.player;
+	const plname = pl.getName();
+
+	isRespawned[plname] = true;
+	setTimeout(() => {
+		isRespawned[plname] = false;
+	}, 1000);
 });

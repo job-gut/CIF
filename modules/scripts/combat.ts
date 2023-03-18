@@ -9,6 +9,9 @@ import { ActorDamageCause } from "bdsx/bds/actor";
 
 if (CIFconfig.Modules.combat === true) {
     const MismatchAuraWarn = new Map<string, number>();
+	const sameRotAuraWarn = new Map<string, number>();
+
+	const ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ: Record<string, number[]> = {};
 
     function mismatchWarn(player: Player): CANCEL {
         const name = player.getName();
@@ -29,13 +32,38 @@ if (CIFconfig.Modules.combat === true) {
             CIF.ban(player.getNetworkIdentifier(), "Aura-A");
             return CIF.detect(
                 player.getNetworkIdentifier(),
-                "aura-A",
+                "Aura-A",
                 "Mismatch head rotation"
             );
         };
 
         return CANCEL;
     };
+
+	function sameRotWarn(player: Player): CANCEL {
+		const name = player.getName();
+		if (sameRotAuraWarn.get(name) === undefined) {
+			sameRotAuraWarn.set(name, 1);
+		};
+
+		sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! + 1);
+
+		setTimeout(async () => {
+            sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! - 1);
+            if (sameRotAuraWarn.get(name)! < 0) sameRotAuraWarn.set(name, 0);
+        }, 3000);
+
+		if (sameRotAuraWarn.get(name)! > 3) {
+            CIF.ban(player.getNetworkIdentifier(), "Aura-B");
+            return CIF.detect(
+                player.getNetworkIdentifier(),
+                "Aura-B",
+                "Same Body Pos Where Player Looking at"
+            );
+        };
+
+		return CANCEL;
+	};
 
     function degreesToRadians(degrees: number): number {
         return (degrees * Math.PI) / 180;
@@ -138,6 +166,8 @@ if (CIFconfig.Modules.combat === true) {
         if (cuz !== ActorDamageCause.EntityAttack) return;
 
         const player = ev.damageSource.getDamagingEntity()!;
+		const plname = player.getName();
+
         const victim = ev.entity;
 
         if (!victim.isPlayer()) return;
@@ -149,13 +179,38 @@ if (CIFconfig.Modules.combat === true) {
         const result1 = Math.pow(playerpos.x - victimpos.x, 2);
         const result2 = Math.pow(playerpos.z - victimpos.z, 2);
 
+		const distance = Math.sqrt(result1 + result2);
+
+		const headPos = player.getPosition();
+		const addThisPos = player.getViewVector().multiply(distance);
+		
+		headPos.x += addThisPos.x;
+		headPos.y += addThisPos.y;
+		headPos.z += addThisPos.z;
+
+		const headRotWhereLookingAt = headPos;
+
+		const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
+		const posFromVicFeet = victimpos.distance(headRotWhereLookingAt);
+
+		if (typeof ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname] !== "undefined") {
+			const lastPosFromVicHead = ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname][0];
+			const lastPosFromVicFeet = ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname][1];
+
+			if (lastPosFromVicHead === posFromVicHead && posFromVicFeet && lastPosFromVicFeet) {
+				return sameRotWarn(player);
+			};
+		};
+
+		ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname] = [posFromVicHead, posFromVicFeet];
+
         const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
         if (
             reach >= 4.5 &&
             !isMismatchAttack(player, victim, player.getViewVector(), reach)
         ) {
-            CIF.announce(`§c[§fCIF§c] §c${player.getName()} §6has failed to using §cReach §7(Increase Reach | ${reach})`);
+            CIF.announce(`§c[§fCIF§c] §c${plname} §6has failed to using §cReach §7(Increase Reach | ${reach})`);
             return CANCEL;
         };
     });
