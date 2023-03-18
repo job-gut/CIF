@@ -436,13 +436,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		movePos.y += 1.62001190185547;
 		return;
-	} else {
-		susToTeleport[plname] === false;
 	};
 
 	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2) {
 		susToTeleport[plname] = false;
 		CIF.detect(ni, "teleport", "Teleport and Moved");
+	} else {
+		susToTeleport[plname] === false;
 	};
 
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
