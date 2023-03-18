@@ -413,7 +413,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (typeof Fly_bStack[plname] !== "number") {
 		Fly_bStack[plname] = 0;
 	};
-	
+
 	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname]) {
 		if (susToTeleport[plname] === true) {
 			susToTeleport[plname] = false;
@@ -432,7 +432,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (susToTeleport[plname] === true) {
+	if (susToTeleport[plname] === true && !isRespawned[plname]) {
 		susToTeleport[plname] = false;
 		CIF.detect(ni, "teleport", "Teleport and Moved");
 	};
