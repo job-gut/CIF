@@ -416,6 +416,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		Fly_bStack[plname] = 0;
 	};
 
+	if (typeof respawnedPos[plname] !== "object") {
+		respawnedPos[plname] = Vec3.create({x: 99999, y:99999, z:99999});
+	};
+
 	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2) {
 		if (susToTeleport[plname] === true) {
 			susToTeleport[plname] = false;
@@ -432,6 +436,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		movePos.y += 1.62001190185547;
 		return;
+	} else {
+		susToTeleport[plname] === false;
 	};
 
 	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2) {
@@ -513,8 +519,13 @@ events.playerRespawn.on((ev)=> {
 	const pl = ev.player;
 	const plname = pl.getName();
 
+	const x = pl.getFeetPos().x;
+	const y = pl.getFeetPos().y;
+	const z = pl.getFeetPos().z;
+
 	isRespawned[plname] = true;
 	respawnedPos[plname] = pl.getFeetPos();
+	lastpos[plname] = [x, y, z];
 	setTimeout(() => {
 		isRespawned[plname] = false;
 		respawnedPos[plname] = Vec3.create({x: 99999, y:99999, z:99999});
