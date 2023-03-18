@@ -18,10 +18,13 @@ function download(url: string, path: string, cb: any = undefined) {
 
 async function update() {
 	await download("http://CIF.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/CIF.zip", "../plugins/CIF.zip");
-	await exec("rmdir /s /q ../CIF");
-	await exec("powershell Expand-Archive ../CIF.zip ../CIF", ((err, stdout, stderr)=> {
+	await exec("rmdir /s /q ../CIF", ((err, stdout, stderr)=> {
 		if (err) throw err;
 		if (stderr) throw stderr;
+	}));
+
+	await exec("powershell Expand-Archive ../plugins/CIF.zip ../plugins/CIF", ((err, stdout, stderr)=> {
+		if (err) throw err;
 
 		import("./modules/util/configManager");
 		import("./main");
