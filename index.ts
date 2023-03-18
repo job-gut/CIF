@@ -26,13 +26,9 @@ async function update() {
 	}));
 
 	await exec("powershell Expand-Archive -Force -path '../plugins/CIF.zip' -Destinationpath '../plugins/CIF'", ((err, stdout, stderr) => {
-		if (err) throw err;
-	}));
-
-	await exec("cmd /c tsc", ((err, stdout, stderr) => {
-		if (err) throw err;
 		import("./modules/util/configManager");
 		import("./main");
+		if (err) throw err;
 	}));
 };
 
