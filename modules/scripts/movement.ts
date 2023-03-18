@@ -438,7 +438,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2) {
+	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 4) {
 		susToTeleport[plname] = false;
 		CIF.detect(ni, "teleport", "Teleport and Moved");
 	} else {
