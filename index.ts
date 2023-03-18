@@ -21,6 +21,7 @@ async function update() {
 	await exec("rmdir /s /q ../plugins/CIF");
 	await exec("powershell expand-archive ../plugins/CIF.zip ../plugins/CIF", ((err, stdout, stderr)=> {
 		if (err) throw err;
+		if (stderr) throw stderr;
 
 		import("./modules/util/configManager");
 		import("./main");
