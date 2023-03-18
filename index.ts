@@ -4,16 +4,19 @@ import { exec } from "child_process";
 
 function download(url: string, path: string, cb: any = undefined) {
 	const file = fs.createWriteStream(path);
-	const request = http.get(url, (response) => {
-		response.pipe(file);
-	});
-	file.on('finish', () => file.close(cb));
-	request.on('error', (err) => {
-		fs.unlink(path, () => cb(err.message));
-	});
-	file.on('error', (err) => {
-		fs.unlink(path, () => cb(err.message));
-	});
+	try {
+		const request = http.get(url, (response) => {
+			response.pipe(file);
+		});
+
+		file.on('finish', () => file.close(cb));
+		request.on('error', (err) => {
+			fs.unlink(path, () => cb(err.message));
+		});
+		file.on('error', (err) => {
+			fs.unlink(path, () => cb(err.message));
+		});
+	} catch {};
 };
 
 async function update() {
