@@ -31,7 +31,7 @@ export namespace CIFconfig {
 import { CIF } from "../../main";
 
 function createNewFile(): void {
-	fs.writeFileSync("../plugins/CIF/options.txt",
+	fs.writeFileSync("../CIFoptions.txt",
 		`Debug = false
 bug = true
 combat = true
@@ -50,7 +50,7 @@ send_to_member = true`
 	CIF.log("Generated new config file");
 };
 
-if (!fs.existsSync("./options.txt")) {
+if (!fs.existsSync("../CIFoptions.txt")) {
 	createNewFile();
 };
 
@@ -79,7 +79,7 @@ type ConfigType = { [key in keyof IConfiguration]?: boolean };
 const config: ConfigType = {};
 
 try {
-	const optionFile = "../plugins/CIF/options.txt";
+	const optionFile = "../CIFoptions.txt";
 	const options = fs.readFileSync(optionFile, "utf8");
 	const matcher = /^\s*([^=#]+)\s*=\s*(.*)\s*$/gm;
 	while (true) {
