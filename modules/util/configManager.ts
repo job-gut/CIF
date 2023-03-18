@@ -19,7 +19,8 @@ export namespace CIFconfig {
 		log: true,
 		movement: true,
 		scaffold: true,
-		xp: true
+		xp: true,
+		auto_update: true
 	};
 	export const Penalties: ConfigType = {
 		ban: true,
@@ -45,7 +46,9 @@ scaffold = true
 xp = true
 ban = true
 kick = true
-send_to_member = true`
+send_to_member = true
+auto_update = true
+`
 	);
 	CIF.log("Generated new config file");
 };
@@ -72,6 +75,7 @@ interface IConfiguration {
 	"ban": boolean
 	"kick": boolean
 	"send_to_member": boolean
+	"auto_update": boolean
 };
 
 type ConfigType = { [key in keyof IConfiguration]?: boolean };
