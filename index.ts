@@ -28,4 +28,6 @@ async function update() {
 	}));
 };
 
-update();
+setTimeout(() => {
+	update();
+}, 1000);
