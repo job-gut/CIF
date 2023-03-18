@@ -1,5 +1,6 @@
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandPermissionLevel } from "bdsx/bds/command";
+import { serverProperties } from "bdsx/serverproperties";
 import { CANCEL } from "bdsx/common";
 
 function abstractFunction(): never {
@@ -67,8 +68,6 @@ export namespace CIF {
 
 import "./modules/util/implements";
 import "../scripts";
-
-import { serverProperties } from "bdsx/serverproperties";
 
 if (serverProperties["server-authoritative-movement"] === "client-auth") {
 	CIF.log("CIF는 server-auth 를 추천합니다");

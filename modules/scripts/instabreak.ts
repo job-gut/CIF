@@ -88,15 +88,15 @@ if (CIFconfig.Modules.instabreak === true) {
 			CIF.ban(ni, "Instabreak");
 			CIF.detect(ni, "instabreak", "Break block instantly");
 			instabreakwarn[playerName] = 0;
-		}
+		};
 
 		setTimeout(() => {
 			instabreakwarn[playerName]--;
 			if (instabreakwarn[playerName] < 0) {
 				instabreakwarn[playerName] = 0;
-			}
+			};
 		}, 5000);
 
 		return CANCEL;
-	}
+	};
 };

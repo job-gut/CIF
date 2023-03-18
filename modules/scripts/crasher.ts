@@ -1,4 +1,4 @@
-import { NetworkConnection, NetworkHandler, NetworkIdentifier } from "bdsx/bds/networkidentifier";
+import { NetworkConnection, NetworkIdentifier, NetworkSystem } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { CANCEL } from "bdsx/common";
 import { VoidPointer } from "bdsx/core";
@@ -106,14 +106,14 @@ const Warns: Record<string, number> = {};
 const ipBlocked: Record<string, boolean> = {};
 
 const receivePacket = procHacker.hooking(
-    "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVNetworkHandler@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
+    "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVNetworkSystem@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
     int32_t,
     null,
     NetworkConnection,
     CxxStringWrapper,
-    NetworkHandler,
+    NetworkSystem,
     VoidPointer,
-)((conn, data, networkHandler, time_point) => {
+)((conn, data, networkSystem, time_point) => {
     const address = conn.networkIdentifier.getAddress();
 
     //Block All Packets from Detected Player
@@ -125,7 +125,7 @@ const receivePacket = procHacker.hooking(
     };
 
     const ip = address.split("|")[0];
-    if (ip === "10.10.10.10") return receivePacket(conn, data, networkHandler, time_point);
+    if (ip === "10.10.10.10") return receivePacket(conn, data, networkSystem, time_point);
 
     if (ipBlocked[ip]) {
         conn.disconnect();
@@ -146,7 +146,7 @@ const receivePacket = procHacker.hooking(
         Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
     };
 
-    return receivePacket(conn, data, networkHandler, time_point);
+    return receivePacket(conn, data, networkSystem, time_point);
 });
 
 events.networkDisconnected.on(ni => {
