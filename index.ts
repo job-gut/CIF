@@ -1,8 +1,6 @@
 import * as fs from "fs";
 import * as http from "http";
 import { exec } from "child_process";
-import { CIFconfig } from "./modules/util/configManager";
-import { CIF } from "./main";
 
 function download(url: string, path: string, cb: any = undefined) {
 	const file = fs.createWriteStream(path);
@@ -31,19 +29,38 @@ async function update() {
 		if (err) throw err;
 	}));
 
-	await exec("cmd /c tsc", ((err, stdout, stderr)=> {
+	await exec("cmd /c tsc", ((err, stdout, stderr) => {
 		if (err) throw err;
 		import("./modules/util/configManager");
 		import("./main");
 	}));
 };
 
+function stringToBoolean(str: string): boolean {
+	if (str === "true") return true;
+	else return false;
+};
 setTimeout(() => {
-	if (CIFconfig.Modules.auto_update) {
+
+	const config: { [keyof: string]: boolean } = {};
+
+	try {
+		const optionFile = "../CIFoptions.txt";
+		const options = fs.readFileSync(optionFile, "utf8");
+		const matcher = /^\s*([^=#]+)\s*=\s*(.*)\s*$/gm;
+		while (true) {
+			const matched = matcher.exec(options);
+			if (matched === null) break;
+			config[matched[1]] = stringToBoolean(matched[2]);
+		};
+	} catch (err) {
+		throw err;
+	};
+	if (config.auto_update) {
 		update();
 	} else {
-		CIF.log("Auto update is disabled".yellow);
+		console.log("CIF auto update is disabled".yellow);
 		import("./modules/util/configManager");
 		import("./main");
-	};
+	}
 }, 1000);
