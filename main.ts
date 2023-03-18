@@ -67,7 +67,7 @@ export namespace CIF {
 
 
 import "./modules/util/implements";
-import "../scripts";
+import "./modules/scripts";
 
 if (serverProperties["server-authoritative-movement"] === "client-auth") {
 	CIF.log("CIF는 server-auth 를 추천합니다");
