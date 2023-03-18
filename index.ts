@@ -59,7 +59,7 @@ setTimeout(() => {
 	if (config.auto_update) {
 		update();
 	} else {
-		console.log("CIF auto update is disabled".yellow);
+		console.warn("CIF auto update is disabled".yellow);
 		import("./modules/util/configManager");
 		import("./main");
 	}
