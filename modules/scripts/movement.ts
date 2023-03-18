@@ -443,6 +443,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		CIF.detect(ni, "teleport", "Teleport and Moved");
 	} else {
 		susToTeleport[plname] === false;
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	};
 
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
