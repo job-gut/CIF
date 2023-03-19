@@ -294,7 +294,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (bps > maxBPS && bps > 5.61 && CIFconfig.Modules.movement === true) {
+	if (bps > maxBPS && bps > 6 && CIFconfig.Modules.movement === true) {
 		if (player.getLastBPS() === bps) {
 			strafestack[plname] = strafestack[plname]
 				? strafestack[plname] + 1
