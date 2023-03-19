@@ -334,7 +334,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				? tooFastStack[plname] + 1
 				: 1;
 
-			if (tooFastStack[plname] > 4) {
+			if (tooFastStack[plname] > 6) {
 				tooFastStack[plname] = 0;
 				CIF.detect(
 					ni,
