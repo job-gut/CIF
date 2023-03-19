@@ -154,18 +154,9 @@ if (CIFconfig.Modules.combat === true) {
     events.entityHurt.on((ev)=> {
         const cuz = ev.damageSource.cause;
 
-		if (cuz === ActorDamageCause.Fall) {
-			const pl = ev.entity;
-			if (!pl.isPlayer()) return;
-
-			if (pl.getFallDistance() - 0.052197456359863 < 0) pl.setFallDistance(3);
-
-			if (pl.getFallDistance() - 0.052197456359863 < 3) return CANCEL;
-		};
-
         if (cuz !== ActorDamageCause.EntityAttack) return;
 
-        const player = ev.damageSource.getDamagingEntity()!;
+        const player = ev.damageSource.getDamagingEntity()! as ServerPlayer;
 		const plname = player.getName();
 
         const victim = ev.entity;

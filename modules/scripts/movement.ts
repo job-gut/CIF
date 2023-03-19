@@ -75,31 +75,6 @@ Block.prototype.isSolid = procHacker.js("?isSolid@Block@@QEBA_NXZ", bool_t, {
 	this: Block,
 });
 
-declare module "bdsx/bds/actor" {
-	interface Actor {
-		/**
-		 * Func from CIF
-		 */
-		getFallDistance(): number;
-
-		/**
-		 * Func from CIF
-		 */
-		setFallDistance(distance: number): void;
-	}
-};
-
-Actor.prototype.getFallDistance = procHacker.js(
-	"?getFallDistance@Actor@@QEBAMXZ",
-	float32_t,
-	{ this: Actor }
-);
-Actor.prototype.setFallDistance = procHacker.js(
-	"?setFallDistance@Actor@@QEAAXM@Z",
-	void_t,
-	{ this: Actor }
-);
-
 declare module "bdsx/bds/player" {
 	interface Player {
 		/**
@@ -229,7 +204,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (pkt.mode === 1) {
 			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 			movePos.y += 1.62001190185547;
-			player.setFallDistance(3);
 			return;
 		};
 	} else if (isPlayerAuthInputPacket(pkt)) {
@@ -498,7 +472,6 @@ const hasTeleport = procHacker.hooking(
 	setTimeout(async () => {
 		isTeleported[plname] = false;
 	}, 2500);
-	pl.setFallDistance(3);
 
 	return hasTeleport(pl, pos);
 });
