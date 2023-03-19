@@ -33,7 +33,7 @@ async function update() {
 };
 
 function stringToBoolean(str: string): boolean {
-	if (str === "true") return true;
+	if (str.includes("true")) return true;
 	else return false;
 };
 setTimeout(() => {
@@ -47,12 +47,12 @@ setTimeout(() => {
 		while (true) {
 			const matched = matcher.exec(options);
 			if (matched === null) break;
-			config[matched[1]] = stringToBoolean(matched[2]);
+			config[matched[1].trim()] = stringToBoolean(matched[2]);
 		};
 	} catch (err) {
 		throw err;
 	};
-	if (config.auto_update) {
+	if (config["auto_update"]) {
 		update();
 	} else {
 		console.warn("CIF auto update is disabled".yellow);
