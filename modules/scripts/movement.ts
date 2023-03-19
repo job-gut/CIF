@@ -416,7 +416,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		susToTeleport[plname] = false;
 		CIF.detect(ni, "teleport", "Teleport and Moved");
 	} else {
-		susToTeleport[plname] === false;
+		susToTeleport[plname] = false;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	};
 
