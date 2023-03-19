@@ -16,7 +16,6 @@ export namespace CIFconfig {
 		crasher: true,
 		instabreak: true,
 		join: true,
-		log: true,
 		movement: true,
 		scaffold: true,
 		xp: true,
@@ -45,7 +44,6 @@ scaffold = true
 xp = true
 ban = true
 kick = true
-log = true
 send_to_member = true
 auto_update = true
 `
@@ -73,7 +71,6 @@ interface IConfiguration {
 	"xp": boolean
 	"ban": boolean
 	"kick": boolean
-	"log": boolean
 	"send_to_member": boolean
 	"auto_update": boolean
 };
