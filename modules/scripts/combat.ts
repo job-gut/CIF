@@ -11,7 +11,7 @@ if (CIFconfig.Modules.combat === true) {
     const MismatchAuraWarn = new Map<string, number>();
 	const sameRotAuraWarn = new Map<string, number>();
 
-	const ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ: Record<string, number[]> = {};
+	const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 
     function mismatchWarn(player: Player): CANCEL {
         const name = player.getName();
@@ -184,16 +184,16 @@ if (CIFconfig.Modules.combat === true) {
 		const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
 		const posFromVicFeet = victimpos.distance(headRotWhereLookingAt);
 
-		if (typeof ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname] !== "undefined") {
-			const lastPosFromVicHead = ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname][0];
-			const lastPosFromVicFeet = ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname][1];
+		if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
+			const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
+			const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
 			if (lastPosFromVicHead === posFromVicHead && posFromVicFeet && lastPosFromVicFeet) {
 				return sameRotWarn(player);
 			};
 		};
 
-		ㅅㅂ이걸_영어로_뭐라_작명해_ㅗㅗ[plname] = [posFromVicHead, posFromVicFeet];
+		headRotWhereLookingAtInBodyWarn[plname] = [posFromVicHead, posFromVicFeet];
 
         const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
