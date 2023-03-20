@@ -445,7 +445,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (lastY === movePos.y && !isTeleported[plname]) {
 		Fly_bStack[plname]++;
 
-		if (Fly_bStack[plname] > 9) {
+		if (Fly_bStack[plname] > 14) {
 			Fly_bStack[plname] = 0;
 			CIF.ban(ni, "Fly-B");
 			CIF.detect(ni, "Fly-B", "Non-Vertical Fly on Air");
