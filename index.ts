@@ -2,6 +2,30 @@ import * as fs from "fs";
 import * as http from "http";
 import { exec } from "child_process";
 
+function createNewFile(): void {
+	fs.writeFileSync("../CIFoptions.txt",
+		`Debug = false
+bug = true
+combat = true
+crasher = true
+give = true
+instabreak = true
+join = true
+movement = true
+scaffold = true
+xp = true
+ban = true
+kick = true
+send_to_member = true
+auto_update = true
+`
+	);
+};
+
+if (!fs.existsSync("../CIFoptions.txt")) {
+	createNewFile();
+};
+
 function download(url: string, path: string, cb: any = undefined) {
 	const file = fs.createWriteStream(path);
 	try {
