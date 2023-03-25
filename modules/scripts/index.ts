@@ -1,7 +1,5 @@
 import "./log";
 
-//import "./give";
-//Mojang Patched Fake InventoryTransAction packets themselves
 import { CIFconfig } from "../util/configManager";
 import { CIF } from "../../main";
 
@@ -14,6 +12,9 @@ if (CIFconfig.Modules.crasher) {
     require("./crasher");
     CIF.log(`Successfully Loaded ${"Crasher".magenta} Modules`.green);
 };
+
+require("./give");
+CIF.log(`Successfully Loaded ${"Give".magenta} Modules`.green);
 
 if (CIFconfig.Modules.instabreak) {
     require("./instabreak");
