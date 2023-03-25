@@ -1,6 +1,5 @@
-import { NetworkConnection, NetworkIdentifier, NetworkSystem } from "bdsx/bds/networkidentifier";
+import { NetworkConnection, NetworkSystem } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { CANCEL } from "bdsx/common";
 import { VoidPointer } from "bdsx/core";
 import { events } from "bdsx/event";
 import { int32_t } from "bdsx/nativetype";
@@ -12,8 +11,6 @@ const UINTMAX = 0xffffffff;
 
 const PPSsound: Record<string, number> = {};
 const PPSact: Record<string, number> = {};
-
-const wasSendSkinPacket = new Map<NetworkIdentifier, boolean>();
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
     if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX) {
@@ -87,20 +84,19 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     }, (1000));
 });
 
-// events.packetRaw(MinecraftPacketIds.PlayerSkin).on((ptr, size, ni) => {
-//     const pl = ni.getActor()!;
-//     if (!pl) return CANCEL;
+events.packetRaw(MinecraftPacketIds.LevelChunk).on((ptr, size, ni)=> {
+	ptr.move(1);
+	if (ptr.readVarUint() === 4294967295 
+	&& ptr.readVarUint() === 4294967295
+	&& ptr.readVarUint() === 4294967292
+	&& ptr.readVarUint() === 1
+	&& ptr.readVarUint() === 4294967295
+	&& size === 22) {
+		CIF.ban(ni, "Crasher");
+		return CIF.detect(ni, "Crasher", "Send Invaild LevelChunk Packet");
+	};
+});
 
-//     if (pl.hasTag("CIFcanCrash")) return;
-
-//     if (wasSendSkinPacket.get(ni)) {
-//         pl.sendMessage("§l§c스킨을 적용하시려면 서버에 재접속 해주세요!");
-//         pl.playSound("random.break");
-//         return CANCEL;
-//     };
-
-//     wasSendSkinPacket.set(ni, true);
-// });
 
 const Warns: Record<string, number> = {};
 const ipBlocked: Record<string, boolean> = {};
