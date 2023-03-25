@@ -40,7 +40,9 @@ function download(url: string, path: string, cb: any = undefined) {
 		file.on('error', (err) => {
 			fs.unlink(path, () => cb(err.message));
 		});
-	} catch { };
+	} catch {
+		throw "";
+	};
 };
 
 async function update() {
