@@ -6,6 +6,7 @@ import { CIF } from "../../main";
 import { lastRotations } from "./movement";
 import { CIFconfig } from "../util/configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
+import { MobEffectIds } from "bdsx/bds/effects";
 
 if (CIFconfig.Modules.combat === true) {
     const MismatchAuraWarn = new Map<string, number>();
@@ -161,9 +162,10 @@ if (CIFconfig.Modules.combat === true) {
 
         const victim = ev.entity;
 
-        if (!victim.isPlayer()) return;
         if (!player.isPlayer()) return;
+        if (!victim.isPlayer()) return;
         if (victim.getGameType() === GameType.Creative) return;
+        if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
 
         const playerpos = player.getFeetPos();
         const victimpos = victim.getFeetPos();
