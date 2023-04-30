@@ -6,12 +6,13 @@ import { CIF } from "../../main";
 import { lastRotations } from "./movement";
 import { CIFconfig } from "../util/configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
+import { MobEffectIds } from "bdsx/bds/effects";
 
 if (CIFconfig.Modules.combat === true) {
     const MismatchAuraWarn = new Map<string, number>();
-	const sameRotAuraWarn = new Map<string, number>();
+    const sameRotAuraWarn = new Map<string, number>();
 
-	const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
+    const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 
     function mismatchWarn(player: Player): CANCEL {
         const name = player.getName();
@@ -40,20 +41,20 @@ if (CIFconfig.Modules.combat === true) {
         return CANCEL;
     };
 
-	function sameRotWarn(player: Player): CANCEL {
-		const name = player.getName();
-		if (sameRotAuraWarn.get(name) === undefined) {
-			sameRotAuraWarn.set(name, 1);
-		};
+    function sameRotWarn(player: Player): CANCEL {
+        const name = player.getName();
+        if (sameRotAuraWarn.get(name) === undefined) {
+            sameRotAuraWarn.set(name, 1);
+        };
 
-		sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! + 1);
+        sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! + 1);
 
-		setTimeout(async () => {
+        setTimeout(async () => {
             sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! - 1);
             if (sameRotAuraWarn.get(name)! < 0) sameRotAuraWarn.set(name, 0);
         }, 3000);
 
-		if (sameRotAuraWarn.get(name)! > 3) {
+        if (sameRotAuraWarn.get(name)! > 3) {
             CIF.ban(player.getNetworkIdentifier(), "Aura-B");
             return CIF.detect(
                 player.getNetworkIdentifier(),
@@ -62,8 +63,8 @@ if (CIFconfig.Modules.combat === true) {
             );
         };
 
-		return CANCEL;
-	};
+        return CANCEL;
+    };
 
     function degreesToRadians(degrees: number): number {
         return (degrees * Math.PI) / 180;
@@ -123,7 +124,7 @@ if (CIFconfig.Modules.combat === true) {
         if (!victim.isPlayer()) return;
         if (ev.player.getGameType() === GameType.Creative) return;
         //if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
-		
+
         const player = ev.player as ServerPlayer;
         const name = player.getName()!;
 
@@ -151,18 +152,20 @@ if (CIFconfig.Modules.combat === true) {
         };
     });
 
-    events.entityHurt.on((ev)=> {
+    events.entityHurt.on((ev) => {
         const cuz = ev.damageSource.cause;
 
         if (cuz !== ActorDamageCause.EntityAttack) return;
 
         const player = ev.damageSource.getDamagingEntity()! as ServerPlayer;
-		const plname = player.getName();
+        const plname = player.getName();
 
         const victim = ev.entity;
 
-        if (!victim.isPlayer()) return;
         if (!player.isPlayer()) return;
+        if (!victim.isPlayer()) return;
+        if (victim.getGameType() === GameType.Creative) return;
+        if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
 
         const playerpos = player.getFeetPos();
         const victimpos = victim.getFeetPos();
@@ -170,30 +173,30 @@ if (CIFconfig.Modules.combat === true) {
         const result1 = Math.pow(playerpos.x - victimpos.x, 2);
         const result2 = Math.pow(playerpos.z - victimpos.z, 2);
 
-		const distance = Math.sqrt(result1 + result2);
+        const distance = Math.sqrt(result1 + result2);
 
-		const headPos = player.getPosition();
-		const addThisPos = player.getViewVector().multiply(distance);
-		
-		headPos.x += addThisPos.x;
-		headPos.y += addThisPos.y;
-		headPos.z += addThisPos.z;
+        const headPos = player.getPosition();
+        const addThisPos = player.getViewVector().multiply(distance);
 
-		const headRotWhereLookingAt = headPos;
+        headPos.x += addThisPos.x;
+        headPos.y += addThisPos.y;
+        headPos.z += addThisPos.z;
 
-		const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
-		const posFromVicFeet = victimpos.distance(headRotWhereLookingAt);
+        const headRotWhereLookingAt = headPos;
 
-		if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
-			const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
-			const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
+        const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
+        const posFromVicFeet = victimpos.distance(headRotWhereLookingAt);
 
-			if (lastPosFromVicHead === posFromVicHead && posFromVicFeet && lastPosFromVicFeet) {
-				return sameRotWarn(player);
-			};
-		};
+        if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
+            const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
+            const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
-		headRotWhereLookingAtInBodyWarn[plname] = [posFromVicHead, posFromVicFeet];
+            if (lastPosFromVicHead === posFromVicHead && posFromVicFeet && lastPosFromVicFeet) {
+                return sameRotWarn(player);
+            };
+        };
+
+        headRotWhereLookingAtInBodyWarn[plname] = [posFromVicHead, posFromVicFeet];
 
         const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
