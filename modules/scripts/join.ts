@@ -102,6 +102,4 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         firstLoginedDID[name] = deviceId;
         firstLoginedOS[name] = deviceOS;
     };
-
-    //nameMap.get(ni) -> do not log illegal names
 });

@@ -131,7 +131,7 @@ const receivePacket = procHacker.hooking(
     };
 
     const id = data.valueptr.getUint8();
-    if (Warns[address] > 9 || id === MinecraftPacketIds.PurchaseReceipt) {
+    if (Warns[address] > 14 || id === MinecraftPacketIds.PurchaseReceipt) {
         conn.disconnect();
         ipBlocked[ip] = true;
         CIF.ipDetect(conn.networkIdentifier, "crasher", "CVE: Send Invalid Packets without Minecraft Connection");
