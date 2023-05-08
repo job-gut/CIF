@@ -84,19 +84,17 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     }, (1000));
 });
 
-events.packetRaw(MinecraftPacketIds.LevelChunk).on((ptr, size, ni)=> {
+events.packetRaw(MinecraftPacketIds.PlayerList).on((ptr, size, ni)=> {
 	ptr.move(1);
-	if (ptr.readVarUint() === 4294967295 
-	&& ptr.readVarUint() === 4294967295
-	&& ptr.readVarUint() === 4294967292
-	&& ptr.readVarUint() === 1
-	&& ptr.readVarUint() === 4294967295
-	&& size === 22) {
-		CIF.ban(ni, "Crasher");
-		return CIF.detect(ni, "Crasher", "Send Invaild LevelChunk Packet");
-	};
-});
 
+	if (ptr.readVarUint() === 1
+	&& ptr.readVarUint() === 4294967295
+	&& ptr.readVarUint() === 0
+	&& size === 7) {
+		CIF.ban(ni, "Crasher");
+		return CIF.detect(ni, "Crasher", "Send Invalid PlayerList Packet")
+	}
+});
 
 const Warns: Record<string, number> = {};
 const ipBlocked: Record<string, boolean> = {};
