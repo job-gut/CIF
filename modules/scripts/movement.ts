@@ -394,7 +394,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		respawnedPos[plname] = Vec3.create({x: 99999, y:99999, z:99999});
 	};
 
-	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2) {
+	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname]) {
 		if (susToTeleport[plname] === true) {
 			susToTeleport[plname] = false;
 			bps = 0;
@@ -412,7 +412,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 4) {
+	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 4 && !isTeleported[plname]) {
 		susToTeleport[plname] = false;
 		CIF.detect(ni, "teleport", "Teleport and Moved");
 	} else {
