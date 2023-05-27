@@ -17,7 +17,7 @@ xp = true
 ban = true
 kick = true
 send_to_member = true
-auto_update = true
+auto_update = false
 `
 	);
 };
