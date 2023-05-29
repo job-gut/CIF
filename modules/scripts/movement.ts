@@ -441,6 +441,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	};
 
 	const lastY = lastPos[1];
+	if (movePos.y < -61) return;
 
 	if (lastY === movePos.y && !isTeleported[plname]) {
 		Fly_bStack[plname]++;
