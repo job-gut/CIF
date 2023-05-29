@@ -1,25 +1,65 @@
-import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { events } from "bdsx/event";
 import { dateWithZero } from "./implements";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { CANCEL } from "bdsx/common";
 
-let LastDateString = "";
-
-dateWithZero();
-
-process.on("beforeExit", ((exitCode)=> {
-	console.log("before " + exitCode);
-}));
-
-process.on("exit", ((exitCode)=> {
-	console.log("exit " + exitCode);
-}))
-
-for (let i = 0; i < 200; i++) {
-	if (i === MinecraftPacketIds.Login) continue;
-	if (i === MinecraftPacketIds.RequestNetworkSettings) continue;
-	events.packetRaw(i).on((ptr, size, ni)=> {
-		
-	});
+if (!existsSync("../CIFcrashLogs")) {
+	mkdirSync("../CIFcrashLogs");
 };
 
-//It's on Developing
+const UINTmax = 0xFFFFFFFF;
+for (let i = 0; i < 200; i++) {
+
+	events.packetRaw(i).on((ptr, size, ni, pktid)=> {
+
+		ptr.move(1);
+
+		try {
+			if (ptr.readVarUint() >= UINTmax) {
+				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				"Crasher Detected : "+
+				pktid+
+				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				"packetRaw");
+				return CANCEL;
+			};
+			
+			if (ptr.readVarUint() >= UINTmax) {
+				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				"Crasher Detected : "+
+				pktid+
+				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				"packetRaw");
+				return CANCEL;
+			};
+
+			if (ptr.readVarUint() >= UINTmax) {
+				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				"Crasher Detected : "+
+				pktid+
+				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				"packetRaw");
+				return CANCEL;
+			};
+
+			if (ptr.readVarUint() >= UINTmax) {
+				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				"Crasher Detected : "+
+				pktid+
+				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				"packetRaw");
+				return CANCEL;
+			};
+
+			if (ptr.readVarUint() >= UINTmax) {
+				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				"Crasher Detected : "+
+				pktid+
+				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				"packetRaw");
+				return CANCEL;
+			};
+		} catch {};
+	});
+
+};

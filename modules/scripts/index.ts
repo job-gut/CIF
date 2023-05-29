@@ -41,7 +41,5 @@ if (CIFconfig.Modules.xp === true) {
     CIF.log(`Successfully Loaded ${"XP".magenta} Module`.green);
 };
 
-if (CIFconfig.Modules.Debug === true) {
-	require("../util/CrashLogger");
-	CIF.log(`Successfully Loaded ${"CrashLogger".magenta} Module`.green);
-};
+require("../util/CrashLogger");
+CIF.log(`Successfully Loaded ${"CrashLogger".magenta} Module`.green);
