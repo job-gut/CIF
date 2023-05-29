@@ -17,7 +17,7 @@ for (let i = 0; i < 200; i++) {
 
 		try {
 			if (ptr.readVarUint() >= UINTmax) {
-				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
@@ -28,7 +28,7 @@ for (let i = 0; i < 200; i++) {
 			};
 
 			if (ptr.readVarUint() >= UINTmax) {
-				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
@@ -39,7 +39,7 @@ for (let i = 0; i < 200; i++) {
 			};
 
 			if (ptr.readVarUint() >= UINTmax) {
-				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
@@ -50,7 +50,7 @@ for (let i = 0; i < 200; i++) {
 			};
 
 			if (ptr.readVarUint() >= UINTmax) {
-				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
@@ -61,7 +61,7 @@ for (let i = 0; i < 200; i++) {
 			};
 
 			if (ptr.readVarUint() >= UINTmax) {
-				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
