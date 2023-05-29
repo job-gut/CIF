@@ -6,6 +6,7 @@ import { int32_t } from "bdsx/nativetype";
 import { CxxStringWrapper } from "bdsx/pointer";
 import { procHacker } from "bdsx/prochacker";
 import { CIF } from "../../main";
+import { CIFconfig } from "../util/configManager";
 
 const UINTMAX = 0xffffffff;
 
@@ -13,6 +14,9 @@ const PPSsound: Record<string, number> = {};
 const PPSact: Record<string, number> = {};
 
 events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
+	if (CIFconfig.Modules.crasher !== true) return;
+
+
     if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX) {
         CIF.ban(ni, "crasher");
         return CIF.detect(ni, "crasher", "Illegal Position");
@@ -25,6 +29,9 @@ events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
 });
 
 events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
+	if (CIFconfig.Modules.crasher !== true) return;
+
+
     if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX || pkt.moveX > UINTMAX || pkt.moveZ > UINTMAX) {
         CIF.ban(ni, "crasher");
         return CIF.detect(ni, "crasher", "Illegal Position");
@@ -38,6 +45,9 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 events.packetRaw(MinecraftPacketIds.ClientCacheBlobStatus).on((ptr, size, ni) => {
+	if (CIFconfig.Modules.crasher !== true) return;
+
+
     if (ptr.readVarUint() >= 0xfff || ptr.readVarUint() >= 0xfff) {
         CIF.ban(ni, "DoS");
         return CIF.detect(ni, "DoS", "DoS using ClientCacheBlobStatus Packet");
@@ -48,6 +58,9 @@ events.packetRaw(MinecraftPacketIds.ClientCacheBlobStatus).on((ptr, size, ni) =>
 events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
     const sound = pkt.sound;
     if (sound === 0) {
+		if (CIFconfig.Modules.crasher !== true) return;
+
+
         CIF.ban(ni, "crasher");
         return CIF.detect(ni, "crasher", "Invalid LevelSoundPacket");
     };
@@ -58,6 +71,9 @@ events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
 	};
 
     if (sound !== 42 && sound !== 43) {
+		if (CIFconfig.Modules.crasher !== true) return;
+
+
         const pl = ni.getActor();
         if (!pl) return;
         
@@ -76,6 +92,9 @@ events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
 });
 
 events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
+	if (CIFconfig.Modules.crasher !== true) return;
+
+
     const pl = ni.getActor()!;
     const plname = pl.getName()!;
     PPSact[plname] = PPSact[plname] ? PPSact[plname] + 1 : 1;
@@ -90,6 +109,9 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
 });
 
 events.packetRaw(MinecraftPacketIds.PlayerList).on((ptr, size, ni)=> {
+	if (CIFconfig.Modules.crasher !== true) return;
+
+
 	ptr.move(1);
 
 	if (ptr.readVarUint() === 1
@@ -122,6 +144,10 @@ const receivePacket = procHacker.hooking(
             return 1;
         };
     };
+
+	
+	if (CIFconfig.Modules.crasher !== true) receivePacket(conn, data, networkSystem, time_point);
+
 
     const ip = address.split("|")[0];
     if (ip === "10.10.10.10") return receivePacket(conn, data, networkSystem, time_point);

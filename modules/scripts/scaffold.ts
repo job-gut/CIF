@@ -1,6 +1,7 @@
 import { CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { CIF } from "../../main";
+import { CIFconfig } from "../util/configManager";
 
 const lastplacedblockposY: any = {};
 const scaffoldWarn: Record<string, number> = {};
@@ -18,6 +19,9 @@ function warn(name: string) {
 }
 
 events.blockPlace.on((ev) => {
+	if (CIFconfig.Modules.scaffold !== true) return;
+
+
     const player = ev.player;
     if (!player) return;
     if (!player.isPlayer()) return;

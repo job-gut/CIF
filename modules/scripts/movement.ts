@@ -190,6 +190,9 @@ function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
 };
 
 events.packetBefore(MovementType).on((pkt, ni) => {
+	if (CIFconfig.Modules.movement !== true) return;
+
+
 	const player = ni.getActor();
 	if (!player) return;
 

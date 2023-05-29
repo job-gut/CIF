@@ -4,6 +4,7 @@ import { BuildPlatform } from "bdsx/common";
 import { events } from "bdsx/event";
 import { yellow } from "colors";
 import { CIF } from "../../main";
+import { CIFconfig } from "../util/configManager";
 
 
 export const nameMap = new Map<NetworkIdentifier, string>();
@@ -25,6 +26,9 @@ const firstLoginedDID: Record<string, string> = {};
 const firstLoginedOS: Record<string, number> = {};
 
 events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
+	if (CIFconfig.Modules.join !== true) return;
+
+
     const req = pkt.connreq;
     if (req === null) return;
     const deviceId = req.getDeviceId();
