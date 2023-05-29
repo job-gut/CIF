@@ -2,9 +2,10 @@ import { events } from "bdsx/event";
 import { dateWithZero } from "./implements";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { CANCEL } from "bdsx/common";
+import { CIF } from "../../main";
 
-if (!existsSync("../CIFcrashLogs")) {
-	mkdirSync("../CIFcrashLogs");
+if (!existsSync("../CIFcrasherLogs")) {
+	mkdirSync("../CIFcrasherLogs");
 };
 
 const UINTmax = 0xFFFFFFFF;
@@ -20,16 +21,9 @@ for (let i = 0; i < 200; i++) {
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
-				"packetRaw");
-				return CANCEL;
-			};
-			
-			if (ptr.readVarUint() >= UINTmax) {
-				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
-				"Crasher Detected : "+
-				pktid+
-				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
-				"packetRaw");
+				"\npacketRaw");
+				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
 				return CANCEL;
 			};
 
@@ -38,7 +32,9 @@ for (let i = 0; i < 200; i++) {
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
-				"packetRaw");
+				"\npacketRaw");
+				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
 				return CANCEL;
 			};
 
@@ -47,7 +43,9 @@ for (let i = 0; i < 200; i++) {
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
-				"packetRaw");
+				"\npacketRaw");
+				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
 				return CANCEL;
 			};
 
@@ -56,7 +54,20 @@ for (let i = 0; i < 200; i++) {
 				"Crasher Detected : "+
 				pktid+
 				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
-				"packetRaw");
+				"\npacketRaw");
+				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
+				return CANCEL;
+			};
+
+			if (ptr.readVarUint() >= UINTmax) {
+				writeFileSync(`../CIFcrashLogs/${dateWithZero()}.log`, 
+				"Crasher Detected : "+
+				pktid+
+				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				"\npacketRaw");
+				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
 				return CANCEL;
 			};
 		} catch {};
