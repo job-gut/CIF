@@ -67,9 +67,6 @@ export namespace CIF {
     export const wasDetected: Record<string, boolean> = {};
 };
 
-
-import "./modules/util/implements";
-import "./modules/scripts";
 import { exec } from "child_process";
 
 if (serverProperties["server-authoritative-movement"] === "client-auth") {

@@ -26,7 +26,7 @@ function zero(num: any, n: any) {
  * Date With Zero
  * @description Use for ban
  */
-function dateWithZero() {
+export function dateWithZero() {
     var d = new Date();
     return (d.getFullYear() + "-" + zero((d.getMonth() + 1), 2) + "-"
         + zero(d.getDate(), 2) + ", " + zero(d.getHours(), 2) + "시 "

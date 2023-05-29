@@ -92,5 +92,5 @@ setTimeout(() => {
 		console.warn("CIF auto update is disabled".yellow);
 		import("./modules/util/configManager");
 		import("./main");
-	}
+	};
 }, 1000);

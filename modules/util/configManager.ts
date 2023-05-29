@@ -86,7 +86,7 @@ try {
 	while (true) {
 		const matched = matcher.exec(options);
 		if (matched === null) break;
-		config[matched[1] as keyof IConfiguration] = stringToBoolean(matched[2]);
+		config[matched[1].trim() as keyof IConfiguration] = stringToBoolean(matched[2]);
 	};
 } catch (err) {
 	throw err;
@@ -99,11 +99,6 @@ for (const [key, value] of Object.entries(config)) {
 		CIFconfig.Modules[key as keyof IConfiguration] = value;
 	};
 };
-
-if (CIFconfig.Modules.Debug === true) {
-	require("./debug/debug");
-};
-
 
 // ███████ ███████ ██████  ██    ██ ███████ ██████      ██████  ██████   ██████  ██████  ███████ ██████  ████████ ██ ███████ ███████
 // ██      ██      ██   ██ ██    ██ ██      ██   ██     ██   ██ ██   ██ ██    ██ ██   ██ ██      ██   ██    ██    ██ ██      ██
@@ -152,4 +147,12 @@ if (serverProperties["server-authoritative-movement"] !== "client-auth") {
 			process.exit(1);
 		}, 2000);
 	};
+};
+
+import "./implements";
+import "../scripts";
+
+if (CIFconfig.Modules.Debug === true) {
+	require("../../debug/debug");
+	console.log("********** CIF DEBUG MODE HAS BEEN ENABLED **********".red);
 };
