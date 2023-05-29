@@ -6,7 +6,7 @@ import { CIF } from "../main";
 
 //debug code
 events.serverOpen.on(() => {
-    const debugCommand = command.register('cif', '', CommandPermissionLevel.Operator);
+    const debugCommand = command.register('cif', 'command for testing some CIF modules', CommandPermissionLevel.Operator);
     debugCommand.overload((param, origin, output) => {
         CIF.announce(param.message.getMessage(origin), param.target);
     }, {
