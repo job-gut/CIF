@@ -447,6 +447,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (movePos.y < -61) return;
 
 	if (lastY === movePos.y && !isTeleported[plname]) {
+		if (lastPos[0] === movePos.x && lastPos[2] === movePos.z) return;
+		
 		Fly_bStack[plname]++;
 
 		if (Fly_bStack[plname] > 14) {
