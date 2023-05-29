@@ -28,6 +28,18 @@ export namespace CIFconfig {
 	};
 };
 
+export namespace CIFconfigNames {
+	export const Debug = "Debug";
+	export const combat = "combat";
+	export const crasher = "crasher";
+	export const instabreak = "instabreak";
+	export const join = "join";
+	export const movement = "movement";
+	export const scaffold = "scaffold";
+	export const xp = "xp";
+	export const auto_update = "auto_update";
+};
+
 import { CIF } from "../../main";
 
 function createNewFile(): void {

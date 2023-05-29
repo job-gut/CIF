@@ -3,7 +3,7 @@ import { ServerPlayer } from "bdsx/bds/player";
 import { command } from "bdsx/command";
 import { events } from "bdsx/event";
 import { CIF } from "../main";
-import { CIFconfig } from "../modules/util/configManager";
+import { CIFconfig, CIFconfigNames } from "../modules/util/configManager";
 import { bool_t } from "bdsx/nativetype";
 
 //debug code
@@ -51,7 +51,7 @@ events.serverOpen.on(() => {
 		origin.getEntity()?.getNetworkIdentifier().getActor()?.sendMessage("§c주의 : 이 설정은 임시적이며 재시작시 초기화됩니다");
 	}, {
 		config : command.enum("config", "config"),
-		configs : command.enum("cif_config", CIFconfig.Modules as Record<string, string>),
+		configs : command.enum("cif_config", CIFconfigNames),
 		enabled : bool_t
 	});
 });
