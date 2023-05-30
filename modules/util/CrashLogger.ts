@@ -10,7 +10,9 @@ if (!existsSync("../CIFcrasherLogs")) {
 
 const UINTmax = 0xFFFFFFFF;
 for (let i = 0; i < 200; i++) {
-
+	if (i === 36) continue;
+	if (i === 44) continue;
+	
 	events.packetRaw(i).on((ptr, size, ni, pktid)=> {
 
 		ptr.move(1);
