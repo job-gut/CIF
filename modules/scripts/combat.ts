@@ -11,6 +11,8 @@ import { MobEffectIds } from "bdsx/bds/effects";
 const MismatchAuraWarn = new Map<string, number>();
 const sameRotAuraWarn = new Map<string, number>();
 
+const lastAttackPlayer: Record<string, string> = {};
+
 const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 
 function mismatchWarn(player: Player): CANCEL {
@@ -196,12 +198,14 @@ events.entityHurt.on((ev) => {
 		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
-		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet && lastPosFromVicFeet) {
+		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet && lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()) {
 			return sameRotWarn(player);
 		};
 	};
 
 	headRotWhereLookingAtInBodyWarn[plname] = [posFromVicHead, posFromVicFeet];
+
+	lastAttackPlayer[plname] = victim.getNameTag();
 
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
