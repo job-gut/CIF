@@ -9,41 +9,8 @@ import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 import { CANCEL } from "bdsx/common";
 
-const UINTMAX = 0xffffffff;
-
 const PPSsound: Record<string, number> = {};
 const PPSact: Record<string, number> = {};
-
-events.packetBefore(MinecraftPacketIds.MovePlayer).on((pkt, ni) => {
-	if (CIFconfig.Modules.crasher !== true) return;
-
-
-    if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX) {
-        CIF.ban(ni, "crasher");
-        return CIF.detect(ni, "crasher", "Illegal Position");
-    };
-
-    if (isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
-        CIF.ban(ni, "Crasher");
-        return CIF.detect(ni, "crasher", "Illegal Head Pos");
-    };
-});
-
-events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
-	if (CIFconfig.Modules.crasher !== true) return;
-
-
-    if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX || pkt.moveX > UINTMAX || pkt.moveZ > UINTMAX) {
-        CIF.ban(ni, "crasher");
-        return CIF.detect(ni, "crasher", "Illegal Position");
-    };
-
-    if (isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
-        CIF.ban(ni, "Crasher");
-        return CIF.detect(ni, "crasher", "Illegal Head Pos");
-    };
-});
-
 
 events.packetRaw(MinecraftPacketIds.ClientCacheBlobStatus).on((ptr, size, ni) => {
 	if (CIFconfig.Modules.crasher !== true) return;

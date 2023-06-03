@@ -15,6 +15,8 @@ import { CIFconfig } from "../util/configManager";
 import { CIF } from "../../main";
 import { wasJoinedIn15seconds } from "./join";
 
+const UINTMAX = 0xffffffff;
+
 export const MovementType =
 	serverProperties["server-authoritative-movement"] === "client-auth"
 		? MinecraftPacketIds.MovePlayer
@@ -169,7 +171,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 		isGlidingWithElytra[plname] = true;
 
 		if (pl.getArmor(ArmorSlot.Torso).getRawNameId() !== "elytra") {
-			return CIF.detect(ni, "Fly-E", "Glide Without Elytra")	;
+			return CIF.detect(ni, "Fly-E", "Glide Without Elytra");
 		};
 
 	} else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
@@ -195,6 +197,19 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	const player = ni.getActor();
 	if (!player) return;
+
+	if (CIFconfig.Modules.crasher === true) {
+
+		if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX) {
+			CIF.ban(ni, "crasher");
+			return CIF.detect(ni, "crasher", "Illegal Position");
+		};
+
+		if (isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
+			CIF.ban(ni, "Crasher");
+			return CIF.detect(ni, "crasher", "Illegal Head Pos");
+		};
+	}
 
 	const movePos = pkt.pos;
 	movePos.y -= 1.62001190185547;
@@ -394,7 +409,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	};
 
 	if (typeof respawnedPos[plname] !== "object") {
-		respawnedPos[plname] = Vec3.create({x: 99999, y:99999, z:99999});
+		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
 	};
 
 	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname]) {
@@ -448,7 +463,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	if (lastY === movePos.y && !isTeleported[plname]) {
 		if (lastPos[0] === movePos.x && lastPos[2] === movePos.z) return;
-		
+
 		Fly_bStack[plname]++;
 
 		if (Fly_bStack[plname] > 14) {
@@ -495,7 +510,7 @@ events.entityKnockback.on((ev) => {
 	}, 2500);
 });
 
-events.playerRespawn.on((ev)=> {
+events.playerRespawn.on((ev) => {
 	const pl = ev.player;
 	const plname = pl.getName();
 
@@ -508,6 +523,6 @@ events.playerRespawn.on((ev)=> {
 	lastpos[plname] = [x, y, z];
 	setTimeout(() => {
 		isRespawned[plname] = false;
-		respawnedPos[plname] = Vec3.create({x: 99999, y:99999, z:99999});
+		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
 	}, 2500);
 });

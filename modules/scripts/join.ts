@@ -9,7 +9,7 @@ import { CIFconfig } from "../util/configManager";
 
 export const nameMap = new Map<NetworkIdentifier, string>();
 
-export const deviceModelMap = new Map<NetworkIdentifier, string>();
+export const identityPublicKeyMap = new Map<NetworkIdentifier, string>();
 
 export const wasJoinedIn15seconds = new Map<NetworkIdentifier, boolean>();
 
@@ -39,15 +39,12 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const xuid = cert.getXuid();
     const model = req.getJsonValue()!.DeviceModel;
 
-	// const test = cert.json.value();
-	// console.log(test);
-	// console.log("----------------");
+	const publicIDKey = cert.json.value().extraData.identityPublicKey.replace("/", "_");
 
     const isXboxLogined = xuid.length > 3;
-	//MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE
 
     nameMap.set(ni, name);
-    deviceModelMap.set(ni, model);
+    identityPublicKeyMap.set(ni, publicIDKey);
 	wasJoinedIn15seconds.set(ni, true);
 	setTimeout(() => {
 		wasJoinedIn15seconds.set(ni, false);
@@ -82,9 +79,13 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const brand = model.split(" ")[0];
     const titleId = cert.json.value()["extraData"]["titleId"];
 
-    if (TitleId[titleId] && TitleId[BuildPlatform[deviceOS] as any] != titleId) {
-        CIF.detect(ni, "os_spoof", "Join with wrong edition");
-        CIF.ban(ni, "os-spoof");
+    if (deviceId.length !== 36 && deviceOS == 7) {
+        CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Android/IOS)");
+		CIF.ban(ni, "fake-os");
+    };
+    if (deviceId.length !== 32 && deviceOS !== 7) {
+		CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Windows 10)");
+		CIF.ban(ni, "fake-os");
     };
 
     if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus")) {
