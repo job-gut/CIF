@@ -62,7 +62,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
     if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
-        bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6Detected`);
+        bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
     };
 
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);

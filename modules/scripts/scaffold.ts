@@ -6,6 +6,8 @@ import { CIFconfig } from "../util/configManager";
 const lastplacedblockposY: any = {};
 const scaffoldWarn: Record<string, number> = {};
 
+const placesPerSecond: Record<string, number> = {};
+
 function warn(name: string) {
     if (typeof scaffoldWarn[name] !== "number") scaffoldWarn[name] = 0;
     scaffoldWarn[name]++;
@@ -25,9 +27,9 @@ events.blockPlace.on((ev) => {
     const player = ev.player;
     if (!player) return;
     if (!player.isPlayer()) return;
+	const name = player.getName()!;
     const blockPos = ev.blockPos;
     const playerPos = player.getFeetPos()!;
-    const name = player.getName()!;
     const plposy = Math.floor(playerPos.y);
     const blockposy = Math.floor(blockPos.y);
     const gm = player.getGameType();
@@ -71,4 +73,7 @@ events.blockPlace.on((ev) => {
 
 		lastplacedblockposY[name] = blockposy;
     };
+
+
+
 });

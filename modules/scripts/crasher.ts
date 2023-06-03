@@ -7,6 +7,10 @@ import { CxxStringWrapper } from "bdsx/pointer";
 import { procHacker } from "bdsx/prochacker";
 import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
+import { CANCEL } from "bdsx/common";
+import { ComplexInventoryTransaction } from "bdsx/bds/inventory";
+
+const transactionPerSecond: Record<string, number> = {};
 
 const UINTMAX = 0xffffffff;
 
@@ -121,6 +125,27 @@ events.packetRaw(MinecraftPacketIds.PlayerList).on((ptr, size, ni)=> {
 		CIF.ban(ni, "Crasher");
 		return CIF.detect(ni, "Crasher", "Send Invalid PlayerList Packet")
 	}
+});
+
+events.packetBefore(MinecraftPacketIds.InventoryTransaction).on((pkt, ni)=> {
+	const player = ni.getActor()!;
+	const name = player.getName();
+
+	if (CIFconfig.Modules.crasher === true) {
+		if (typeof transactionPerSecond[name] !== "number") transactionPerSecond[name] = 0;
+		transactionPerSecond[name]++;
+		setTimeout(() => {
+			transactionPerSecond[name]--;
+			if (transactionPerSecond[name] < 0) transactionPerSecond[name] = 0;
+		}, 999).unref(); 
+
+		if (transactionPerSecond[name] > 99) {
+			if (transactionPerSecond[name] > 100) return CANCEL;
+			CIF.ban(player.getNetworkIdentifier(), "Crasher");
+			return CIF.detect(player.getNetworkIdentifier(), "crasher", "Spamming InventoryTransAction Packet");
+		};
+
+	};
 });
 
 const Warns: Record<string, number> = {};
