@@ -39,7 +39,12 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const xuid = cert.getXuid();
     const model = req.getJsonValue()!.DeviceModel;
 
+	// const test = cert.json.value();
+	// console.log(test);
+	// console.log("----------------");
+
     const isXboxLogined = xuid.length > 3;
+	//MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE
 
     nameMap.set(ni, name);
     deviceModelMap.set(ni, model);
@@ -82,7 +87,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.ban(ni, "os-spoof");
     };
 
-    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG")) {
+    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus")) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
         CIF.ban(ni, "Toolbox");
     };
