@@ -39,7 +39,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const xuid = cert.getXuid();
     const model = req.getJsonValue()!.DeviceModel;
 
-	const publicIDKey = cert.json.value().extraData.identityPublicKey.replace("/", "_");
+	const publicIDKey = String(cert.json.value().extraData.identityPublicKey).replace("/", "_");
 
     const isXboxLogined = xuid.length > 3;
 
