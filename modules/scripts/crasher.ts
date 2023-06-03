@@ -85,7 +85,7 @@ events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
         PPSsound[plname] = PPSsound[plname] ? PPSsound[plname] + 1 : 1;
 
         if (PPSsound[plname] > 39) {
-            PPSsound[plname] = 0;
+            if (PPSsound[plname] > 40) return CANCEL;
             return CIF.detect(ni, "Sound Spam", "Spamming Sound Packets");
         };
 
@@ -104,7 +104,7 @@ events.packetBefore(MinecraftPacketIds.ActorEvent).on((pkt, ni) => {
     PPSact[plname] = PPSact[plname] ? PPSact[plname] + 1 : 1;
 
     if (PPSact[plname] > 39) {
-        PPSact[plname] = 0;
+        if (PPSact[plname] > 40) return CANCEL;
         return CIF.detect(ni, "Act Spam", "Spamming ActorEvent Packets");
     };
     setTimeout(async () => {
