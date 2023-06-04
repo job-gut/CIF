@@ -7,6 +7,7 @@ import { CIF } from "../../main";
 import { identityPublicKeyMap, nameMap } from "../scripts/join";
 import { MovementType } from "../scripts/movement";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { red } from "colors";
 
 
 /**
@@ -83,7 +84,7 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
-    this.log(`${cheaterName} was banned using ${reason}`);
+    this.log(red(`${cheaterName} was banned using ${reason}`));
 	const accidKey = identityPublicKeyMap.get(ni)!;
 	writeFileSync("../CIFbanList/"+accidKey, reason);
 };
