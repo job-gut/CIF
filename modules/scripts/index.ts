@@ -26,5 +26,8 @@ CIF.log(`Successfully Loaded ${"Scaffold".magenta} Modules`.green);
 require("./xp");
 CIF.log(`Successfully Loaded ${"XP".magenta} Module`.green);
 
+require("../util/command");
+CIF.log(`Successfully Registered ${"Commands".magenta}`.green);
+
 require("../util/CrashLogger");
 CIF.log(`Successfully Loaded ${"CrashLogger".magenta} Module`.green);

@@ -4,8 +4,9 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { CANCEL } from "bdsx/common";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../../main";
-import { nameMap } from "../scripts/join";
+import { identityPublicKeyMap, nameMap } from "../scripts/join";
 import { MovementType } from "../scripts/movement";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 
 
 /**
@@ -83,9 +84,16 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     this.wasDetected[cheaterName] = true;
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
     this.log(`${cheaterName} was banned using ${reason}`);
+	const accidKey = identityPublicKeyMap.get(ni)!;
+	writeFileSync("../CIFbanList/"+accidKey, reason);
 };
 
 
 CIF.resetDetected = function (plname: string): void {
     this.wasDetected[plname] = false;
+};
+
+
+if (!existsSync("../CIFbanList")) {
+	mkdirSync("../CIFbanList");
 };

@@ -5,6 +5,8 @@ import { events } from "bdsx/event";
 import { yellow } from "colors";
 import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
+import { readFileSync, readdirSync } from "fs";
+import { bedrockServer } from "bdsx/launcher";
 
 
 export const nameMap = new Map<NetworkIdentifier, string>();
@@ -50,8 +52,17 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 		wasJoinedIn15seconds.set(ni, false);
 	}, 15000);
 
-    //TODO : 밴 된 사람 처리하는 곳 만들기 (CIF.log & OP ALERT)
-    
+	
+    const banlist = readdirSync("../CIFbanList");
+	for (const bannedPlayer of banlist) {
+		if (bannedPlayer === publicIDKey) {
+			const bannedReason = readFileSync("../CIFbanList/"+bannedPlayer).toString();
+
+			bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
+			CIF.announce(`§c[§fCIF§c] §c${name} §6failed to connect §7(§c${bannedReason}§7)`);
+    		CIF.log(`${name} failed to connect ${bannedReason.red}`.yellow);
+		};
+	};
 
     if (name.length > 20) {
         nameMap.set(ni, "Invalid_Name");

@@ -114,7 +114,7 @@ const receivePacket = procHacker.hooking(
     };
 
 	
-	if (CIFconfig.Modules.crasher !== true) receivePacket(conn, data, networkSystem, time_point);
+	if (CIFconfig.Modules.crasher !== true) return receivePacket(conn, data, networkSystem, time_point);
 
 
     const ip = address.split("|")[0];
