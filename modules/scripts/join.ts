@@ -52,7 +52,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 		wasJoinedIn15seconds.set(ni, false);
 	}, 15000);
 
-	
+
     const banlist = readdirSync("../CIFbanList");
 	for (const bannedPlayer of banlist) {
 		if (bannedPlayer === publicIDKey) {
@@ -60,7 +60,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
 			bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
 			CIF.announce(`§c[§fCIF§c] §c${name} §6failed to connect §7(§c${bannedReason}§7)`);
-    		CIF.log(`${name} failed to connect ${bannedReason.red}`.yellow);
+    		CIF.log(`${name} failed to connect (${bannedReason.red})`.yellow);
 		};
 	};
 
