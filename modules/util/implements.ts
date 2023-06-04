@@ -86,7 +86,7 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
     this.log(red(`${cheaterName} was banned using ${reason}`));
 	const accidKey = identityPublicKeyMap.get(ni)!;
-	writeFileSync("../CIFbanList/"+accidKey, reason);
+	writeFileSync("../CIFbanList/"+accidKey, cheaterName+":"+reason);
 };
 
 
