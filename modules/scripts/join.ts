@@ -1,6 +1,5 @@
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { BuildPlatform } from "bdsx/common";
 import { events } from "bdsx/event";
 import { yellow } from "colors";
 import { CIF } from "../../main";
@@ -41,7 +40,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const xuid = cert.getXuid();
     const model = req.getJsonValue()!.DeviceModel;
 
-	const publicIDKey = String(cert.json.value().extraData.identityPublicKey).replace("/", "_");
+	const publicIDKey = String(cert.json.value().identityPublicKey).replace("/", "_");
 
     const isXboxLogined = xuid.length > 3;
 
