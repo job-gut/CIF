@@ -12,16 +12,10 @@ export const nameMap = new Map<NetworkIdentifier, string>();
 
 export const identityPublicKeyMap = new Map<NetworkIdentifier, string>();
 
+export const deviceIdMap = new Map<NetworkIdentifier, string>();
+
 export const wasJoinedIn15seconds = new Map<NetworkIdentifier, boolean>();
 
-enum TitleId {
-    ANDROID = 1739947436,
-    IOS = 1810924247,
-    WINDOWS_10 = 896928775,
-    PLAYSTATION = 2044456598,
-    NINTENDO = 2047319603,
-    XBOX = 1828326430,
-};
 
 const firstLoginedDID: Record<string, string> = {};
 const firstLoginedOS: Record<string, number> = {};
@@ -48,6 +42,8 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     nameMap.set(ni, name);
     identityPublicKeyMap.set(ni, publicIDKey);
 	wasJoinedIn15seconds.set(ni, true);
+	deviceIdMap.set(ni, deviceId);
+
 	setTimeout(() => {
 		wasJoinedIn15seconds.set(ni, false);
 	}, 15000);
@@ -55,7 +51,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     const banlist = readdirSync("../CIFbanList");
 	for (const bannedPlayer of banlist) {
-		if (bannedPlayer === publicIDKey) {
+		if (bannedPlayer === publicIDKey || bannedPlayer === deviceId) {
 			const bannedReason = readFileSync("../CIFbanList/"+bannedPlayer).toString().split(":")[1];
 
 			bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
@@ -88,7 +84,6 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     };
 
     const brand = model.split(" ")[0];
-    const titleId = cert.json.value()["extraData"]["titleId"];
 
     if (deviceId.length !== 36 && deviceOS == 7) {
         CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Android/IOS)");
