@@ -198,7 +198,7 @@ events.entityHurt.on((ev) => {
 		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
-		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet && lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()) {
+		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()) {
 			return sameRotWarn(player);
 		};
 	};
