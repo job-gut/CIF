@@ -86,12 +86,12 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
     this.log(red(`${cheaterName} was banned using ${reason}`));
 	const did = deviceIdMap.get(ni)!;
-	if (did.length === 36) {
-		const accidKey = identityPublicKeyMap.get(ni)!;
-		writeFileSync("../CIFbanList/"+accidKey, cheaterName+":"+reason);
-	} else {
+	// if (did.length === 36) {
+	// 	const accidKey = identityPublicKeyMap.get(ni)!;
+	// 	writeFileSync("../CIFbanList/"+accidKey, cheaterName+":"+reason);
+	// } else {
 		writeFileSync("../CIFbanList/"+did, cheaterName+":"+reason);
-	};
+	//};
 };
 
 
