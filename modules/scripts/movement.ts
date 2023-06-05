@@ -25,7 +25,7 @@ export const MovementType =
 const lastBPS: Record<string, number> = {};
 const isSpinAttacking: Record<string, boolean> = {};
 const onGround: Record<string, boolean> = {};
-const isGlidingWithElytra: Record<string, boolean> = {};
+const usedElytra: Record<string, boolean> = {};
 
 const lastpos: Record<string, number[]> = {};
 
@@ -155,8 +155,8 @@ Player.prototype.onGround = function () {
 
 Player.prototype.isGlidingWithElytra = function () {
 	const plname = this.getName();
-	if (!isGlidingWithElytra[plname]) isGlidingWithElytra[plname] = false;
-	return isGlidingWithElytra[plname];
+	if (!usedElytra[plname]) usedElytra[plname] = false;
+	return usedElytra[plname];
 };
 
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
@@ -170,15 +170,16 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 	};
 
 	if (pkt.action === PlayerActionPacket.Actions.StartGlide) {
-		isGlidingWithElytra[plname] = true;
+		// usedElytra[plname] = true;
 
 		if (pl.getArmor(ArmorSlot.Torso).getRawNameId() !== "elytra") {
 			return CIF.detect(ni, "Fly-E", "Glide Without Elytra");
 		};
 
-	} else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
-		isGlidingWithElytra[plname] = false;
-	};
+	}
+	// else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
+	// 	usedElytra[plname] = false;
+	// };
 
 	if (pkt.action === PlayerActionPacket.Actions.Jump) {
 		jumpedTick[plname] = pl.getLevel().getCurrentTick();
@@ -192,6 +193,43 @@ function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
 function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
 	return (<PlayerAuthInputPacket>pkt).moveX !== undefined;
 };
+
+
+const fishHook = procHacker.hooking(
+	"?_pullCloser@FishingHook@@IEAAXAEAVActor@@M@Z",
+	void_t,
+	null,
+	Actor,
+	float32_t
+)((actor, strength) => {
+	if (actor.isPlayer()) {
+		const name = actor.getName();
+		haveFished[name] = true;
+		setTimeout(() => {
+			haveFished[name] = false;
+		}, 2000);
+	}
+});
+
+const startGlide = procHacker.hooking(
+	"?startGliding@Player@@QEAAXXZ",
+	void_t,
+	null,
+	Player
+)((player) => {
+	usedElytra[player.getName()] = true;
+});
+
+const stopGlide = procHacker.hooking(
+	"?stopGliding@Player@@QEAAXXZ",
+	void_t,
+	null,
+	Player
+)((player) => {
+	setTimeout(() => {
+		usedElytra[player.getName()] = false
+	}, 1000);
+});
 
 events.packetBefore(MovementType).on((pkt, ni) => {
 	if (CIFconfig.Modules.movement !== true) return;
@@ -501,7 +539,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			};
 		};
 	};
-	
+
 	if (movePos.y < -61) return;
 
 	if (lastY === movePos.y && !isTeleported[plname]) {
