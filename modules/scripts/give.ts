@@ -3,6 +3,7 @@ import { events } from "bdsx/event";
 import { CIF } from "../../main";
 import { CANCEL } from "bdsx/common";
 import { CIFconfig } from "../util/configManager";
+import { InputMode } from "bdsx/bds/player";
 
 const transactionPerSecond: Record<string, number> = {};
 
@@ -12,7 +13,7 @@ events.packetRaw(MinecraftPacketIds.InventoryTransaction).on((ptr, size, ni)=> {
 	const player = ni.getActor()!;
 	const name = player.getName();
 
-	if (CIFconfig.Modules.crasher === true) {
+	if (CIFconfig.Modules.crasher === true && player.getInputMode() === InputMode.Mouse) {
 		if (typeof transactionPerSecond[name] !== "number") transactionPerSecond[name] = 0;
 		transactionPerSecond[name]++;
 		setTimeout(() => {
