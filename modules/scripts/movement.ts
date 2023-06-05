@@ -35,6 +35,8 @@ const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 const littleFastStack: Record<string, number> = {};
 const littleFastWarn: Record<string, number> = {};
+const spiderWarn: Record<string, number> = {};
+const lastWentUpBlocks: Record<string, number> = {};
 
 const Fly_bStack: Record<string, number> = {};
 
@@ -438,6 +440,48 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	};
 
+	const lastY = lastPos[1];
+
+	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
+		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
+			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
+				const block = region.getBlock(
+					BlockPos.create({ x: x, y: y, z: z })
+				);
+				const blockName = block.getName();
+				if (blockName === "minecraft:ladder" || blockName === "minecraft:vine") {
+					lastBPS[plname] = bps;
+					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+
+					spiderWarn[plname] = 0;
+
+					movePos.y += 1.62001190185547;
+					return;
+				};
+			};
+		};
+	};
+
+	if (typeof spiderWarn[plname] !== "number") spiderWarn[plname] = 0;
+
+	if (lastWentUpBlocks[plname] > 0) {
+		if (lastWentUpBlocks[plname] === movePos.y - lastY) {
+			spiderWarn[plname]++;
+
+			if (spiderWarn[plname] > 4) {
+				CIF.detect(ni, "Spider", "Climb Walls with Same Speed");
+			};
+		} else {
+			spiderWarn[plname]--;
+			if (spiderWarn[plname] < 0) spiderWarn[plname] = 0;
+		};
+	} else if (lastWentUpBlocks[plname] < 0) {
+		if (spiderWarn[plname] < 0) spiderWarn[plname] = 0;
+	};
+
+	if (typeof lastWentUpBlocks[plname] !== "number") lastWentUpBlocks[plname] = 0;
+	lastWentUpBlocks[plname] = movePos.y - lastY;
+
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
 		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
 			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
@@ -457,8 +501,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			};
 		};
 	};
-
-	const lastY = lastPos[1];
+	
 	if (movePos.y < -61) return;
 
 	if (lastY === movePos.y && !isTeleported[plname]) {

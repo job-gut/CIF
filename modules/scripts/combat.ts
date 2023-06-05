@@ -31,7 +31,7 @@ function mismatchWarn(player: Player): CANCEL {
 	}, 3000);
 
 	if (MismatchAuraWarn.get(name)! > 2) {
-		CIF.ban(player.getNetworkIdentifier(), "Aura-A");
+		CIF.ban(player.getNetworkIdentifier(), "Aura");
 		return CIF.detect(
 			player.getNetworkIdentifier(),
 			"Aura-A",
@@ -56,7 +56,7 @@ function sameRotWarn(player: Player): CANCEL {
 	}, 3000);
 
 	if (sameRotAuraWarn.get(name)! > 3) {
-		CIF.ban(player.getNetworkIdentifier(), "Aura-B");
+		CIF.ban(player.getNetworkIdentifier(), "Aura");
 		return CIF.detect(
 			player.getNetworkIdentifier(),
 			"Aura-B",
