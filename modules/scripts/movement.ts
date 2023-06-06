@@ -208,7 +208,7 @@ const fishHook = procHacker.hooking(
 		haveFished[name] = true;
 		setTimeout(() => {
 			haveFished[name] = false;
-		}, 2000);
+		}, 1000);
 	}
 });
 
@@ -229,7 +229,7 @@ const stopGlide = procHacker.hooking(
 )((player) => {
 	setTimeout(() => {
 		usedElytra[player.getName()] = false
-	}, 1000);
+	}, 2000);
 });
 
 const pistonPush = procHacker.hooking(
