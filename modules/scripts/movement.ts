@@ -1,6 +1,6 @@
 import { AbilitiesIndex } from "bdsx/bds/abilities";
 import { Actor } from "bdsx/bds/actor";
-import { Block } from "bdsx/bds/block";
+import { Block, BlockActor } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot } from "bdsx/bds/inventory";
 import { Packet } from "bdsx/bds/packet";
@@ -47,6 +47,7 @@ const respawnedPos: Record<string, Vec3> = {};
 const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
+const pushedByPiston: Record<string, boolean> = {};
 
 const susToTeleport: Record<string, boolean> = {};
 
@@ -229,6 +230,23 @@ const stopGlide = procHacker.hooking(
 	setTimeout(() => {
 		usedElytra[player.getName()] = false
 	}, 1000);
+});
+
+const pistonPush = procHacker.hooking(
+	"?moveEntityLastProgress@PistonBlockActor@@QEAAXAEAVActor@@VVec3@@@Z",
+	void_t,
+	null,
+	BlockActor,
+	Actor,
+	Vec3
+)((blockActor, actor, pos) => {
+	if (actor.isPlayer()) {
+		const name = actor.getName();
+		pushedByPiston[name] = true
+		setTimeout(() => {
+			pushedByPiston[name] = false
+		}, 1000);
+	}
 });
 
 events.packetBefore(MovementType).on((pkt, ni) => {
