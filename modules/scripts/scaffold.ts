@@ -55,7 +55,7 @@ events.blockPlace.on((ev) => {
             return CANCEL;
         };
 
-        if (headrotation.x < 30) {
+        if (headrotation.x < 20) {
             if (lastplacedblockposY[name] + 1 === blockposy) {
                 warn(name);
 
