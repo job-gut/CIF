@@ -505,7 +505,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					BlockPos.create({ x: x, y: y, z: z })
 				);
 				const blockName = block.getName();
-				if (blockName === "minecraft:ladder" || blockName === "minecraft:vine") {
+				if (blockName === "minecraft:ladder" || blockName === "minecraft:vine" ||
+				blockName.includes("water") || blockName.includes("lava")
+				) {
 					lastBPS[plname] = bps;
 					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 
