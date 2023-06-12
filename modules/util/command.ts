@@ -11,7 +11,7 @@ enum isEnabled {
 };
 
 events.serverOpen.on(()=> {
-	const cmd = command.register("cif", "Manage all things about CIF");
+	const cmd = command.register("cif", "Manage all things about CIF", 1);
 
 	cmd.overload((param) => {
 		CIFconfig.Modules[param.configs] = param.isenabled;
