@@ -172,6 +172,7 @@ events.entityHurt.on((ev) => {
 	if (!player.isPlayer()) return;
 	if (!victim.isPlayer()) return;
 	if (victim.getGameType() === GameType.Creative) return;
+	if (player.getGameType() === GameType.Creative) return;
 	if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
 
 	const playerpos = player.getFeetPos();
