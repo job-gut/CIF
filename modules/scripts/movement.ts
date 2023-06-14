@@ -219,6 +219,7 @@ const startGlide = procHacker.hooking(
 	Player
 )((player) => {
 	usedElytra[player.getName()] = true;
+	return startGlide(player);
 });
 
 const stopGlide = procHacker.hooking(
@@ -230,6 +231,7 @@ const stopGlide = procHacker.hooking(
 	setTimeout(() => {
 		usedElytra[player.getName()] = false
 	}, 2000);
+	return stopGlide(player);
 });
 
 const pistonPush = procHacker.hooking(
@@ -246,7 +248,9 @@ const pistonPush = procHacker.hooking(
 		setTimeout(() => {
 			pushedByPiston[name] = false
 		}, 1000);
-	}
+	};
+
+	return pistonPush(blockActor, actor, pos);
 });
 
 events.packetBefore(MovementType).on((pkt, ni) => {

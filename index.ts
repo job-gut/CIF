@@ -49,7 +49,7 @@ function download(url: string, path: string, cb: any = undefined) {
 };
 
 async function update() {
-	if(await download("http://CIF.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/CIF.zip", "../plugins/CIF.zip") !== true) {
+	if(await download("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/CIF.zip", "../plugins/CIF.zip") !== true) {
 		import("./modules/util/configManager");
 		import("./main");
 		return;
@@ -59,11 +59,13 @@ async function update() {
 		if (err) throw err;
 	}));
 
-	await exec("powershell Expand-Archive -Force -path '../plugins/CIF.zip' -Destinationpath '../plugins/CIF'", ((err, stdout, stderr) => {
-		import("./modules/util/configManager");
-		import("./main");
-		if (err) throw err;
-	}));
+	await setTimeout(async () => {
+		await exec("powershell Expand-Archive -Force -path '../plugins/CIF.zip' -Destinationpath '../plugins/CIF'", ((err, stdout, stderr) => {
+			import("./modules/util/configManager");
+			import("./main");
+			if (err) throw err;
+		}));
+	}, 1000).unref;
 };
 
 function stringToBoolean(str: string): boolean {
