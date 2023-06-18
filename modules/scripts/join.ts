@@ -21,8 +21,6 @@ const firstLoginedDID: Record<string, string> = {};
 const firstLoginedOS: Record<string, number> = {};
 
 events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
-	if (CIFconfig.Modules.join !== true) return;
-
 
     const req = pkt.connreq;
     if (req === null) return;
@@ -48,7 +46,6 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 		wasJoinedIn15seconds.set(ni, false);
 	}, 15000);
 
-
     const banlist = readdirSync("../CIFbanList");
 	for (const bannedPlayer of banlist) {
 		if (bannedPlayer === publicIDKey || bannedPlayer === deviceId) {
@@ -59,6 +56,10 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     		CIF.log(`${name} failed to connect `+"(".white+`${bannedReason.red})`.yellow);
 		};
 	};
+
+	
+	if (CIFconfig.Modules.join !== true) return;
+
 
     if (name.length > 20) {
         nameMap.set(ni, "Invalid_Name");
