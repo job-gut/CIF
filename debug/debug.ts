@@ -43,15 +43,4 @@ events.serverOpen.on(() => {
         cheatName: CommandMessage,
         cheatDescription: CommandMessage
     });
-
-	debugCommand.overload((param, origin, output) => {
-		CIFconfig.Modules[param.configs] = param.enabled;
-		if (!origin.isServerCommandOrigin()) 
-		origin.getEntity()?.getNetworkIdentifier().getActor()?.sendMessage("§c[§fCIF§c] §d"+param.configs+` §e모듈이 ${param.enabled} 상태로 설정되었습니다`);
-		origin.getEntity()?.getNetworkIdentifier().getActor()?.sendMessage("§c주의 : 이 설정은 임시적이며 재시작시 초기화됩니다");
-	}, {
-		config : command.enum("config", "config"),
-		configs : command.enum("cif_config", CIFconfigNames),
-		enabled : bool_t
-	});
 });
