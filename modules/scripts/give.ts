@@ -19,10 +19,10 @@ events.packetRaw(MinecraftPacketIds.InventoryTransaction).on((ptr, size, ni)=> {
 		setTimeout(() => {
 			transactionPerSecond[name]--;
 			if (transactionPerSecond[name] < 0) transactionPerSecond[name] = 0;
-		}, 999).unref(); 
+		}, 996).unref(); 
 
-		if (transactionPerSecond[name] > 199) {
-			if (transactionPerSecond[name] > 200) return CANCEL;
+		if (transactionPerSecond[name] > 249) {
+			if (transactionPerSecond[name] > 250) return CANCEL;
 			CIF.ban(player.getNetworkIdentifier(), "Crasher");
 			return CIF.detect(player.getNetworkIdentifier(), "crasher", "Spamming InventoryTransAction Packet");
 		};
