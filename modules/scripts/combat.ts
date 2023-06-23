@@ -200,6 +200,9 @@ events.entityHurt.on((ev) => {
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
 		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()) {
+			headPos.x -= addThisPos.x;
+			headPos.y -= addThisPos.y;
+			headPos.z -= addThisPos.z;
 			return sameRotWarn(player);
 		};
 	};
@@ -214,7 +217,14 @@ events.entityHurt.on((ev) => {
 		reach >= 4.5 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
+		headPos.x -= addThisPos.x;
+		headPos.y -= addThisPos.y;
+		headPos.z -= addThisPos.z;
 		CIF.announce(`§c[§fCIF§c] §c${plname} §6has failed to using §cReach §7(Increase Reach | ${reach})`);
 		return CANCEL;
 	};
+
+	headPos.x -= addThisPos.x;
+	headPos.y -= addThisPos.y;
+	headPos.z -= addThisPos.z;
 });
