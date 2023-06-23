@@ -209,7 +209,9 @@ const fishHook = procHacker.hooking(
 		setTimeout(() => {
 			haveFished[name] = false;
 		}, 1000);
-	}
+	};
+
+	return fishHook(actor, strength);
 });
 
 const startGlide = procHacker.hooking(
