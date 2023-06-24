@@ -575,7 +575,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					BlockPos.create({ x: x, y: y, z: z })
 				);
 				const blockName = block.getName();
-				if (blockName !== "minecraft:water") {
+				if (!blockName.includes("water")) {
 					break outerFor;
 				};
 			};
@@ -586,7 +586,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })
 	);
 	const blockName = underblock.getName();
-	if (blockName === "minecraft:water") {
+	if (blockName.includes("water")) {
 		if (player.onGround()) {
 			CIF.ban(ni, "WaterWalker");
 			CIF.detect(ni, "WaterWalker", "Walks on water like a solid block");
