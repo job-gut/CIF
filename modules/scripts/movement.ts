@@ -256,9 +256,6 @@ const pistonPush = procHacker.hooking(
 });
 
 events.packetBefore(MovementType).on((pkt, ni) => {
-	if (CIFconfig.Modules.movement !== true) return;
-
-
 	const player = ni.getActor();
 	if (!player) return;
 
@@ -275,6 +272,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 	}
 
+	if (CIFconfig.Modules.movement !== true) return;
 	const movePos = pkt.pos;
 	movePos.y -= 1.62001190185547;
 
@@ -351,6 +349,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const lastPos = lastpos[plname];
 	const plSpeed = player.getSpeed();
 
+	//Normal Speed ≒ 0.13
 	//5.62 is max speed without any speed effects and while sprinting.
 	const maxBPS = plSpeed * 45;
 
@@ -398,11 +397,11 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 
 		if (player.onIce() && player.isRiding()) {
-			//이거는 그냥 의미 없는 짓거리
+			//Just for Exception
 		} else if (player.onIce() && !player.isRiding()) {
-			//대충 max bps 구해서 처리하는거 만들기
+			//TODO: get Max BPS and Process If player uses entity speed
 		} else if (!player.onIce() && player.isRiding()) {
-			//대충 max bps 구해서 처리하는거 만들기
+			//TODO: get Max BPS and Process If player uses entity speed
 		};
 
 		if (
