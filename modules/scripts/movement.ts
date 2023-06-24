@@ -508,7 +508,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	let waterStack = 0;
 
 	outerFor: for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
-		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
+		for (let y = movePos.y - 1; y === movePos.y - 1; y++) {
 			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
 				const block = region.getBlock(
 					BlockPos.create({ x: x, y: y, z: z })
