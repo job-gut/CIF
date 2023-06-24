@@ -505,6 +505,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	const lastY = lastPos[1];
 
+	let waterStack = 0;
+
 	outerFor: for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
 		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
 			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
@@ -515,6 +517,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				if (!blockName.includes("water")) {
 					break outerFor;
 				};
+				waterStack++;
 			};
 		};
 	};
@@ -523,7 +526,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })
 	);
 	const blockName = underblock.getName();
-	if (blockName.includes("water")) {
+	if (blockName.includes("water") && waterStack === 9) {
 		if (player.onGround()) {
 			CIF.ban(ni, "WaterWalker");
 			CIF.detect(ni, "WaterWalker", "Walks on water like a solid block");
