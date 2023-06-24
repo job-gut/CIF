@@ -505,6 +505,31 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	const lastY = lastPos[1];
 
+	outerFor: for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
+		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
+			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
+				const block = region.getBlock(
+					BlockPos.create({ x: x, y: y, z: z })
+				);
+				const blockName = block.getName();
+				if (!blockName.includes("water")) {
+					break outerFor;
+				};
+			};
+		};
+	};
+
+	const underblock = region.getBlock(
+		BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })
+	);
+	const blockName = underblock.getName();
+	if (blockName.includes("water")) {
+		if (player.onGround()) {
+			CIF.ban(ni, "WaterWalker");
+			CIF.detect(ni, "WaterWalker", "Walks on water like a solid block");
+		};
+	};
+
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
 		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
 			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
@@ -566,31 +591,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			};
 		};
 
-	};
-
-	outerFor: for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
-		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
-			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
-				const block = region.getBlock(
-					BlockPos.create({ x: x, y: y, z: z })
-				);
-				const blockName = block.getName();
-				if (!blockName.includes("water")) {
-					break outerFor;
-				};
-			};
-		};
-	};
-
-	const underblock = region.getBlock(
-		BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })
-	);
-	const blockName = underblock.getName();
-	if (blockName.includes("water")) {
-		if (player.onGround()) {
-			CIF.ban(ni, "WaterWalker");
-			CIF.detect(ni, "WaterWalker", "Walks on water like a solid block");
-		};
 	};
 
 	if (movePos.y < -61) return;
