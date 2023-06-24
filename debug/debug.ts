@@ -6,8 +6,16 @@ import { CIF } from "../main";
 import { CIFconfig, CIFconfigNames } from "../modules/util/configManager";
 import { bool_t } from "bdsx/nativetype";
 
+let isLogPackets = false;
+
 //debug code
 events.serverOpen.on(() => {
+	for (let i = 1; i < 200; i++) {
+		events.packetRaw(i).on((ptr, size, ni, pktid)=> {
+			if (isLogPackets) console.log(pktid, ni.getActor()?.getName());
+		});
+	};
+ 
     const debugCommand = command.register('cif_dbg', 'command for testing some CIF modules', CommandPermissionLevel.Operator);
     debugCommand.overload((param, origin, output) => {
         CIF.announce(param.message.getMessage(origin), param.target);
@@ -43,4 +51,10 @@ events.serverOpen.on(() => {
         cheatName: CommandMessage,
         cheatDescription: CommandMessage
     });
+	debugCommand.overload((p, o, op)=> {
+		isLogPackets = p.boolean;
+
+	}, {
+		boolean: bool_t
+	});
 });
