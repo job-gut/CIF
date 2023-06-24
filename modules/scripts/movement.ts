@@ -337,6 +337,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
+		pushedByPiston[plname] ||
+		
 		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
@@ -580,6 +582,14 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	} else {
 		Fly_bStack[plname]--;
 		if (Fly_bStack[plname] < 0) Fly_bStack[plname] = 0;
+	};
+
+	if (haveFished[plname]) {
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		susToTeleport[plname] = false;
+		lastBPS[plname] = 0;
+		movePos.y += 1.62001190185547;
+		return;
 	};
 
 	lastBPS[plname] = bps;

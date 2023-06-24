@@ -37,7 +37,6 @@ export namespace CIFconfigNames {
 	export const movement = "movement";
 	export const scaffold = "scaffold";
 	export const xp = "xp";
-	export const auto_update = "auto_update";
 };
 
 import { CIF } from "../../main";
