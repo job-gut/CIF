@@ -5,6 +5,7 @@ import { events } from "bdsx/event";
 import { CIF } from "../main";
 import { CIFconfig, CIFconfigNames } from "../modules/util/configManager";
 import { bool_t } from "bdsx/nativetype";
+import { MinecraftPacketIds } from "bdsx/bds/packetids";
 
 let isLogPackets = false;
 
@@ -12,7 +13,7 @@ let isLogPackets = false;
 events.serverOpen.on(() => {
 	for (let i = 1; i < 200; i++) {
 		events.packetRaw(i).on((ptr, size, ni, pktid)=> {
-			if (isLogPackets) console.log(pktid, ni.getActor()?.getName());
+			if (isLogPackets) console.log(MinecraftPacketIds[pktid], ni.getActor()?.getName());
 		});
 	};
  
@@ -55,6 +56,7 @@ events.serverOpen.on(() => {
 		isLogPackets = p.boolean;
 
 	}, {
+		packetLog: command.enum("logpackets", "logpackets"),
 		boolean: bool_t
 	});
 });
