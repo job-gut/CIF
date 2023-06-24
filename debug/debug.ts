@@ -5,9 +5,18 @@ import { events } from "bdsx/event";
 import { CIF } from "../main";
 import { CIFconfig, CIFconfigNames } from "../modules/util/configManager";
 import { bool_t } from "bdsx/nativetype";
+import { MinecraftPacketIds } from "bdsx/bds/packetids";
+
+let isLogPackets = false;
 
 //debug code
 events.serverOpen.on(() => {
+	for (let i = 1; i < 200; i++) {
+		events.packetRaw(i).on((ptr, size, ni, pktid)=> {
+			if (isLogPackets) console.log(MinecraftPacketIds[pktid], ni.getActor()?.getName());
+		});
+	};
+ 
     const debugCommand = command.register('cif_dbg', 'command for testing some CIF modules', CommandPermissionLevel.Operator);
     debugCommand.overload((param, origin, output) => {
         CIF.announce(param.message.getMessage(origin), param.target);
@@ -43,4 +52,11 @@ events.serverOpen.on(() => {
         cheatName: CommandMessage,
         cheatDescription: CommandMessage
     });
+	debugCommand.overload((p, o, op)=> {
+		isLogPackets = p.boolean;
+
+	}, {
+		packetLog: command.enum("logpackets", "logpackets"),
+		boolean: bool_t
+	});
 });

@@ -231,7 +231,7 @@ const stopGlide = procHacker.hooking(
 	Player
 )((player) => {
 	setTimeout(() => {
-		usedElytra[player.getName()] = false
+		usedElytra[player.getName()] = false;
 	}, 2000);
 	return stopGlide(player);
 });
@@ -256,9 +256,6 @@ const pistonPush = procHacker.hooking(
 });
 
 events.packetBefore(MovementType).on((pkt, ni) => {
-	if (CIFconfig.Modules.movement !== true) return;
-
-
 	const player = ni.getActor();
 	if (!player) return;
 
@@ -275,6 +272,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 	}
 
+	if (CIFconfig.Modules.movement !== true) return;
 	const movePos = pkt.pos;
 	movePos.y -= 1.62001190185547;
 
@@ -334,11 +332,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
-		torso.getRawNameId() === "elytra" ||
+		usedElytra[plname] ||
 		isKnockbacking[plname] ||
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
+		pushedByPiston[plname] ||
+		
 		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
@@ -351,6 +351,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const lastPos = lastpos[plname];
 	const plSpeed = player.getSpeed();
 
+	//Normal Speed ≒ 0.13
 	//5.62 is max speed without any speed effects and while sprinting.
 	const maxBPS = plSpeed * 45;
 
@@ -398,11 +399,11 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 
 		if (player.onIce() && player.isRiding()) {
-			//이거는 그냥 의미 없는 짓거리
+			//Just for Exception
 		} else if (player.onIce() && !player.isRiding()) {
-			//대충 max bps 구해서 처리하는거 만들기
+			//TODO: get Max BPS and Process If player uses entity speed
 		} else if (!player.onIce() && player.isRiding()) {
-			//대충 max bps 구해서 처리하는거 만들기
+			//TODO: get Max BPS and Process If player uses entity speed
 		};
 
 		if (
@@ -533,7 +534,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			spiderWarn[plname]++;
 
 			if (spiderWarn[plname] > 4) {
-				CIF.detect(ni, "Spider", "Climb Walls with Same Speed");
+				CIF.detect(ni, "Spider", "Increasing value of Y is constant");
 			};
 		} else {
 			spiderWarn[plname]--;
@@ -564,6 +565,32 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				};
 			};
 		};
+
+	};
+
+	outerFor: for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
+		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
+			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
+				const block = region.getBlock(
+					BlockPos.create({ x: x, y: y, z: z })
+				);
+				const blockName = block.getName();
+				if (!blockName.includes("water")) {
+					break outerFor;
+				};
+			};
+		};
+	};
+
+	const underblock = region.getBlock(
+		BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })
+	);
+	const blockName = underblock.getName();
+	if (blockName.includes("water")) {
+		if (player.onGround()) {
+			CIF.ban(ni, "WaterWalker");
+			CIF.detect(ni, "WaterWalker", "Walks on water like a solid block");
+		};
 	};
 
 	if (movePos.y < -61) return;
@@ -581,6 +608,14 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	} else {
 		Fly_bStack[plname]--;
 		if (Fly_bStack[plname] < 0) Fly_bStack[plname] = 0;
+	};
+
+	if (haveFished[plname]) {
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		susToTeleport[plname] = false;
+		lastBPS[plname] = 0;
+		movePos.y += 1.62001190185547;
+		return;
 	};
 
 	lastBPS[plname] = bps;

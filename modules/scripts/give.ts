@@ -27,14 +27,4 @@ events.packetRaw(MinecraftPacketIds.InventoryTransaction).on((ptr, size, ni)=> {
 	// 		return CIF.detect(player.getNetworkIdentifier(), "crasher", "Spamming InventoryTransAction Packet");
 	// 	};
 	// };
-
-	
-    try {
-        for (let i = 0; i < size; i++) {
-            if (ptr.readVarUint() === 99999) {
-                CIF.ban(ni, "give")
-                return CIF.detect(ni, "give", "Fake InventoryTransaction Packet");
-            };
-        };
-    } catch {};
 });
