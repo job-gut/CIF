@@ -8,9 +8,6 @@ CIF.log(`Successfully Loaded ${"Combat".magenta} Modules`.green);
 require("./crasher");
 CIF.log(`Successfully Loaded ${"Crasher".magenta} Modules`.green);
 
-require("./give");
-CIF.log(`Successfully Loaded ${"Give".magenta} Modules`.green);
-
 require("./instabreak");
 CIF.log(`Successfully Loaded ${"Instabreak".magenta} Modules`.green);
 
