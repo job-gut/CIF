@@ -220,7 +220,7 @@ events.entityHurt.on((ev) => {
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
-		CIF.announce(`§c[§fCIF§c] §c${plname} §6has failed to using §cReach §7(Increase Reach | ${reach})`);
+		CIF.announce(`§c[§fCIF§c] §c${plname} §6has failed to use §cReach §7(Increase Reach | ${reach})`);
 		return CANCEL;
 	};
 
