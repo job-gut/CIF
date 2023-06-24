@@ -231,7 +231,7 @@ const stopGlide = procHacker.hooking(
 	Player
 )((player) => {
 	setTimeout(() => {
-		usedElytra[player.getName()] = false
+		usedElytra[player.getName()] = false;
 	}, 2000);
 	return stopGlide(player);
 });
@@ -332,7 +332,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
-		torso.getRawNameId() === "elytra" ||
+		usedElytra[plname] ||
 		isKnockbacking[plname] ||
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
@@ -532,7 +532,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			spiderWarn[plname]++;
 
 			if (spiderWarn[plname] > 4) {
-				CIF.detect(ni, "Spider", "Climb Walls with Same Speed");
+				CIF.detect(ni, "Spider", "Increasing value of Y is constant");
 			};
 		} else {
 			spiderWarn[plname]--;
