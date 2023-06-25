@@ -541,6 +541,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				);
 				const blockName = block.getName();
 				if (blockName === "minecraft:ladder" || blockName === "minecraft:vine" ||
+				blockName === "minecraft:scaffolding" ||
 				blockName.includes("water") || blockName.includes("lava")
 				) {
 					lastBPS[plname] = bps;
