@@ -1,6 +1,6 @@
 import { Vec3 } from "bdsx/bds/blockpos";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
-import { CANCEL } from "bdsx/common";
+import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { CIF } from "../../main";
 import { lastRotations } from "./movement";
@@ -127,7 +127,7 @@ events.playerAttack.on((ev) => {
 	const victim = ev.victim;
 	if (!victim.isPlayer()) return;
 	if (ev.player.getGameType() === GameType.Creative) return;
-	//if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
+	if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
 
 	const player = ev.player as ServerPlayer;
 	const name = player.getName()!;
