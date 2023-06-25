@@ -84,6 +84,11 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         };
     };
 
+	if (deviceId.length !== 32 && deviceId.length !== 36) {
+		CIF.detect(ni, "Invalid DeviceID", "Spoof their DeviceId");
+		CIF.ban(ni, "Invalid-DeviceId");
+	};
+
     const brand = model.split(" ")[0];
 
     if (deviceId.length !== 36 && deviceOS == 7) {
