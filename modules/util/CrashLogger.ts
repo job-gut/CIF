@@ -22,10 +22,10 @@ for (let i = 0; i < 200; i++) {
 				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
-				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				`\n${ni.getActor()?.getName() || "Couldn't Get Name"}`+
 				"\npacketRaw");
-				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
-				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.log(ni.getActor()?.getName() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getName() + " could try to crash server");
 				return CANCEL;
 			};
 
@@ -33,10 +33,10 @@ for (let i = 0; i < 200; i++) {
 				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
-				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				`\n${ni.getActor()?.getName() || "Couldn't Get Name"}`+
 				"\npacketRaw");
-				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
-				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.log(ni.getActor()?.getName() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getName() + " could try to crash server");
 				return CANCEL;
 			};
 
@@ -44,10 +44,10 @@ for (let i = 0; i < 200; i++) {
 				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
-				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				`\n${ni.getActor()?.getName() || "Couldn't Get Name"}`+
 				"\npacketRaw");
-				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
-				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.log(ni.getActor()?.getName() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getName() + " could try to crash server");
 				return CANCEL;
 			};
 
@@ -55,10 +55,10 @@ for (let i = 0; i < 200; i++) {
 				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
-				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				`\n${ni.getActor()?.getName() || "Couldn't Get Name"}`+
 				"\npacketRaw");
-				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
-				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.log(ni.getActor()?.getName() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getName() + " could try to crash server");
 				return CANCEL;
 			};
 
@@ -66,10 +66,10 @@ for (let i = 0; i < 200; i++) {
 				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
 				"Crasher Detected : "+
 				pktid+
-				`\n${ni.getActor()?.getNameTag() || "Couldn't Get Name"}`+
+				`\n${ni.getActor()?.getName() || "Couldn't Get Name"}`+
 				"\npacketRaw");
-				CIF.log(ni.getActor()?.getNameTag() + " could try to crash server");
-				CIF.announce(ni.getActor()?.getNameTag() + " could try to crash server");
+				CIF.log(ni.getActor()?.getName() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getName() + " could try to crash server");
 				return CANCEL;
 			};
 		} catch {};
