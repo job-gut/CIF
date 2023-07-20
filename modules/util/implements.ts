@@ -95,6 +95,15 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
 };
 
 
+CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
+	const cheaterName = nameMap.get(ni)!;
+    this.wasDetected[cheaterName] = true;
+	this.announce(`§c[§fCIF§c] §c${cheaterName} §6is suspected by §c${cheatName} §7(${cheatDescription})`);
+	this.log(`${cheaterName} is suspected by ${cheatName} (${cheatDescription})`.yellow);
+	return CANCEL;
+};
+
+
 CIF.resetDetected = function (plname: string): void {
     this.wasDetected[plname] = false;
 };
