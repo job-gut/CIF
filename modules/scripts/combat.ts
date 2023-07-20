@@ -1,6 +1,6 @@
 import { Vec3 } from "bdsx/bds/blockpos";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
-import { CANCEL } from "bdsx/common";
+import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { CIF } from "../../main";
 import { lastRotations } from "./movement";
@@ -55,13 +55,9 @@ function sameRotWarn(player: Player): CANCEL {
 		if (sameRotAuraWarn.get(name)! < 0) sameRotAuraWarn.set(name, 0);
 	}, 3000);
 
-	if (sameRotAuraWarn.get(name)! > 3) {
-		CIF.ban(player.getNetworkIdentifier(), "Aura");
-		return CIF.detect(
-			player.getNetworkIdentifier(),
-			"Aura-B",
-			"Same Body Pos Where Player Looking at"
-		);
+	if (sameRotAuraWarn.get(name)! > 3) { 
+		sameRotAuraWarn.set(name, 0);
+		CIF.suspect(player.getNetworkIdentifier(), "Aura-B", "Attacking Same Body Position");
 	};
 
 	return CANCEL;
@@ -127,7 +123,7 @@ events.playerAttack.on((ev) => {
 	const victim = ev.victim;
 	if (!victim.isPlayer()) return;
 	if (ev.player.getGameType() === GameType.Creative) return;
-	//if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
+	if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
 
 	const player = ev.player as ServerPlayer;
 	const name = player.getName()!;
@@ -220,8 +216,7 @@ events.entityHurt.on((ev) => {
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
-		CIF.announce(`§c[§fCIF§c] §c${plname} §6has failed to use §cReach §7(Increase Reach | ${reach})`);
-		return CANCEL;
+		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increase Reach | ${reach}`);
 	};
 
 	headPos.x -= addThisPos.x;

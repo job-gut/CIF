@@ -34,8 +34,9 @@ events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
     };
 
 	if (pkt.extraData === -1 && !pkt.entityType) {
-		CIF.ban(ni, "SwingSound");
-		return CIF.detect(ni, "SwingSound", "Invalid Sound on Swing Motion");
+		// CIF.ban(ni, "SwingSound");
+		// return CIF.detect(ni, "SwingSound", "Invalid Sound on Swing Motion");
+		return CANCEL;
 	};
 
     if (sound !== 42 && sound !== 43) {
@@ -91,8 +92,8 @@ events.packetRaw(MinecraftPacketIds.PlayerList).on((ptr, size, ni)=> {
 	}
 });
 
-const Warns: Record<string, number> = {};
-const ipBlocked: Record<string, boolean> = {};
+// const Warns: Record<string, number> = {};
+// const ipBlocked: Record<string, boolean> = {};
 
 const receivePacket = procHacker.hooking(
     "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVNetworkSystem@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
@@ -103,7 +104,7 @@ const receivePacket = procHacker.hooking(
     NetworkSystem,
     VoidPointer,
 )((conn, data, networkSystem, time_point) => {
-    const address = conn.networkIdentifier.getAddress();
+    // const address = conn.networkIdentifier.getAddress();
 
     //Block All Packets from Detected Player
     if (conn.networkIdentifier.getActor()) {
@@ -114,44 +115,44 @@ const receivePacket = procHacker.hooking(
     };
 
 	
-	if (CIFconfig.Modules.crasher !== true) return receivePacket(conn, data, networkSystem, time_point);
+	// if (CIFconfig.Modules.crasher !== true) return receivePacket(conn, data, networkSystem, time_point);
 
 
-    const ip = address.split("|")[0];
-    if (ip === "10.10.10.10") return receivePacket(conn, data, networkSystem, time_point);
+    // const ip = address.split("|")[0];
+    // if (ip === "10.10.10.10") return receivePacket(conn, data, networkSystem, time_point);
 
-    if (ipBlocked[ip]) {
-        conn.disconnect();
-        CIF.announce(`§c[§fCIF§c] §c${ip} §6tried to connect §c(IP Blocked)`);
-        CIF.log(`${ip} tried to connect (IP Blocked)`);
-        return 1;
-    };
+    // if (ipBlocked[ip]) {
+    //     conn.disconnect();
+    //     CIF.announce(`§c[§fCIF§c] §c${ip} §6tried to connect §c(IP Blocked)`);
+    //     CIF.log(`${ip} tried to connect (IP Blocked)`);
+    //     return 1;
+    // };
 
-    const id = data.valueptr.getUint8();
-    if (Warns[address] > 14 || id === MinecraftPacketIds.PurchaseReceipt) {
-        conn.disconnect();
-        ipBlocked[ip] = true;
-        CIF.ipDetect(conn.networkIdentifier, "crasher", "CVE: Send Invalid Packets without Minecraft Connection");
-        return 1;
-    };
+    // const id = data.valueptr.getUint8();
+    // if (Warns[address] > 14 || id === MinecraftPacketIds.PurchaseReceipt) {
+    //     conn.disconnect();
+    //     ipBlocked[ip] = true;
+    //     CIF.ipDetect(conn.networkIdentifier, "crasher", "CVE: Send Invalid Packets without Minecraft Connection");
+    //     return 1;
+    // };
 
-    if (id === 0) {
-        Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
-    };
+    // if (id === 0) {
+    //     Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
+    // };
 
     return receivePacket(conn, data, networkSystem, time_point);
 });
 
 events.networkDisconnected.on(ni => {
     if (ni) {
-        Warns[ni.getAddress()] = 0;
+        // Warns[ni.getAddress()] = 0;
         CIF.resetDetected(ni.getActor()?.getName()!);
     };
 });
 
 events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 	if (ni) {
-		Warns[ni.getAddress()] = 0;
+		// Warns[ni.getAddress()] = 0;
         CIF.resetDetected(ni.getActor()?.getName()!);
 	};
 });

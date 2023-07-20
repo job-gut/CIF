@@ -60,9 +60,15 @@ export namespace CIF {
     };
 
 
+	export function suspect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
+		abstractFunction();
+	};
+
+
     export function resetDetected(playerName: string): void {
         abstractFunction();
     };
+
 
     export const wasDetected: Record<string, boolean> = {};
 };
