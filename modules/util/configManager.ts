@@ -19,7 +19,8 @@ export namespace CIFconfig {
 		movement: true,
 		scaffold: true,
 		xp: true,
-		auto_update: true
+		auto_update: true,
+		log_packets: false,
 	};
 	export const Penalties: ConfigType = {
 		ban: true,
@@ -29,7 +30,6 @@ export namespace CIFconfig {
 };
 
 export namespace CIFconfigNames {
-	export const Debug = "Debug";
 	export const combat = "combat";
 	export const crasher = "crasher";
 	export const instabreak = "instabreak";
@@ -37,6 +37,7 @@ export namespace CIFconfigNames {
 	export const movement = "movement";
 	export const scaffold = "scaffold";
 	export const xp = "xp";
+	export const log_packets = "log_packets";
 };
 
 import { CIF } from "../../main";
@@ -83,7 +84,8 @@ interface IConfiguration {
 	"ban": boolean
 	"kick": boolean
 	"send_to_member": boolean
-	"auto_update": boolean
+	"auto_update": boolean,
+	"log_packets": boolean,
 };
 
 type ConfigType = { [key in keyof IConfiguration]?: boolean };

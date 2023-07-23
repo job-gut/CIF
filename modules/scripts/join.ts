@@ -100,7 +100,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 		CIF.ban(ni, "fake-os");
     };
 
-    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword")) {
+    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword") && model !== "Desktop DANAWA COMPUTER Co.") {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
         CIF.ban(ni, "Toolbox");
     };
