@@ -324,10 +324,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		player.getGameType() !== GameType.SurvivalSpectator &&
 		CIFconfig.Modules.movement === true
 	) {
-		player.runCommand("tp ~ ~ ~");
+		player.teleport(player.getFeetPos(), undefined, );
 	};
-
-	const torso = player.getArmor(ArmorSlot.Torso);
 
 	if (
 		isTeleported[plname] ||

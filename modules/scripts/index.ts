@@ -28,3 +28,6 @@ CIF.log(`Successfully Registered ${"Commands".magenta}`.green);
 
 require("../util/CrashLogger");
 CIF.log(`Successfully Loaded ${"CrashLogger".magenta} Module`.green);
+
+require("../util/packetLogger");
+CIF.log(`Successfully Loaded ${"PacketLogger".magenta} Module`.green);

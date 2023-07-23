@@ -34,9 +34,7 @@ events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
     };
 
 	if (pkt.extraData === -1 && !pkt.entityType) {
-		// CIF.ban(ni, "SwingSound");
-		// return CIF.detect(ni, "SwingSound", "Invalid Sound on Swing Motion");
-		return CANCEL;
+		return CIF.suspect(ni, "SwingSound", "Illegal Sound on Swing Motion");
 	};
 
     if (sound !== 42 && sound !== 43) {
