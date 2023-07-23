@@ -475,7 +475,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
 	};
 
-	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname]) {
+	if (Number(distance.toFixed(2)) >= 8 && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname]) {
 		if (susToTeleport[plname] === true) {
 			susToTeleport[plname] = false;
 			bps = 0;
