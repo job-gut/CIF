@@ -375,7 +375,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (bps > maxBPS && bps > 6 && CIFconfig.Modules.movement === true) {
+	if (bps > maxBPS && bps > 6 && CIFconfig.Modules.movement === true && !player.isGlidingWithElytra()) {
 		if (player.getLastBPS() === bps) {
 			strafestack[plname] = strafestack[plname]
 				? strafestack[plname] + 1
@@ -475,30 +475,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
 	};
 
-	if (Number(distance.toFixed(2)) >= 8 && isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname]) {
-		if (susToTeleport[plname] === true) {
-			susToTeleport[plname] = false;
-			bps = 0;
-			lastBPS[plname] = bps;
-			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-			movePos.y += 1.62001190185547;
-			return;
-		};
+	if (Number(distance.toFixed(2)) >= maxBPS && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname]) {
+		CIF.detect(ni, "teleport", "Teleported over speed limit");
 
-		susToTeleport[plname] = true;
-		bps = 0;
 		lastBPS[plname] = bps;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		movePos.y += 1.62001190185547;
 		return;
-	};
-
-	if (susToTeleport[plname] === true && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 4 && !isTeleported[plname]) {
-		susToTeleport[plname] = false;
-		CIF.detect(ni, "teleport", "Teleport and Moved");
-	} else {
-		susToTeleport[plname] = false;
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	};
 
 	const lastY = lastPos[1];
@@ -592,7 +575,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				};
 			};
 		};
-
 	};
 
 	if (movePos.y < -61) return;
