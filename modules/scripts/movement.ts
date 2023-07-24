@@ -272,11 +272,17 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 	}
 
-	if (CIFconfig.Modules.movement !== true) return;
+	const plname = player.getName();
+
 	const movePos = pkt.pos;
 	movePos.y -= 1.62001190185547;
 
-	const plname = player.getName();
+	if (CIFconfig.Modules.movement !== true) { 
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		movePos.y += 1.62001190185547;
+		return;
+	};
+
 	if (isMovePlayerPacket(pkt)) {
 		onGround[plname] = pkt.onGround;
 
@@ -356,7 +362,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	let bps: number;
 	let distance: number;
 
-	if (lastPos) {
+	if (typeof lastPos[0] === "number") {
 		const x1 = lastPos[0];
 		const x2 = movePos.x;
 		const y1 = lastPos[2];
@@ -372,6 +378,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		lastBPS[plname] = bps;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		movePos.y += 1.62001190185547;
+		distance = 0;
 		return;
 	};
 
@@ -548,7 +555,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			Fly_c1Stack[plname]++;
 
 			if (Fly_c1Stack[plname] > 4) {
-				CIF.detect(ni, "Fly-C", "Increasing value of Y is constant");
+				CIF.detect(ni, "Fly-C_1", "Increasing value of Y is constant");
 			};
 		} else {
 			Fly_c1Stack[plname]--;
@@ -617,6 +624,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		}, 9990).unref();
 
 		if (Fly_c2Stack[plname] > 2) {
+			CIF.ban(ni, "Fly-C_2");
 			CIF.detect(ni, "Fly-C", "Y boost in midair");
 		};
 	};
