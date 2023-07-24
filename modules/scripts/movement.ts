@@ -14,6 +14,7 @@ import { serverProperties } from "bdsx/serverproperties";
 import { CIFconfig } from "../util/configManager";
 import { CIF } from "../../main";
 import { wasJoinedIn15seconds } from "./join";
+import { MobEffectIds } from "bdsx/bds/effects";
 
 const UINTMAX = 0xffffffff;
 
@@ -35,10 +36,11 @@ const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 const littleFastStack: Record<string, number> = {};
 const littleFastWarn: Record<string, number> = {};
-const spiderWarn: Record<string, number> = {};
 const lastWentUpBlocks: Record<string, number> = {};
 
 const Fly_bStack: Record<string, number> = {};
+const Fly_c1Stack: Record<string, number> = {};
+const Fly_c2Stack: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
@@ -48,8 +50,6 @@ const haveFished: Record<string, boolean> = {};
 const isKnockbacking: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
 const pushedByPiston: Record<string, boolean> = {};
-
-const susToTeleport: Record<string, boolean> = {};
 
 export const lastRotations = new Map<string, { x: number; y: number }[]>();
 function appendRotationRecord(
@@ -330,7 +330,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
-		usedElytra[plname] ||
+		player.isGlidingWithElytra() ||
 		isKnockbacking[plname] ||
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
@@ -340,9 +340,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		susToTeleport[plname] = false;
 		lastBPS[plname] = 0;
 		movePos.y += 1.62001190185547;
+		lastWentUpBlocks[plname] = 10000000000;
 		return;
 	};
 
@@ -475,12 +475,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
 	};
 
-	if (Number(distance.toFixed(2)) >= maxBPS && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname]) {
+	if (Number(distance.toFixed(2)) >= maxBPS && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname] && maxBPS !== 0) {
 		CIF.detect(ni, "teleport", "Teleported over speed limit");
 
 		lastBPS[plname] = bps;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		movePos.y += 1.62001190185547;
+		lastWentUpBlocks[plname] = 10000000000;
 		return;
 	};
 
@@ -528,8 +529,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					lastBPS[plname] = bps;
 					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 
-					spiderWarn[plname] = 0;
+					Fly_c1Stack[plname] = 0;
 
+					lastWentUpBlocks[plname] = 10000000000;
 					movePos.y += 1.62001190185547;
 					return;
 				};
@@ -537,25 +539,29 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 	};
 
-	if (typeof spiderWarn[plname] !== "number") spiderWarn[plname] = 0;
+	if (typeof Fly_c1Stack[plname] !== "number") Fly_c1Stack[plname] = 0;
 
-	if (lastWentUpBlocks[plname] > 0) {
+	const hasLevitation = player.getEffect(MobEffectIds.Levitation);
+
+	if (lastWentUpBlocks[plname] > 0 && !hasLevitation) {
 		if (lastWentUpBlocks[plname] === movePos.y - lastY) {
-			spiderWarn[plname]++;
+			Fly_c1Stack[plname]++;
 
-			if (spiderWarn[plname] > 4) {
-				CIF.detect(ni, "Spider", "Increasing value of Y is constant");
+			if (Fly_c1Stack[plname] > 4) {
+				CIF.detect(ni, "Fly-C", "Increasing value of Y is constant");
 			};
 		} else {
-			spiderWarn[plname]--;
-			if (spiderWarn[plname] < 0) spiderWarn[plname] = 0;
+			Fly_c1Stack[plname]--;
+			if (Fly_c1Stack[plname] < 0) Fly_c1Stack[plname] = 0;
 		};
 	} else if (lastWentUpBlocks[plname] < 0) {
-		if (spiderWarn[plname] < 0) spiderWarn[plname] = 0;
+		if (Fly_c1Stack[plname] < 0) Fly_c1Stack[plname] = 0;
 	};
 
 	if (typeof lastWentUpBlocks[plname] !== "number") lastWentUpBlocks[plname] = 0;
-	lastWentUpBlocks[plname] = movePos.y - lastY;
+	if (lastWentUpBlocks[plname] === 10000000000) {
+		lastWentUpBlocks[plname] = movePos.y - lastY;
+	};
 
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
 		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
@@ -571,6 +577,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					Fly_bStack[plname] = 0;
 
 					movePos.y += 1.62001190185547;
+					lastWentUpBlocks[plname] = 10000000000;
 					return;
 				};
 			};
@@ -596,12 +603,25 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	if (haveFished[plname]) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		susToTeleport[plname] = false;
 		lastBPS[plname] = 0;
 		movePos.y += 1.62001190185547;
+		lastWentUpBlocks[plname] = 10000000000;
 		return;
 	};
+	
+	if (lastWentUpBlocks[plname] < movePos.y - lastY) {
+		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
+		setTimeout(() => {
+			Fly_c2Stack[plname]--;
+			if (Fly_c2Stack[plname] < 0) Fly_c2Stack[plname] = 0;
+		}, 9990).unref();
 
+		if (Fly_c2Stack[plname] > 2) {
+			CIF.detect(ni, "Fly-C", "Y boost in midair");
+		};
+	};
+
+	lastWentUpBlocks[plname] = movePos.y - lastY;
 	lastBPS[plname] = bps;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	movePos.y += 1.62001190185547;
