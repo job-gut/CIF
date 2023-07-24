@@ -4,7 +4,8 @@ import { CIFconfig } from "./configManager";
 
 for (let i = 1; i < 200; i++) {
 	events.packetRaw(i).on((ptr, size, ni, pktid)=> {
+		ptr.move(1);
 		if (CIFconfig.Modules.log_packets) 
-			console.log(MinecraftPacketIds[pktid], ni.getActor()?.getName());
+			console.log(MinecraftPacketIds[pktid], ni.getActor()?.getName(), ptr.readVarUint(), size);
 	});
 };
