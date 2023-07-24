@@ -551,7 +551,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const hasLevitation = player.getEffect(MobEffectIds.Levitation);
 
 	if (lastWentUpBlocks[plname] > 0 && !hasLevitation) {
-		if (lastWentUpBlocks[plname] === movePos.y - lastY) {
+		if (lastWentUpBlocks[plname].toString().slice(0, 7) === (movePos.y - lastY).toString().slice(0, 7)) {
 			Fly_c1Stack[plname]++;
 
 			if (Fly_c1Stack[plname] > 4) {
@@ -570,6 +570,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		lastWentUpBlocks[plname] = movePos.y - lastY;
 	};
 
+	if (region.getBlock(BlockPos.create({x: movePos.x, y: movePos.y - 1, z: movePos.z})).getName() !== "minecraft:air") {
+		lastWentUpBlocks[plname] = 10000000000;
+	};
+
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
 		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
 			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
@@ -584,7 +588,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					Fly_bStack[plname] = 0;
 
 					movePos.y += 1.62001190185547;
-					lastWentUpBlocks[plname] = 10000000000;
 					return;
 				};
 			};
@@ -621,9 +624,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		setTimeout(() => {
 			Fly_c2Stack[plname]--;
 			if (Fly_c2Stack[plname] < 0) Fly_c2Stack[plname] = 0;
-		}, 9990).unref();
+		}, 4990).unref();
 
-		if (Fly_c2Stack[plname] > 2) {
+		if (Fly_c2Stack[plname] > 1) {
 			CIF.ban(ni, "Fly-C_2");
 			CIF.detect(ni, "Fly-C", "Y boost in midair");
 		};
