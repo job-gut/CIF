@@ -63,9 +63,9 @@ CIF.log = function (message: string): void {
 CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
-    if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
-        bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
-    };
+    // if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
+    //     bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
+    // };
 
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
     this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`.yellow);
@@ -82,7 +82,7 @@ CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescript
 
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     const cheaterName = nameMap.get(ni)!;
-    this.wasDetected[cheaterName] = true;
+    // this.wasDetected[cheaterName] = true;
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
     this.log(red(`${cheaterName} was banned using ${reason}`));
 	const did = deviceIdMap.get(ni)!;
@@ -97,7 +97,6 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
 
 CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
 	const cheaterName = nameMap.get(ni)!;
-    this.wasDetected[cheaterName] = true;
 	this.announce(`§c[§fCIF§c] §c${cheaterName} §6is suspected by §c${cheatName} §7(${cheatDescription})`);
 	this.log(`${cheaterName} is suspected by ${cheatName} (${cheatDescription})`.yellow);
 	return CANCEL;

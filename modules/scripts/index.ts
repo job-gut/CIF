@@ -31,3 +31,5 @@ CIF.log(`Successfully Loaded ${"CrashLogger".magenta} Module`.green);
 
 require("../util/packetLogger");
 CIF.log(`Successfully Loaded ${"PacketLogger".magenta} Module`.green);
+
+require("../util/suspend");
