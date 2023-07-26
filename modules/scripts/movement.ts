@@ -587,6 +587,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 					Fly_bStack[plname] = 0;
 
+					lastWentUpBlocks[plname] = 10000000000;
 					movePos.y += 1.62001190185547;
 					return;
 				};
@@ -626,7 +627,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			if (Fly_c2Stack[plname] < 0) Fly_c2Stack[plname] = 0;
 		}, 4990).unref();
 
-		if (Fly_c2Stack[plname] > 2) {
+		if (Fly_c2Stack[plname] > 1) {
 			CIF.ban(ni, "Fly-C_2");
 			CIF.detect(ni, "Fly-C", "Y boost in midair");
 		};
