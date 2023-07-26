@@ -207,7 +207,7 @@ events.entityHurt.on((ev) => {
 
 	lastAttackPlayer[plname] = victim.getNameTag();
 
-	const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
+	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.5;
 
 	if (
 		reach >= 4.5 &&
