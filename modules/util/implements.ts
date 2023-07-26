@@ -82,7 +82,7 @@ CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescript
 
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     const cheaterName = nameMap.get(ni)!;
-    // this.wasDetected[cheaterName] = true;
+    this.wasDetected[cheaterName] = true;
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
     this.log(red(`${cheaterName} was banned using ${reason}`));
 	const did = deviceIdMap.get(ni)!;
