@@ -113,6 +113,8 @@ for (const [key, value] of Object.entries(config)) {
 	};
 };
 
+import "./implements";
+
 // ███████ ███████ ██████  ██    ██ ███████ ██████      ██████  ██████   ██████  ██████  ███████ ██████  ████████ ██ ███████ ███████
 // ██      ██      ██   ██ ██    ██ ██      ██   ██     ██   ██ ██   ██ ██    ██ ██   ██ ██      ██   ██    ██    ██ ██      ██
 // ███████ █████   ██████  ██    ██ █████   ██████      ██████  ██████  ██    ██ ██████  █████   ██████     ██    ██ █████   ███████
@@ -162,7 +164,6 @@ if (serverProperties["server-authoritative-movement"] !== "client-auth") {
 	};
 };
 
-import "./implements";
 import "../scripts";
 
 if (CIFconfig.Modules.Debug === true) {

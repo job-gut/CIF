@@ -387,7 +387,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			strafestack[plname] = strafestack[plname]
 				? strafestack[plname] + 1
 				: 1;
-			if (strafestack[plname] > 14) {
+			if (strafestack[plname] > 12) {
 				strafestack[plname] = 0;
 				CIF.ban(ni, "Speed-B");
 				CIF.detect(
