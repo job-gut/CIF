@@ -8,7 +8,7 @@ import { readFileSync, readdirSync } from "fs";
 import { bedrockServer } from "bdsx/launcher";
 
 
-export const nameMap = new Map<NetworkIdentifier, string>();
+// export const didToNameMap = new Map<string, string>();
 
 export const identityPublicKeyMap = new Map<NetworkIdentifier, string>();
 
@@ -19,6 +19,7 @@ export const wasJoinedIn15seconds = new Map<NetworkIdentifier, boolean>();
 
 const firstLoginedDID: Record<string, string> = {};
 const firstLoginedOS: Record<string, number> = {};
+
 
 events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
@@ -31,44 +32,42 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const ip = ni.getAddress();
     const xuid = cert.getXuid();
     const model = req.getJsonValue()!.DeviceModel;
-
-	const slashReg = /\//g;
-	const publicIDKey = String(cert.json.value().identityPublicKey).replace(slashReg, "_");
+    const slashReg = /\//g;
+    const publicIDKey = String(cert.json.value().identityPublicKey).replace(slashReg, "_");
 
     const isXboxLogined = xuid.length > 3;
-
-    nameMap.set(ni, name);
+    // didToNameMap.set(deviceId, name);
     identityPublicKeyMap.set(ni, publicIDKey);
-	wasJoinedIn15seconds.set(ni, true);
-	deviceIdMap.set(ni, deviceId);
+    wasJoinedIn15seconds.set(ni, true);
+    deviceIdMap.set(ni, deviceId);
 
-	setTimeout(() => {
-		wasJoinedIn15seconds.set(ni, false);
-	}, 15000);
+    setTimeout(() => {
+        wasJoinedIn15seconds.set(ni, false);
+    }, 15000);
 
     const banlist = readdirSync("../CIFbanList");
-	for (const bannedPlayer of banlist) {
-		if (bannedPlayer === publicIDKey || bannedPlayer === deviceId) {
-			const bannedReason = readFileSync("../CIFbanList/"+bannedPlayer).toString().split(":")[1];
-			CIF.wasDetected[name] = true;
-			// bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
-			CIF.announce(`§c[§fCIF§c] §c${name} §6failed to connect §7(§c${bannedReason}§7)`);
-    		CIF.log(`${name} failed to connect `+"(".white+`${bannedReason.red})`.yellow);
-		};
-	};
+    for (const bannedPlayer of banlist) {
+        if (bannedPlayer === publicIDKey || bannedPlayer === deviceId) {
+            const bannedReason = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[1];
+            CIF.wasDetected[name] = true;
+            // bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
+            CIF.announce(`§c[§fCIF§c] §c${name} §6failed to connect §7(§c${bannedReason}§7)`);
+            CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
+        };
+    };
 
-	
-	if (CIFconfig.Modules.join !== true) return;
+
+    if (CIFconfig.Modules.join !== true) return;
 
 
     if (name.length > 20) {
-        nameMap.set(ni, "Invalid_Name");
+        // didToNameMap.set(deviceId, "Invalid_Name");
         CIF.detect(ni, "long_name", "Too long nickname");
         CIF.ban(ni, "Long_Name");
     };
 
     if (name === "") {
-        nameMap.set(ni, "Invalid_Name");
+        // didToNameMap.set(deviceId, "Invalid_Name");
         CIF.detect(ni, "invalid_name", "Nickname is null");
         CIF.ban(ni, "Invalid_Name");
     };
@@ -78,26 +77,26 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     for (let i = 0; i < invisibleChars.length; i++) {
         const char = invisibleChars[i];
         if (name.includes(char)) {
-            nameMap.set(ni, "Invalid_Name");
+            // didToNameMap.set(deviceId, "Invalid_Name");
             CIF.detect(ni, "invisible_name", "Nickname includes disallowed space");
             CIF.ban(ni, "Invisible_Name");
         };
     };
 
-	if (deviceId.length !== 32 && deviceId.length !== 36) {
-		CIF.detect(ni, "Invalid DeviceID", "Spoof their DeviceId");
-		CIF.ban(ni, "Invalid-DeviceId");
-	};
+    if (deviceId.length !== 32 && deviceId.length !== 36) {
+        CIF.detect(ni, "Invalid DeviceID", "Spoof their DeviceId");
+        CIF.ban(ni, "Invalid-DeviceId");
+    };
 
     const brand = model.split(" ")[0];
 
     if (deviceId.length !== 36 && deviceOS == 7) {
         CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Android/IOS)");
-		CIF.ban(ni, "fake-os");
+        CIF.ban(ni, "fake-os");
     };
     if (deviceId.length !== 32 && deviceOS !== 7) {
-		CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Windows 10)");
-		CIF.ban(ni, "fake-os");
+        CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Windows 10)");
+        CIF.ban(ni, "fake-os");
     };
 
     if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword") && model !== "Desktop DANAWA COMPUTER Co.") {
@@ -105,7 +104,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.ban(ni, "Toolbox");
     };
 
-    CIF.log(yellow(`${nameMap.get(ni)} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
+    CIF.log(yellow(`${ni.getActor()!.getName()} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
 
     if (deviceId.length === 36) {
         if (deviceId.includes("g") || deviceId.includes("h") || deviceId.includes("i") || deviceId.includes("j") || deviceId.includes("k") || deviceId.includes("l") || deviceId.includes("m") || deviceId.includes("n") || deviceId.includes("o") || deviceId.includes("p") || deviceId.includes("q") || deviceId.includes("r") || deviceId.includes("s") || deviceId.includes("t") || deviceId.includes("u") || deviceId.includes("v") || deviceId.includes("w") || deviceId.includes("x") || deviceId.includes("y") || deviceId.includes("z")) {

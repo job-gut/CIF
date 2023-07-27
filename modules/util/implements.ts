@@ -4,7 +4,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { CANCEL } from "bdsx/common";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../../main";
-import { deviceIdMap, identityPublicKeyMap, nameMap } from "../scripts/join";
+import { deviceIdMap, identityPublicKeyMap } from "../scripts/join";
 import { MovementType } from "../scripts/movement";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { red } from "colors";
@@ -61,7 +61,7 @@ CIF.log = function (message: string): void {
 
 
 CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
-    const cheaterName = nameMap.get(ni)!;
+    const cheaterName = ni.getActor()!.getName();
     this.wasDetected[cheaterName] = true;
     // if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
     //     bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
@@ -81,25 +81,25 @@ CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescript
 
 
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
-    const cheaterName = nameMap.get(ni)!;
+    const cheaterName = ni.getActor()!.getName();
     this.wasDetected[cheaterName] = true;
     this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
     this.log(red(`${cheaterName} was banned using ${reason}`));
-	const did = deviceIdMap.get(ni)!;
-	// if (did.length === 36) {
-	// 	const accidKey = identityPublicKeyMap.get(ni)!;
-	// 	writeFileSync("../CIFbanList/"+accidKey, cheaterName+":"+reason);
-	// } else {
-		writeFileSync("../CIFbanList/"+did, cheaterName+":"+reason);
-	//};
+    const did = deviceIdMap.get(ni)!;
+    // if (did.length === 36) {
+    // 	const accidKey = identityPublicKeyMap.get(ni)!;
+    // 	writeFileSync("../CIFbanList/"+accidKey, cheaterName+":"+reason);
+    // } else {
+    writeFileSync("../CIFbanList/" + did, cheaterName + ":" + reason);
+    //};
 };
 
 
 CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
-	const cheaterName = nameMap.get(ni)!;
-	this.announce(`§c[§fCIF§c] §c${cheaterName} §6is suspected by §c${cheatName} §7(${cheatDescription})`);
-	this.log(`${cheaterName} is suspected by ${cheatName} (${cheatDescription})`.yellow);
-	return CANCEL;
+    const cheaterName = ni.getActor()!.getName();
+    this.announce(`§c[§fCIF§c] §c${cheaterName} §6is suspected by §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${cheaterName} is suspected by ${cheatName} (${cheatDescription})`.yellow);
+    return CANCEL;
 };
 
 
@@ -109,5 +109,5 @@ CIF.resetDetected = function (plname: string): void {
 
 
 if (!existsSync("../CIFbanList")) {
-	mkdirSync("../CIFbanList");
+    mkdirSync("../CIFbanList");
 };
