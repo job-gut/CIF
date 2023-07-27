@@ -27,9 +27,12 @@ require("../util/command");
 CIF.log(`Successfully Registered ${"Commands".magenta}`.green);
 
 require("../util/CrashLogger");
-CIF.log(`Successfully Loaded ${"CrashLogger".magenta} Module`.green);
+CIF.log(`Successfully Loaded ${"Crash Logger".magenta} Module`.green);
 
 require("../util/packetLogger");
-CIF.log(`Successfully Loaded ${"PacketLogger".magenta} Module`.green);
+CIF.log(`Successfully Loaded ${"Packet Logger".magenta} Module`.green);
+
+require("../util/updateChecker");
+CIF.log(`Successfully Loaded ${"Update Checker".magenta}`.green);
 
 require("../util/suspend");

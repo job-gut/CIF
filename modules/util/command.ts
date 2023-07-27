@@ -4,6 +4,8 @@ import { bool_t } from "bdsx/nativetype";
 import { CIFconfig, CIFconfigNames } from "./configManager";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../../main";
+import { alertAboutUpdates } from "./updateChecker";
+import { thisACisLastestVersion, update } from "../..";
 
 enum isEnabled {
 	Enabled = 1,
@@ -29,5 +31,25 @@ events.serverOpen.on(()=> {
 		config : command.enum("config", "config"),
 		configs : command.enum("cif_config", CIFconfigNames),
 		isenabled : bool_t
+	});
+
+	cmd.overload((param, origin)=> {
+		alertAboutUpdates();
+	}, {
+		checkupdate: command.enum("checkupdate", "checkupdate")
+	});
+
+	cmd.overload((p, o)=> {
+		if (thisACisLastestVersion() === true) {
+			alertAboutUpdates();
+			return;
+		} else if (thisACisLastestVersion() === undefined) {
+			alertAboutUpdates();
+			return;
+		};
+
+		update(true);
+	}, {
+		update: command.enum("update", "update")
 	});
 });

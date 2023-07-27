@@ -25,7 +25,8 @@ export namespace CIFconfig {
 	export const Penalties: ConfigType = {
 		ban: true,
 		kick: true,
-		send_to_member: true
+		blockAllPackets: true,
+		onlyAlert: true,
 	};
 };
 
@@ -38,6 +39,13 @@ export namespace CIFconfigNames {
 	export const scaffold = "scaffold";
 	export const xp = "xp";
 	export const log_packets = "log_packets";
+};
+
+export namespace CIFPenaltyNames {
+	export const ban = "ban";
+	export const kick = "kick";
+	export const blockallpackets = "blockallpackets";
+	export const onlyalert = "onlyalert";
 };
 
 import { CIF } from "../../main";
@@ -56,7 +64,8 @@ scaffold = true
 xp = true
 ban = true
 kick = true
-send_to_member = true
+blockAllPackets = true
+onlyAlert = true
 auto_update = true
 `
 	);
@@ -73,17 +82,18 @@ function stringToBoolean(str: string): boolean {
 };
 
 interface IConfiguration {
-	"Debug": boolean
-	"combat": boolean
-	"crasher": boolean
-	"instabreak": boolean
-	"join": boolean
-	"movement": boolean
-	"scaffold": boolean
-	"xp": boolean
-	"ban": boolean
-	"kick": boolean
-	"send_to_member": boolean
+	"Debug": boolean,
+	"combat": boolean,
+	"crasher": boolean,
+	"instabreak": boolean,
+	"join": boolean,
+	"movement": boolean,
+	"scaffold": boolean,
+	"xp": boolean,
+	"ban": boolean,
+	"kick": boolean,
+	"blockAllPackets": boolean,
+	"onlyAlert": boolean,
 	"auto_update": boolean,
 	"log_packets": boolean,
 };
