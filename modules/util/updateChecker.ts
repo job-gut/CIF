@@ -16,7 +16,7 @@ export async function alertAboutUpdates(): Promise<void> {
 
 		CIF.log("CIF 가 현재 최신 버전이 아닙니다".bgRed);
 		CIF.log("cif update 로 업데이트 할 수 있습니다".bgRed);
-		CIF.log(`현재 버전: ${CIFVersion} -> 최신 버전: ${getNewVersion()}`.magenta);
+		CIF.log(`현재 버전: ${CIFVersion} -> 최신 버전: ${await getNewVersion()}`.magenta);
 		CIF.log("변경 사항: ".yellow + (await getWhatsNew()).green);
 
 		return;
