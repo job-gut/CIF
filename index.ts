@@ -1,4 +1,4 @@
-export let CIFVersion = "23v7.27.1803";
+export let CIFVersion = "23v7.28.2146";
 
 
 import * as fs from "fs";
@@ -28,19 +28,10 @@ if (!fs.existsSync("../CIFoptions.txt")) {
 	createNewFile();
 };
 
-export async function getWhatsNew(): Promise<string> {
-	const data = await getRawData();
-	return data.split(":")[1];
-};
-
-export async function getNewVersion(): Promise<string> {
-	const data = await getRawData();
-	return data.split(":")[0];
-};
 
 async function getRawData(): Promise<string> {
 	let rawdata = "";
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 		http.get("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/version.txt", (res) => {
 			if (res.statusCode !== 200) return;
 			res.setEncoding('utf8');
@@ -51,6 +42,17 @@ async function getRawData(): Promise<string> {
 			});
 		});
 	});
+};
+
+
+export async function getWhatsNew(): Promise<string> {
+	const data = await getRawData();
+	return data.split(":")[1];
+};
+
+export async function getNewVersion(): Promise<string> {
+	const data = await getRawData();
+	return data.split(":")[0];
 };
 
 export async function thisACisLastestVersion(): Promise<boolean | undefined> {
