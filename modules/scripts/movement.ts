@@ -27,7 +27,6 @@ const lastBPS: Record<string, number> = {};
 const isSpinAttacking: Record<string, boolean> = {};
 const onGround: Record<string, boolean> = {};
 const usedElytra: Record<string, boolean> = {};
-Vec3.create
 const lastpos: Record<string, number[]> = {};
 /** @description returns nearest value if this array's length is shorter than 20*/
 const lastPositions: Record<string, { x: number, y: number, z: number }[]> = {};
