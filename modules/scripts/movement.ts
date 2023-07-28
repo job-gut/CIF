@@ -27,8 +27,10 @@ const lastBPS: Record<string, number> = {};
 const isSpinAttacking: Record<string, boolean> = {};
 const onGround: Record<string, boolean> = {};
 const usedElytra: Record<string, boolean> = {};
-
+Vec3.create
 const lastpos: Record<string, number[]> = {};
+/** @description returns nearest value if this array's length is shorter than 20*/
+const lastPositions: Record<string, { x: number, y: number, z: number }[]> = {};
 
 const jumpedTick: Record<string, number> = {};
 
@@ -255,6 +257,21 @@ const pistonPush = procHacker.hooking(
 	return pistonPush(blockActor, actor, pos);
 });
 
+function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): undefined {
+	const currentValue = lastPositions[playerName];
+	if (currentValue === undefined || currentValue.length !== 20) {
+		let array: { x: number, y: number, z: number }[] = [];
+		for (let i = 0; i < 20; i++) {
+			array.push(lastPosition);
+		}
+		lastPositions[playerName] = array;
+		return;
+	}
+	lastPositions[playerName].splice(0, 19);
+	lastPositions[playerName].unshift(lastPosition);
+	return;
+}
+
 events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
 	if (!player) return;
@@ -277,8 +294,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const movePos = pkt.pos;
 	movePos.y -= 1.62001190185547;
 
-	if (CIFconfig.Modules.movement !== true) { 
+	if (CIFconfig.Modules.movement !== true) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		movePos.y += 1.62001190185547;
 		return;
 	};
@@ -289,6 +307,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		//respawn
 		if (pkt.mode === 1) {
 			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+			setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 			movePos.y += 1.62001190185547;
 			return;
 		};
@@ -307,6 +326,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (gamemode !== 2 && gamemode !== 0) {
 		movePos.y += 1.62001190185547;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		return;
 	};
 
@@ -330,7 +350,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		player.getGameType() !== GameType.SurvivalSpectator &&
 		CIFconfig.Modules.movement === true
 	) {
-		player.teleport(player.getFeetPos(), undefined, );
+		player.teleport(player.getFeetPos(), undefined,);
 	};
 
 	if (
@@ -342,10 +362,11 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
 		pushedByPiston[plname] ||
-		
+
 		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		lastBPS[plname] = 0;
 		movePos.y += 1.62001190185547;
 		lastWentUpBlocks[plname] = 10000000000;
@@ -377,6 +398,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		bps = 0;
 		lastBPS[plname] = bps;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		movePos.y += 1.62001190185547;
 		distance = 0;
 		return;
@@ -487,6 +509,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 		lastBPS[plname] = bps;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		movePos.y += 1.62001190185547;
 		lastWentUpBlocks[plname] = 10000000000;
 		return;
@@ -530,11 +553,12 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				);
 				const blockName = block.getName();
 				if (blockName === "minecraft:ladder" || blockName === "minecraft:vine" ||
-				blockName === "minecraft:scaffolding" ||
-				blockName.includes("water") || blockName.includes("lava")
+					blockName === "minecraft:scaffolding" ||
+					blockName.includes("water") || blockName.includes("lava")
 				) {
 					lastBPS[plname] = bps;
 					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+					setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 
 					Fly_c1Stack[plname] = 0;
 
@@ -570,7 +594,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		lastWentUpBlocks[plname] = movePos.y - lastY;
 	};
 
-	if (region.getBlock(BlockPos.create({x: movePos.x, y: movePos.y - 1, z: movePos.z})).getName() !== "minecraft:air") {
+	if (region.getBlock(BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })).getName() !== "minecraft:air") {
 		lastWentUpBlocks[plname] = 10000000000;
 	};
 
@@ -584,6 +608,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				if (blockName !== "minecraft:air") {
 					lastBPS[plname] = bps;
 					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+					setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 
 					Fly_bStack[plname] = 0;
 
@@ -614,12 +639,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	if (haveFished[plname]) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		lastBPS[plname] = 0;
 		movePos.y += 1.62001190185547;
 		lastWentUpBlocks[plname] = 10000000000;
 		return;
 	};
-	
+
 	if (lastWentUpBlocks[plname] < movePos.y - lastY) {
 		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
 		setTimeout(() => {
@@ -636,6 +662,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	lastWentUpBlocks[plname] = movePos.y - lastY;
 	lastBPS[plname] = bps;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+	setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 	movePos.y += 1.62001190185547;
 });
 
