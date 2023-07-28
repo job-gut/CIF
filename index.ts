@@ -1,4 +1,4 @@
-export let CIFVersion = "23v7.27.1803";
+export let CIFVersion = "23v7.28.2149";
 
 
 import * as fs from "fs";
@@ -28,64 +28,36 @@ if (!fs.existsSync("../CIFoptions.txt")) {
 	createNewFile();
 };
 
-export function getWhatsNew(): string {
+
+async function getRawData(): Promise<string> {
 	let rawdata = "";
-
-	try {
-		http.get("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/version.txt", (res)=> {
+	return new Promise((resolve) => {
+		http.get("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/version.txt", (res) => {
 			if (res.statusCode !== 200) return;
-			res.setEncoding('utf8');            
+			res.setEncoding('utf8');
 			res.on('data', (buffer) => rawdata += buffer);
-            res.on('end', function () {
-                if (!rawdata.includes("v")) return;
-				return rawdata.split(":")[1]
-            });
+			res.on('end', function () {
+				if (!rawdata.includes("v")) return;
+				resolve(rawdata);
+			});
 		});
-	} catch {
-		return rawdata;
-	};
-
-	return rawdata;
+	});
 };
 
-export function getNewVersion(): string {
-	let rawdata = "";
 
-	try {
-		http.get("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/version.txt", (res)=> {
-			if (res.statusCode !== 200) return;
-			res.setEncoding('utf8');            
-			res.on('data', (buffer) => rawdata += buffer);
-            res.on('end', function () {
-                if (!rawdata.includes("v")) return;
-				return rawdata.split(":")[0];
-            });
-		});
-	} catch {
-		return rawdata;
-	};
-
-	return rawdata;
+export async function getWhatsNew(): Promise<string> {
+	const data = await getRawData();
+	return data.split(":")[1];
 };
 
-export function thisACisLastestVersion(): boolean | undefined {
-	let rawdata = "";
+export async function getNewVersion(): Promise<string> {
+	const data = await getRawData();
+	return data.split(":")[0];
+};
 
-	try {
-		http.get("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/version.txt", (res)=> {
-			if (res.statusCode !== 200) return;
-			res.setEncoding('utf8');            
-			res.on('data', (buffer) => rawdata += buffer);
-            res.on('end', function () {
-                if (!rawdata.includes("v")) return;
-				return rawdata.split(":")[0] === CIFVersion;
-            });
-		});
-	} catch {
-		return;
-	};
-
-	return false;
+export async function thisACisLastestVersion(): Promise<boolean | undefined> {
+	const data = await getRawData();
+	return data.split(":")[0] === CIFVersion;
 };
 
 function download(url: string, path: string, cb: any = undefined): boolean {
@@ -110,48 +82,48 @@ function download(url: string, path: string, cb: any = undefined): boolean {
 	return true;
 };
 
-export function update(isNotFirstCall: boolean | undefined = undefined): void {
-	if (thisACisLastestVersion() === undefined) {
+export async function update(isNotFirstCall: boolean | undefined = undefined): Promise<void> {
+	if (await thisACisLastestVersion() === undefined) {
 		console.warn("CIF 메인 서버에 연결 할 수 없습니다".red);
 		import("./modules/util/configManager");
 		import("./main");
 		return;
 	};
 
-	if (thisACisLastestVersion() === true) {
+	if (await thisACisLastestVersion() === true) {
 		import("./modules/util/configManager");
 		import("./main");
 		return;
 	};
 
 
-	if(download("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/CIF.zip", "../plugins/CIF.zip") !== true) {
+	if (await download("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/CIF.zip", "../plugins/CIF.zip") !== true) {
 		import("./modules/util/configManager");
 		import("./main");
 		return;
 	};
 
-	exec('cmd /c rmdir /q /s "../plugins/cif"', ((err, stdout, stderr) => {
+	await exec('cmd /c rmdir /q /s "../plugins/cif"', ((err, stdout, stderr) => {
 		if (err) throw err;
 	}));
 
-	setTimeout(() => {
-		exec("powershell Expand-Archive -Force -path '../plugins/CIF.zip' -Destinationpath '../plugins/CIF'", ((err, stdout, stderr) => {
+	await setTimeout(() => {
+		exec("powershell Expand-Archive -Force -path '../plugins/CIF.zip' -Destinationpath '../plugins/CIF'", (async (err, stdout, stderr) => {
 			if (err) throw err;
-			if (isNotFirstCall === true)  {
+			if (isNotFirstCall === true) {
 				const { CIF } = require("./main");
 				CIF.log(`CIF 가 성공적으로 업데이트 되었습니다`.green);
-				CIF.log(`업데이트 사항: `+getWhatsNew().yellow);
-				CIFVersion = getNewVersion();
-				return; 
+				CIF.log(`업데이트 사항: ` + (await getWhatsNew()).yellow);
+				CIFVersion = await getNewVersion();
+				return;
 			};
 
 			import("./modules/util/configManager");
-			import("./main").then(()=> {
+			import("./main").then(async () => {
 				const { CIF } = require("./main");
 				CIF.log(`CIF 가 성공적으로 업데이트 되었습니다`.green);
-				CIF.log(`업데이트 사항: `+getWhatsNew().yellow);
-				CIFVersion = getNewVersion();
+				CIF.log(`업데이트 사항: ` + (await getWhatsNew()).yellow);
+				CIFVersion = await getNewVersion();
 			});
 		}));
 	}, 1000).unref();
