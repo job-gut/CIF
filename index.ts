@@ -38,7 +38,7 @@ export function getWhatsNew(): string {
 			res.on('data', (buffer) => rawdata += buffer);
             res.on('end', function () {
                 if (!rawdata.includes("v")) return;
-				return rawdata.split(":")[1]
+				return rawdata.split(":")[1];
             });
 		});
 	} catch {
