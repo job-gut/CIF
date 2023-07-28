@@ -38,7 +38,7 @@ export function getWhatsNew(): string {
 			res.on('data', (buffer) => rawdata += buffer);
             res.on('end', function () {
                 if (!rawdata.includes("v")) return;
-				return rawdata.split(":")[1];
+				rawdata = rawdata.split(":")[1];
             });
 		});
 	} catch {
@@ -58,7 +58,7 @@ export function getNewVersion(): string {
 			res.on('data', (buffer) => rawdata += buffer);
             res.on('end', function () {
                 if (!rawdata.includes("v")) return;
-				return rawdata.split(":")[0];
+				rawdata = rawdata.split(":")[0];
             });
 		});
 	} catch {
@@ -70,6 +70,7 @@ export function getNewVersion(): string {
 
 export function thisACisLastestVersion(): boolean | undefined {
 	let rawdata = "";
+	let returnValue: boolean = false;
 
 	try {
 		http.get("http://cifupdate.kro.kr/398znmfl-rf-zrekip029z-qwerwe/zmofip=43-8900ua34j3-09-124825425234-z9i90j/version.txt", (res)=> {
@@ -78,14 +79,14 @@ export function thisACisLastestVersion(): boolean | undefined {
 			res.on('data', (buffer) => rawdata += buffer);
             res.on('end', function () {
                 if (!rawdata.includes("v")) return;
-				return rawdata.split(":")[0] === CIFVersion;
+				returnValue = rawdata.split(":")[0] === CIFVersion;
             });
 		});
 	} catch {
 		return;
 	};
 
-	return false;
+	return returnValue;
 };
 
 function download(url: string, path: string, cb: any = undefined): boolean {
