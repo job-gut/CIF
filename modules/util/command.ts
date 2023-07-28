@@ -39,11 +39,11 @@ events.serverOpen.on(()=> {
 		checkupdate: command.enum("checkupdate", "checkupdate")
 	});
 
-	cmd.overload((p, o)=> {
-		if (thisACisLastestVersion() === true) {
+	cmd.overload(async (p, o)=> {
+		if (await thisACisLastestVersion() === true) {
 			alertAboutUpdates();
 			return;
-		} else if (thisACisLastestVersion() === undefined) {
+		} else if (await thisACisLastestVersion() === undefined) {
 			alertAboutUpdates();
 			return;
 		};
