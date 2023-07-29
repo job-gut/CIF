@@ -35,4 +35,4 @@ CIF.log(`Successfully Loaded ${"Packet Logger".magenta} Module`.green);
 require("../util/updateChecker");
 CIF.log(`Successfully Loaded ${"Update Checker".magenta}`.green);
 
-require("../util/suspend");
+require("../util/punishment");
