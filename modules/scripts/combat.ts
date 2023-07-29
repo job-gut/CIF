@@ -3,10 +3,13 @@ import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
 import { CIF } from "../../main";
-import { lastRotations } from "./movement";
+import { lastPositions, lastRotations } from "./movement";
 import { CIFconfig } from "../util/configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
 import { MobEffectIds } from "bdsx/bds/effects";
+import { bedrockServer } from "bdsx/launcher";
+
+const peer = bedrockServer.rakPeer;
 
 const MismatchAuraWarn = new Map<string, number>();
 const sameRotAuraWarn = new Map<string, number>();
@@ -172,7 +175,22 @@ events.entityHurt.on((ev) => {
 	if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
 
 	const playerpos = player.getFeetPos();
-	const victimpos = victim.getFeetPos();
+
+	const playerPing = peer.GetLastPing(player.getNetworkIdentifier().address);
+	const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
+	
+	const playerViewVec = player.getViewVector();
+	const howManyMultiplyToPos = Math.max(Math.round(playerPing/50) + 1, 2);
+	playerpos.x += playerViewVec.x * howManyMultiplyToPos;
+	playerpos.y += playerViewVec.y * howManyMultiplyToPos;
+	playerpos.z += playerViewVec.z * howManyMultiplyToPos;
+
+	
+	const victimpos = 
+		playerpos.distance(lastPositions[victim.getName()][Math.max(Math.round(victimPing/50) + 1, 3)])
+		> playerpos.distance(victim.getFeetPos()) ?
+		victim.getFeetPos() : lastPositions[victim.getName()][Math.max(Math.round(victimPing/50) + 1, 3)];
+
 
 	const result1 = Math.pow(playerpos.x - victimpos.x, 2);
 	const result2 = Math.pow(playerpos.z - victimpos.z, 2);
@@ -189,7 +207,7 @@ events.entityHurt.on((ev) => {
 	const headRotWhereLookingAt = headPos;
 
 	const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
-	const posFromVicFeet = victimpos.distance(headRotWhereLookingAt);
+	const posFromVicFeet = Vec3.create(victimpos).distance(headRotWhereLookingAt);
 
 	if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
 		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
@@ -210,7 +228,7 @@ events.entityHurt.on((ev) => {
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.5;
 
 	if (
-		reach >= 4.5 &&
+		reach >= 4 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
 		headPos.x -= addThisPos.x;
