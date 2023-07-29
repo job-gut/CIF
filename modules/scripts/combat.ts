@@ -191,9 +191,9 @@ events.entityHurt.on((ev) => {
 	playerpos.z += playerViewVec.z * howManyMultiplyToPos;
 
 	const victimpos = 
-		playerpos.distance(lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 17) + 2, 3)])
+		playerpos.distance(lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 18) + 1, 2)])
 		> playerpos.distance(victim.getFeetPos()) ?
-		victim.getFeetPos() : lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 17) + 2, 3)];
+		victim.getFeetPos() : lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 18) + 1, 2)];
 
 
 	const result1 = Math.pow(playerpos.x - victimpos.x, 2);
@@ -233,12 +233,20 @@ events.entityHurt.on((ev) => {
 	console.log(reach);
 
 	if (
-		reach > 3 &&
+		reach >= 3.1 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
+		if (reach >= 4.76) {
+			CIF.ban(player.getNetworkIdentifier(), "Reach");
+		};
+
+		if (reach >= 3.76) {
+			return CIF.detect(player.getNetworkIdentifier(), "Reach", `Increase Reach | ${reach}`);
+		};
+
 		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increase Reach | ${reach}`);
 	};
 
