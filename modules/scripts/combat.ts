@@ -207,7 +207,7 @@ events.entityHurt.on((ev) => {
 	const headRotWhereLookingAt = headPos;
 
 	const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
-	const posFromVicFeet = Vec3.create(victimpos).distance(headRotWhereLookingAt);
+	const posFromVicFeet = victim.getFeetPos().distance(headRotWhereLookingAt);
 
 	if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
 		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
