@@ -704,7 +704,7 @@ events.playerRespawn.on((ev) => {
 	const z = pl.getFeetPos().z;
 
 	isRespawned[plname] = true;
-	respawnedPos[plname] = pl.getFeetPos();
+	respawnedPos[plname] = Vec3.create(pl.getFeetPos());
 	lastpos[plname] = [x, y, z];
 	setTimeout(() => {
 		isRespawned[plname] = false;
