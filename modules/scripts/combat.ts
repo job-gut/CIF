@@ -39,7 +39,7 @@ function mismatchWarn(player: Player): CANCEL {
 	}, 3000);
 
 	if (MismatchAuraWarn.get(name)! > 4) {
-		CIF.ban(player.getNetworkIdentifier(), "Aura");
+		CIF.ban(player.getNetworkIdentifier(), "Aura-A");
 		return CIF.detect(
 			player.getNetworkIdentifier(),
 			"Aura-A",
