@@ -239,11 +239,11 @@ events.entityHurt.on((ev) => {
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
-		if (reach >= 4.76) {
+		if (reach >= 4.8) {
 			CIF.ban(player.getNetworkIdentifier(), "Reach");
 		};
 
-		if (reach >= 3.76) {
+		if (reach >= 3.8) {
 			return CIF.detect(player.getNetworkIdentifier(), "Reach", `Increase Reach | ${reach}`);
 		};
 
