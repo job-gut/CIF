@@ -228,7 +228,7 @@ events.entityHurt.on((ev) => {
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) ;
 
 	if (
-		reach > 3.5 &&
+		reach > 3.6 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
 		headPos.x -= addThisPos.x;
