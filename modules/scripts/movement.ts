@@ -660,7 +660,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		}, 4990).unref();
 
 		if (Fly_c2Stack[plname] > 2) {
-			CIF.ban(ni, "Fly-C_2");
 			CIF.detect(ni, "Fly-C", "Y boost in midair");
 		};
 	};
