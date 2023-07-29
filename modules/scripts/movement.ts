@@ -534,6 +534,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				if (!blockName.includes("water")) {
 					break outerFor;
 				};
+				lastWentUpBlocks[plname] = 10000000000;
 				waterStack++;
 			};
 		};
@@ -651,7 +652,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (lastWentUpBlocks[plname] < movePos.y - lastY) {
+	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && lastWentUpBlocks[plname] > 0) {
 		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
 		setTimeout(() => {
 			Fly_c2Stack[plname]--;
