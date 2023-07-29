@@ -50,7 +50,7 @@ const isRespawned: Record<string, boolean> = {};
 const respawnedPos: Record<string, Vec3> = {};
 
 const haveFished: Record<string, boolean> = {};
-const isKnockbacking: Record<string, boolean> = {};
+const isKnockbacked: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
 const pushedByPiston: Record<string, boolean> = {};
 
@@ -357,7 +357,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
 		player.isGlidingWithElytra() ||
-		isKnockbacking[plname] ||
+		isKnockbacked[plname] ||
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
@@ -436,7 +436,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (
 			!player.onIce() &&
 			!player.isRiding() &&
-			!isKnockbacking[plname] &&
+			!isKnockbacked[plname] &&
 			!haveFished[plname] &&
 			bps >= plSpeed * 100
 		) {
@@ -462,7 +462,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (
 			!player.onIce() &&
 			!player.isRiding() &&
-			!isKnockbacking[plname] &&
+			!isKnockbacked[plname] &&
 			!haveFished[plname] &&
 			bps > plSpeed * 61.5 &&
 			!player.isUnderAnyBlock()
@@ -687,11 +687,11 @@ events.entityKnockback.on((ev) => {
 
 	const pl = ev.target as ServerPlayer;
 	const plname = pl.getName();
-	isKnockbacking[plname] = true;
+	isKnockbacked[plname] = true;
 	damagedTime[plname] = Date.now();
 	setTimeout(() => {
 		const now = Date.now();
-		if (now - damagedTime[plname] > 1800) isKnockbacking[plname] = false;
+		if (now - damagedTime[plname] > 1800) isKnockbacked[plname] = false;
 	}, 2500);
 });
 
