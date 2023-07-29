@@ -225,10 +225,10 @@ events.entityHurt.on((ev) => {
 
 	lastAttackPlayer[plname] = victim.getNameTag();
 
-	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.5;
+	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) ;
 
 	if (
-		reach >= 4 &&
+		reach > 3.5 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
 		headPos.x -= addThisPos.x;
