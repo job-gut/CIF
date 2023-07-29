@@ -259,20 +259,23 @@ const pistonPush = procHacker.hooking(
 	return pistonPush(blockActor, actor, pos);
 });
 
-function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): undefined {
+function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): void {
 	const currentValue = lastPositions[playerName];
+
 	if (currentValue === undefined || currentValue.length !== 20) {
-		let array: { x: number, y: number, z: number }[] = [];
+		const array: { x: number, y: number, z: number }[] = [];
+
 		for (let i = 0; i < 20; i++) {
 			array.push(lastPosition);
-		}
+		};
+
 		lastPositions[playerName] = array;
 		return;
-	}
-	lastPositions[playerName].splice(0, 19);
+	};
+	
+	lastPositions[playerName] = lastPositions[playerName].splice(0, 19);
 	lastPositions[playerName].unshift(lastPosition);
-	return;
-}
+};
 
 events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
