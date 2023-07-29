@@ -28,14 +28,6 @@ export const MovementType =
 export const lastPositions: Record<string, { x: number, y: number, z: number }[]> = {};
 
 
-const lastBPS: Record<string, number> = {};
-const isSpinAttacking: Record<string, boolean> = {};
-const onGround: Record<string, boolean> = {};
-const usedElytra: Record<string, boolean> = {};
-const lastpos: Record<string, number[]> = {};
-
-const jumpedTick: Record<string, number> = {};
-
 const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 const littleFastStack: Record<string, number> = {};
@@ -45,6 +37,13 @@ const lastWentUpBlocks: Record<string, number> = {};
 const Fly_bStack: Record<string, number> = {};
 const Fly_c1Stack: Record<string, number> = {};
 const Fly_c2Stack: Record<string, number> = {};
+
+const lastBPS: Record<string, number> = {};
+
+const isSpinAttacking: Record<string, boolean> = {};
+const onGround: Record<string, boolean> = {};
+const usedElytra: Record<string, boolean> = {};
+const lastpos: Record<string, number[]> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
@@ -185,10 +184,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 	// else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
 	// 	usedElytra[plname] = false;
 	// };
-
-	if (pkt.action === PlayerActionPacket.Actions.Jump) {
-		jumpedTick[plname] = pl.getLevel().getCurrentTick();
-	};
 });
 
 function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
