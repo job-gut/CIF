@@ -8,8 +8,13 @@ import { CIFconfig } from "../util/configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
 import { MobEffectIds } from "bdsx/bds/effects";
 import { bedrockServer } from "bdsx/launcher";
+import { RakNet } from "bdsx/bds/raknet";
 
-const peer = bedrockServer.rakPeer;
+let peer: RakNet.RakPeer;
+
+events.serverOpen.on(()=> {
+	peer = bedrockServer.rakPeer;
+});
 
 const MismatchAuraWarn = new Map<string, number>();
 const sameRotAuraWarn = new Map<string, number>();
