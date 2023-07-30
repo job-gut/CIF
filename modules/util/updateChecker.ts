@@ -8,7 +8,7 @@ export async function alertAboutUpdates(): Promise<void> {
 			p => p.getName() === "jobgutworlds" || p.getCommandPermissionLevel() >= 1);
 
 		for (const pl of ops) {
-			CIF.announce("§c[§fCIF§c] ※§dCIF가 현재 최신버전이 아닙니다※");
+			CIF.announce("§c[§fCIF§c] §l§4※§r§dCIF가 현재 최신버전이 아닙니다§l§4※");
 			CIF.announce("§c[§fCIF§c] §e/cif update 로 업데이트 할 수 있습니다");
 			CIF.announce(`§c[§fCIF§c] §7현재 버전: ${CIFVersion} §l§f-> §r§b최신 버전: ${await getNewVersion()}`);
 			CIF.announce("§c[§fCIF§c] §6변경 사항: §a" + await getWhatsNew());
@@ -23,13 +23,8 @@ export async function alertAboutUpdates(): Promise<void> {
 	};
 
 	if (await thisACisLastestVersion() === true) {
-		const ops = bedrockServer.serverInstance.getPlayers().filter(
-			p => p.getName() === "jobgutworlds" || p.getCommandPermissionLevel() >= 1);
-
-		for (const pl of ops) {
-			CIF.announce("§c[§fCIF§c] §aCIF가 현재 최신버전입니다");
-			CIF.announce(`§c[§fCIF§c] §7현재 버전: ${CIFVersion}`);
-		};
+		CIF.announce("§c[§fCIF§c] §aCIF가 현재 최신버전입니다");
+		CIF.announce(`§c[§fCIF§c] §7현재 버전: ${CIFVersion}`);
 
 		CIF.log("CIF 가 현재 최신버전입니다".green);
 		CIF.log(`현재 버전: ${CIFVersion}`.magenta);

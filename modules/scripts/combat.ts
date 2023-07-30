@@ -1,4 +1,4 @@
-import { Vec3 } from "bdsx/bds/blockpos";
+import { Vec2, Vec3 } from "bdsx/bds/blockpos";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
@@ -8,8 +8,13 @@ import { CIFconfig } from "../util/configManager";
 import { ActorDamageCause } from "bdsx/bds/actor";
 import { MobEffectIds } from "bdsx/bds/effects";
 import { bedrockServer } from "bdsx/launcher";
+import { RakNet } from "bdsx/bds/raknet";
 
-const peer = bedrockServer.rakPeer;
+let peer: RakNet.RakPeer;
+
+events.serverOpen.on(()=> {
+	peer = bedrockServer.rakPeer;
+});
 
 const MismatchAuraWarn = new Map<string, number>();
 const sameRotAuraWarn = new Map<string, number>();
@@ -34,7 +39,7 @@ function mismatchWarn(player: Player): CANCEL {
 	}, 3000);
 
 	if (MismatchAuraWarn.get(name)! > 4) {
-		CIF.ban(player.getNetworkIdentifier(), "Aura");
+		CIF.ban(player.getNetworkIdentifier(), "Aura-A");
 		return CIF.detect(
 			player.getNetworkIdentifier(),
 			"Aura-A",
@@ -180,16 +185,15 @@ events.entityHurt.on((ev) => {
 	const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
 	
 	const playerViewVec = player.getViewVector();
-	const howManyMultiplyToPos = Math.max(Math.round(playerPing/50) + 1, 2);
+	const howManyMultiplyToPos = Math.max(Math.min(Math.round(playerPing/50), 18), 1);
 	playerpos.x += playerViewVec.x * howManyMultiplyToPos;
 	playerpos.y += playerViewVec.y * howManyMultiplyToPos;
 	playerpos.z += playerViewVec.z * howManyMultiplyToPos;
 
-	
 	const victimpos = 
-		playerpos.distance(lastPositions[victim.getName()][Math.max(Math.round(victimPing/50) + 1, 3)])
+		playerpos.distance(lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 17) + 2, 3)])
 		> playerpos.distance(victim.getFeetPos()) ?
-		victim.getFeetPos() : lastPositions[victim.getName()][Math.max(Math.round(victimPing/50) + 1, 3)];
+		victim.getFeetPos() : lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 17) + 2, 3)];
 
 
 	const result1 = Math.pow(playerpos.x - victimpos.x, 2);
@@ -213,7 +217,8 @@ events.entityHurt.on((ev) => {
 		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
-		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()) {
+		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()
+			&& !player.getRotation().equals(Vec2.create(lastRotations.get(plname)![0]))) {
 			headPos.x -= addThisPos.x;
 			headPos.y -= addThisPos.y;
 			headPos.z -= addThisPos.z;
@@ -225,15 +230,19 @@ events.entityHurt.on((ev) => {
 
 	lastAttackPlayer[plname] = victim.getNameTag();
 
-	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.5;
+	const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
 	if (
-		reach >= 4 &&
+		reach > 3 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
+		if (reach >= 4.75) {
+			CIF.ban(player.getNetworkIdentifier(), "Reach");
+		};
+
 		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increase Reach | ${reach}`);
 	};
 

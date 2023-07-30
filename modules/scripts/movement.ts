@@ -28,14 +28,6 @@ export const MovementType =
 export const lastPositions: Record<string, { x: number, y: number, z: number }[]> = {};
 
 
-const lastBPS: Record<string, number> = {};
-const isSpinAttacking: Record<string, boolean> = {};
-const onGround: Record<string, boolean> = {};
-const usedElytra: Record<string, boolean> = {};
-const lastpos: Record<string, number[]> = {};
-
-const jumpedTick: Record<string, number> = {};
-
 const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 const littleFastStack: Record<string, number> = {};
@@ -46,12 +38,19 @@ const Fly_bStack: Record<string, number> = {};
 const Fly_c1Stack: Record<string, number> = {};
 const Fly_c2Stack: Record<string, number> = {};
 
+const lastBPS: Record<string, number> = {};
+
+const isSpinAttacking: Record<string, boolean> = {};
+const onGround: Record<string, boolean> = {};
+const usedElytra: Record<string, boolean> = {};
+const lastpos: Record<string, number[]> = {};
+
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
 const respawnedPos: Record<string, Vec3> = {};
 
 const haveFished: Record<string, boolean> = {};
-const isKnockbacking: Record<string, boolean> = {};
+const isKnockbacked: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
 const pushedByPiston: Record<string, boolean> = {};
 
@@ -185,10 +184,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 	// else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
 	// 	usedElytra[plname] = false;
 	// };
-
-	if (pkt.action === PlayerActionPacket.Actions.Jump) {
-		jumpedTick[plname] = pl.getLevel().getCurrentTick();
-	};
 });
 
 function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
@@ -259,20 +254,23 @@ const pistonPush = procHacker.hooking(
 	return pistonPush(blockActor, actor, pos);
 });
 
-function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): undefined {
+function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): void {
 	const currentValue = lastPositions[playerName];
+
 	if (currentValue === undefined || currentValue.length !== 20) {
-		let array: { x: number, y: number, z: number }[] = [];
+		const array: { x: number, y: number, z: number }[] = [];
+
 		for (let i = 0; i < 20; i++) {
 			array.push(lastPosition);
-		}
+		};
+
 		lastPositions[playerName] = array;
 		return;
-	}
-	lastPositions[playerName].splice(0, 19);
+	};
+	
+	lastPositions[playerName] = lastPositions[playerName].splice(0, 19);
 	lastPositions[playerName].unshift(lastPosition);
-	return;
-}
+};
 
 events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
@@ -359,11 +357,12 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		isTeleported[plname] ||
 		player.isSpinAttacking() ||
 		player.isGlidingWithElytra() ||
-		isKnockbacking[plname] ||
+		isKnockbacked[plname] ||
 		isSpinAttacking[plname] ||
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
 		pushedByPiston[plname] ||
+		isRespawned[plname]||
 
 		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
@@ -395,7 +394,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		const yDiff = Math.pow(y1 - y2, 2);
 		distance = Math.sqrt(xDiff + yDiff);
 
-		bps = Number((Math.sqrt(xDiff + yDiff) * 20).toFixed(2));
+		bps = Number((distance * 20).toFixed(2));
 	} else {
 		bps = 0;
 		lastBPS[plname] = bps;
@@ -438,15 +437,15 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (
 			!player.onIce() &&
 			!player.isRiding() &&
-			!isKnockbacking[plname] &&
+			!isKnockbacked[plname] &&
 			!haveFished[plname] &&
-			bps >= plSpeed * 100
+			bps >= plSpeed * 150
 		) {
 			tooFastStack[plname] = tooFastStack[plname]
 				? tooFastStack[plname] + 1
 				: 1;
-
-			if (tooFastStack[plname] > 5) {
+			
+			if (tooFastStack[plname] > 7) {
 				tooFastStack[plname] = 0;
 				CIF.detect(
 					ni,
@@ -464,7 +463,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (
 			!player.onIce() &&
 			!player.isRiding() &&
-			!isKnockbacking[plname] &&
+			!isKnockbacked[plname] &&
 			!haveFished[plname] &&
 			bps > plSpeed * 61.5 &&
 			!player.isUnderAnyBlock()
@@ -481,6 +480,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 				if (littleFastWarn[plname] > 2) {
 					littleFastWarn[plname] = 0;
+					CIF.ban(ni, "Speed-C");
 					CIF.detect(
 						ni,
 						"Speed-C",
@@ -531,6 +531,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				if (!blockName.includes("water")) {
 					break outerFor;
 				};
+				lastWentUpBlocks[plname] = 10000000000;
 				waterStack++;
 			};
 		};
@@ -622,7 +623,17 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 	};
 
-	if (movePos.y < -61) return;
+	if (movePos.y < -61) {
+		lastBPS[plname] = bps;
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
+
+		Fly_bStack[plname] = 0;
+
+		lastWentUpBlocks[plname] = 10000000000;
+		movePos.y += 1.62001190185547;
+		return;
+	};
 
 	if (lastY === movePos.y && !isTeleported[plname]) {
 		if (lastPos[0] === movePos.x && lastPos[2] === movePos.z) return;
@@ -648,7 +659,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (lastWentUpBlocks[plname] < movePos.y - lastY) {
+	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && lastWentUpBlocks[plname] > 0) {
 		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
 		setTimeout(() => {
 			Fly_c2Stack[plname]--;
@@ -656,7 +667,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		}, 4990).unref();
 
 		if (Fly_c2Stack[plname] > 2) {
-			CIF.ban(ni, "Fly-C_2");
 			CIF.detect(ni, "Fly-C", "Y boost in midair");
 		};
 	};
@@ -689,11 +699,11 @@ events.entityKnockback.on((ev) => {
 
 	const pl = ev.target as ServerPlayer;
 	const plname = pl.getName();
-	isKnockbacking[plname] = true;
+	isKnockbacked[plname] = true;
 	damagedTime[plname] = Date.now();
 	setTimeout(() => {
 		const now = Date.now();
-		if (now - damagedTime[plname] > 1800) isKnockbacking[plname] = false;
+		if (now - damagedTime[plname] > 1800) isKnockbacked[plname] = false;
 	}, 2500);
 });
 
@@ -706,7 +716,7 @@ events.playerRespawn.on((ev) => {
 	const z = pl.getFeetPos().z;
 
 	isRespawned[plname] = true;
-	respawnedPos[plname] = pl.getFeetPos();
+	respawnedPos[plname] = Vec3.create(pl.getFeetPos());
 	lastpos[plname] = [x, y, z];
 	setTimeout(() => {
 		isRespawned[plname] = false;
