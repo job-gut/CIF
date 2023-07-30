@@ -46,7 +46,7 @@ CIF.announce = function (message: string, target: CommandPermissionLevel | "ALL"
 
     for (const member of users) {
         if (this.wasDetected[member.getName()] === true) continue;
-        member.sendMessage(`§d[CIF]§r${message}`);
+        member.sendMessage(`§d[CIF]§r ${message}`);
     };
 };
 
