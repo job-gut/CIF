@@ -362,6 +362,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
 		pushedByPiston[plname] ||
+		isRespawned[plname]||
 
 		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
