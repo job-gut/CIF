@@ -111,9 +111,9 @@ export async function update(isNotFirstCall: boolean | undefined = undefined): P
 	await setTimeout(() => {
 		exec("powershell Expand-Archive -Force -path '../plugins/CIF.zip' -Destinationpath '../plugins/CIF'", (async (err, stdout, stderr) => {
 			if (err) throw err;
+			const whatsNew = await getWhatsNew();
 			if (isNotFirstCall === true) {
 				const { CIF } = require("./main");
-				const whatsNew = await getWhatsNew();
 				CIF.log(`CIF 가 성공적으로 업데이트 되었습니다`.green);
 				CIF.log(`업데이트 사항: ${whatsNew}`.yellow);
 				CIF.log(`업데이트 사항은 재부팅 시 적용됩니다`.magenta);
@@ -126,7 +126,7 @@ export async function update(isNotFirstCall: boolean | undefined = undefined): P
 			import("./main").then(async () => {
 				const { CIF } = require("./main");
 				CIF.log(`CIF 가 성공적으로 업데이트 되었습니다`.green);
-				CIF.log(`업데이트 사항: ${await getWhatsNew()}`.yellow);
+				CIF.log(`업데이트 사항: ${whatsNew}`.yellow);
 				CIFVersion = await getNewVersion();
 			});
 		}));
