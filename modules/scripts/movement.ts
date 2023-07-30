@@ -394,7 +394,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		const yDiff = Math.pow(y1 - y2, 2);
 		distance = Math.sqrt(xDiff + yDiff);
 
-		bps = Number((Math.sqrt(xDiff + yDiff) * 20).toFixed(2));
+		bps = Number((distance * 20).toFixed(2));
 	} else {
 		bps = 0;
 		lastBPS[plname] = bps;
@@ -445,6 +445,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				? tooFastStack[plname] + 1
 				: 1;
 
+			console.log(plSpeed, lastPos, movePos, distance);
 			if (tooFastStack[plname] > 7) {
 				tooFastStack[plname] = 0;
 				CIF.detect(
@@ -623,7 +624,17 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		};
 	};
 
-	if (movePos.y < -61) return;
+	if (movePos.y < -61) {
+		lastBPS[plname] = bps;
+		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
+
+		Fly_bStack[plname] = 0;
+
+		lastWentUpBlocks[plname] = 10000000000;
+		movePos.y += 1.62001190185547;
+		return;
+	};
 
 	if (lastY === movePos.y && !isTeleported[plname]) {
 		if (lastPos[0] === movePos.x && lastPos[2] === movePos.z) return;
