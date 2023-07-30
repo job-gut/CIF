@@ -115,13 +115,8 @@ export async function update(isNotFirstCall: boolean | undefined = undefined): P
 				const { CIF } = require("./main");
 				const whatsNew = await getWhatsNew();
 				CIF.log(`CIF 가 성공적으로 업데이트 되었습니다`.green);
-<<<<<<< HEAD
-				CIF.log(`업데이트 사항: ${whatsNew}`.yellow);
-				CIF.announce(`§aCIF 가 성공적으로 업데이트 되었습니다\n 업데이트 사항: §e${whatsNew}`)
-=======
 				CIF.log(`업데이트 사항: ` + (await getWhatsNew()).yellow);
 				CIF.log(`업데이트 사항은 재부팅 시 적용됩니다`.magenta);
->>>>>>> 41cdd5d2987845be1f8bd25579603329ec86d68c
 				CIFVersion = await getNewVersion();
 				return;
 			};
