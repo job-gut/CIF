@@ -53,7 +53,6 @@ import { CIF } from "../../main";
 function createNewFile(): void {
 	fs.writeFileSync("../CIFoptions.txt",
 		`Debug = false
-bug = true
 combat = true
 crasher = true
 give = true
@@ -116,7 +115,7 @@ try {
 };
 
 for (const [key, value] of Object.entries(config)) {
-	if (key === "ban" || key === "kick" || key === "send_to_member") {
+	if (key === "ban" || key === "kick" || key === "blockAllPackets" || key === "onlyAlert") {
 		CIFconfig.Penalties[key] = value;
 	} else {
 		CIFconfig.Modules[key as keyof IConfiguration] = value;

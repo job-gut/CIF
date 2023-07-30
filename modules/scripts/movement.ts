@@ -480,6 +480,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 				if (littleFastWarn[plname] > 2) {
 					littleFastWarn[plname] = 0;
+					CIF.ban(ni, "Speed-C");
 					CIF.detect(
 						ni,
 						"Speed-C",

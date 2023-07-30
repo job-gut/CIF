@@ -1,4 +1,4 @@
-export let CIFVersion = "23v7.30.1724";
+export let CIFVersion = "23v7.30.1752";
 
 
 import * as fs from "fs";
@@ -8,7 +8,6 @@ import { exec } from "child_process";
 function createNewFile(): void {
 	fs.writeFileSync("../CIFoptions.txt",
 		`Debug = false
-bug = true
 combat = true
 crasher = true
 give = true
@@ -19,7 +18,9 @@ scaffold = true
 xp = true
 ban = true
 kick = true
-auto_update = false
+blockAllPackets = true
+onlyAlert = true
+auto_update = true
 `
 	);
 };
