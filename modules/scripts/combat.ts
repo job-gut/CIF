@@ -1,4 +1,4 @@
-import { Vec3 } from "bdsx/bds/blockpos";
+import { Vec2, Vec3 } from "bdsx/bds/blockpos";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { BuildPlatform, CANCEL } from "bdsx/common";
 import { events } from "bdsx/event";
@@ -217,7 +217,8 @@ events.entityHurt.on((ev) => {
 		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
-		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()) {
+		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()
+			&& !player.getRotation().equals(Vec2.create(lastRotations.get(plname)![0]))) {
 			headPos.x -= addThisPos.x;
 			headPos.y -= addThisPos.y;
 			headPos.z -= addThisPos.z;
