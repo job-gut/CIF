@@ -439,13 +439,13 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			!player.isRiding() &&
 			!isKnockbacked[plname] &&
 			!haveFished[plname] &&
-			bps >= plSpeed * 100
+			bps >= plSpeed * 150
 		) {
 			tooFastStack[plname] = tooFastStack[plname]
 				? tooFastStack[plname] + 1
 				: 1;
 
-			if (tooFastStack[plname] > 9) {
+			if (tooFastStack[plname] > 7) {
 				tooFastStack[plname] = 0;
 				CIF.detect(
 					ni,
