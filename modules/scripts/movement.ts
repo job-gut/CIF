@@ -444,8 +444,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			tooFastStack[plname] = tooFastStack[plname]
 				? tooFastStack[plname] + 1
 				: 1;
-
-			console.log(plSpeed, lastPos, movePos, distance);
+			
 			if (tooFastStack[plname] > 7) {
 				tooFastStack[plname] = 0;
 				CIF.detect(
