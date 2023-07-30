@@ -83,14 +83,14 @@ function download(url: string, path: string, cb: any = undefined): boolean {
 };
 
 export async function update(isNotFirstCall: boolean | undefined = undefined): Promise<void> {
-	if (await thisACisLastestVersion() === undefined) {
+	if (await thisACisLastestVersion() === undefined && !isNotFirstCall) {
 		console.warn("CIF 메인 서버에 연결 할 수 없습니다".red);
 		import("./modules/util/configManager");
 		import("./main");
 		return;
 	};
 
-	if (await thisACisLastestVersion() === true) {
+	if (await thisACisLastestVersion() === true && !isNotFirstCall) {
 		import("./modules/util/configManager");
 		import("./main");
 		return;

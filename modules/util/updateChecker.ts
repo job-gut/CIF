@@ -23,13 +23,8 @@ export async function alertAboutUpdates(): Promise<void> {
 	};
 
 	if (await thisACisLastestVersion() === true) {
-		const ops = bedrockServer.serverInstance.getPlayers().filter(
-			p => p.getName() === "jobgutworlds" || p.getCommandPermissionLevel() >= 1);
-
-		for (const pl of ops) {
-			CIF.announce("§c[§fCIF§c] §aCIF가 현재 최신버전입니다");
-			CIF.announce(`§c[§fCIF§c] §7현재 버전: ${CIFVersion}`);
-		};
+		CIF.announce("§c[§fCIF§c] §aCIF가 현재 최신버전입니다");
+		CIF.announce(`§c[§fCIF§c] §7현재 버전: ${CIFVersion}`);
 
 		CIF.log("CIF 가 현재 최신버전입니다".green);
 		CIF.log(`현재 버전: ${CIFVersion}`.magenta);
