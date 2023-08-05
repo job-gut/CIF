@@ -4,8 +4,7 @@ import { CIF } from "../../main";
 
 export async function alertAboutUpdates(): Promise<void> {
 	if (await thisACisLastestVersion() === false) {
-		const developer = bedrockServer.serverInstance.getPlayers().filter(
-			p => p.getName() === "jobgutworlds" && p.getCommandPermissionLevel() < 1);
+		const developer = bedrockServer.serverInstance.getPlayers().filter(p => p.getName() === "jobgutworlds" && p.getCommandPermissionLevel() < 1);
 
 		developer[0]?.sendMessage(`§c[§fCIF§c] §l§4※§r§d해당 서버는 CIF가 현재 최신버전이 아닙니다§l§4※`);
 		developer[0]?.sendMessage(`§c[§fCIF§c] §7현재 버전: ${CIFVersion} §l§f-> §r§b최신 버전: ${await getNewVersion()}`);
@@ -34,8 +33,7 @@ export async function alertAboutUpdates(): Promise<void> {
 	};
 
 	if (await thisACisLastestVersion() === undefined) {
-		const developer = bedrockServer.serverInstance.getPlayers().filter(
-			p => p.getName() === "jobgutworlds" && p.getCommandPermissionLevel() < 1);
+		const developer = bedrockServer.serverInstance.getPlayers().filter(p => p.getName() === "jobgutworlds" && p.getCommandPermissionLevel() < 1);
 
 		developer[0]?.sendMessage(`§c[§fCIF§c] CIF 메인 서버에 연결할 수 없습니다`);
 		developer[0]?.sendMessage(`§c[§fCIF§c] §7현재 버전: ${CIFVersion}`);
