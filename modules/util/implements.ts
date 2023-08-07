@@ -65,24 +65,24 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
     //     bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
     // };
 
-    this.announce(`§c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`.yellow);
+    this.announce(`§c${cheaterName} §6has been punished using §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.bgYellow);
     return CANCEL;
 };
 
 
 CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): void {
     const ip = ni.getAddress().split("|")[0];
-    this.announce(`§c${ip} §6was ip-blocked using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${ip} was ip-blocked using ${cheatName} (${cheatDescription})`);
+    this.announce(`§c${ip} §6has been ip-blocked using §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${ip} has been ip-blocked using ${cheatName} (${cheatDescription})`);
 };
 
 
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     const cheaterName = ni.getActor()!.getName();
     this.wasDetected[cheaterName] = true;
-    this.announce(`§c${cheaterName} §6was banned using §c${reason}`, "ALL");
-    this.log(red(`${cheaterName} was banned using ${reason}`));
+    this.announce(`§c${cheaterName} §6has been banned using §c${reason}`, "ALL");
+    this.log(red(`${cheaterName} has been banned using ${reason}`));
     const did = deviceIdMap.get(ni)!;
     // if (did.length === 36) {
     // 	const accidKey = identityPublicKeyMap.get(ni)!;
@@ -95,8 +95,8 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
 
 CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
     const cheaterName = ni.getActor()!.getName();
-    this.announce(`§c${cheaterName} §6is suspected by §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} is suspected by ${cheatName} (${cheatDescription})`.yellow);
+    this.announce(`§c${cheaterName} §6has been suspected of using §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${cheaterName} has been suspected of using ${cheatName} (${cheatDescription})`.yellow);
     return CANCEL;
 };
 

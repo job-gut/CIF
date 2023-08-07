@@ -9,6 +9,7 @@ import { procHacker } from "bdsx/prochacker";
 import { CIF } from "../../main";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { events } from "bdsx/event";
+import { bedrockServer } from "bdsx/launcher";
 
 const receivePacket = procHacker.hooking(
     "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVNetworkSystem@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
@@ -61,13 +62,19 @@ const receivePacket = procHacker.hooking(
 events.networkDisconnected.on(ni => {
     if (ni) {
         // Warns[ni.getAddress()] = 0;
-        CIF.resetDetected(ni.getActor()?.getName()!);
+		const plname = ni.getActor()?.getName()!;
+        bedrockServer.serverInstance.nextTick().then(()=> {
+			CIF.resetDetected(plname);
+		});
     };
 });
 
 events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 	if (ni) {
 		// Warns[ni.getAddress()] = 0;
-        CIF.resetDetected(ni.getActor()?.getName()!);
+		const plname = ni.getActor()?.getName()!;
+        bedrockServer.serverInstance.nextTick().then(()=> {
+			CIF.resetDetected(plname);
+		});
 	};
 });
