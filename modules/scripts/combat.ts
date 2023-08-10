@@ -116,7 +116,7 @@ function isMismatchAttack(
 		Math.pow(distanceX, 2) + Math.pow(distanceZ, 2)
 	);
 
-	if (hitRange > 1) {
+	if (hitRange > 1.25) {
 		return true;
 	};
 
