@@ -66,7 +66,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
     // };
 
     this.announce(`§c${cheaterName} §6has been punished using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.bgYellow);
+    this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.bgYellow.red);
     return CANCEL;
 };
 
