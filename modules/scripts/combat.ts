@@ -223,17 +223,14 @@ events.entityHurt.on((ev) => {
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
 	if (
-		reach > 3 &&
+		reach >= 3 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
-		if (reach >= 4.75) {
-			CIF.ban(player.getNetworkIdentifier(), "Reach");
-		};
 
-		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increase Reach | ${reach}`);
+		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increases Reach | ${reach}`);
 	};
 
 	headPos.x -= addThisPos.x;
