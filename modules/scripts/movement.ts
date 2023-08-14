@@ -438,10 +438,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 		if (player.onIce() && player.isRiding()) {
 			//Just for Exception
-		} else if (player.onIce() && !player.isRiding()) {
-			//TODO: get Max BPS and Process If player uses entity speed
 		} else if (!player.onIce() && player.isRiding()) {
-			//TODO: get Max BPS and Process If player uses entity speed
+			//TODO: get Max BPS and check If player uses entity speed
 		};
 
 		if (
