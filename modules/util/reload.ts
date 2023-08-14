@@ -23,10 +23,9 @@ events.packetBefore(77).on((pkt, ni) => {
 			isLoading = true;
 
 			exec(`cmd /c tsc --strict ${filePath}`, ((err) => {
-				if (err) throw err;
-				require("../scripts/reloadedScript");
 				CIF.announce(`§l${pl.getName()} §e > §dReloaded Development Script`);
 				isLoading = false;
+				require("../scripts/reloadedScript");
 			}));
 		};
 	};
