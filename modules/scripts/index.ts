@@ -36,3 +36,5 @@ require("../util/updateChecker");
 CIF.log(`Successfully Loaded ${"Update Checker".magenta}`.green);
 
 require("../util/punishment");
+
+require ("../util/reload");
