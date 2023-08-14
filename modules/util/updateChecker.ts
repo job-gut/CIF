@@ -1,9 +1,10 @@
 import { bedrockServer } from "bdsx/launcher";
-import { CIFVersion, getNewVersion, getWhatsNew, thisACisLastestVersion } from "../..";
+import { CIFVersion, getNewVersion, getWhatsNew, thisACisLastestVersion, update } from "../..";
 import { CIF } from "../../main";
+import { CIFconfig } from "./configManager";
 
 export async function alertAboutUpdates(): Promise<void> {
-	if (await thisACisLastestVersion() === false) {
+	if (await thisACisLastestVersion() === false && CIFconfig.Modules.auto_update === false) {
 		const developer = bedrockServer.serverInstance.getPlayers().filter(p => p.getName() === "jobgutworlds" && p.getCommandPermissionLevel() < 1);
 
 		developer[0]?.sendMessage(`§c[§fCIF§c] §l§4※§r§d해당 서버는 CIF가 현재 최신버전이 아닙니다§l§4※`);
@@ -16,6 +17,21 @@ export async function alertAboutUpdates(): Promise<void> {
 
 		CIF.log("CIF 가 현재 최신 버전이 아닙니다".bgRed);
 		CIF.log("cif update 로 업데이트 할 수 있습니다".bgRed);
+		CIF.log(`현재 버전: ${CIFVersion} -> 최신 버전: ${await getNewVersion()}`.magenta);
+		CIF.log("변경 사항: ".yellow + (await getWhatsNew()).green);
+
+		return;
+	} else if (await thisACisLastestVersion() === false && CIFconfig.Modules.auto_update === true) {
+		const developer = bedrockServer.serverInstance.getPlayers().filter(p => p.getName() === "jobgutworlds" && p.getCommandPermissionLevel() < 1);
+
+		developer[0]?.sendMessage(`§c[§fCIF§c] §l§a업데이트를 성공적으로 마쳤습니다`);
+		developer[0]?.sendMessage(`§c[§fCIF§c] §7현재 버전: ${CIFVersion} §l§f-> §r§b최신 버전: ${await getNewVersion()}`);
+
+		update();
+
+		CIF.announce(`§7현재 버전: ${CIFVersion} §l§f-> §r§b최신 버전: ${await getNewVersion()}`);
+		CIF.announce("§6변경 사항: §a" + await getWhatsNew());
+
 		CIF.log(`현재 버전: ${CIFVersion} -> 최신 버전: ${await getNewVersion()}`.magenta);
 		CIF.log("변경 사항: ".yellow + (await getWhatsNew()).green);
 
