@@ -51,7 +51,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
             const bannedReason = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[1];
             CIF.wasDetected[name] = true;
             // bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
-            CIF.announce(`§c[§fCIF§c] §c${name} §6failed to connect §7(§c${bannedReason}§7)`);
+            CIF.announce(`§c${name} §6failed to connect §7(§c${bannedReason}§7)`);
             CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
         };
     };
