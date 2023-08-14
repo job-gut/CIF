@@ -27,6 +27,7 @@ let Reloaded = false;
 
 
 
+
 events.packetBefore(77).on((pkt, ni) => {
     if (Reloaded) return;
     const pl = ni.getActor()!;
