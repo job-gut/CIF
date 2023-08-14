@@ -66,7 +66,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
     // };
 
     this.announce(`§c${cheaterName} §6has been punished using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.bgYellow.red);
+    this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.magenta);
     return CANCEL;
 };
 
@@ -102,7 +102,9 @@ CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescripti
 
 
 CIF.resetDetected = function (plname: string): void {
-    this.wasDetected[plname] = false;
+	bedrockServer.serverInstance.nextTick().then(()=> {
+		CIF.wasDetected[plname] = false;
+	});
 };
 
 

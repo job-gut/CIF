@@ -29,13 +29,8 @@ const receivePacket = procHacker.hooking(
             return 1;
         };
     };
-
 	
-	// if (CIFconfig.Modules.crasher !== true) return receivePacket(conn, data, networkSystem, time_point);
-
-
     // const ip = address.split("|")[0];
-    // if (ip === "10.10.10.10") return receivePacket(conn, data, networkSystem, time_point);
 
     // if (ipBlocked[ip]) {
     //     conn.disconnect();
@@ -45,16 +40,6 @@ const receivePacket = procHacker.hooking(
     // };
 
     // const id = data.valueptr.getUint8();
-    // if (Warns[address] > 14 || id === MinecraftPacketIds.PurchaseReceipt) {
-    //     conn.disconnect();
-    //     ipBlocked[ip] = true;
-    //     CIF.ipDetect(conn.networkIdentifier, "crasher", "CVE: Send Invalid Packets without Minecraft Connection");
-    //     return 1;
-    // };
-
-    // if (id === 0) {
-    //     Warns[address] = Warns[address] ? Warns[address] + 1 : 1;
-    // };
 
     return receivePacket(conn, data, networkSystem, time_point);
 });
@@ -63,9 +48,7 @@ events.networkDisconnected.on(ni => {
     if (ni) {
         // Warns[ni.getAddress()] = 0;
 		const plname = ni.getActor()?.getName()!;
-        bedrockServer.serverInstance.nextTick().then(()=> {
-			CIF.resetDetected(plname);
-		});
+		CIF.resetDetected(plname);
     };
 });
 
@@ -73,8 +56,6 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 	if (ni) {
 		// Warns[ni.getAddress()] = 0;
 		const plname = ni.getActor()?.getName()!;
-        bedrockServer.serverInstance.nextTick().then(()=> {
-			CIF.resetDetected(plname);
-		});
+		CIF.resetDetected(plname);
 	};
 });

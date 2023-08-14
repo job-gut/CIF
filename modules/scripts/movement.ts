@@ -48,11 +48,14 @@ const lastpos: Record<string, number[]> = {};
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
 const respawnedPos: Record<string, Vec3> = {};
+const isTeleportedBySuspection: Record<string, boolean> = {};
 
 const haveFished: Record<string, boolean> = {};
 const isKnockbacked: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
 const pushedByPiston: Record<string, boolean> = {};
+
+const removeTeleportedTimeout: Record<string, NodeJS.Timeout> = {};
 
 export const lastRotations = new Map<string, { x: number; y: number }[]>();
 function appendRotationRecord(
@@ -383,6 +386,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	let bps: number;
 	let distance: number;
+	let displayedBPS: number;
 
 	if (typeof lastPos[0] === "number") {
 		const x1 = lastPos[0];
@@ -394,7 +398,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		const yDiff = Math.pow(y1 - y2, 2);
 		distance = Math.sqrt(xDiff + yDiff);
 
-		bps = Number((distance * 20).toFixed(2));
+		bps = Number((distance * 20).toFixed(5));
+		displayedBPS = Number(String(distance * 20).slice(0, 4));
 	} else {
 		bps = 0;
 		lastBPS[plname] = bps;
@@ -410,15 +415,20 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			strafestack[plname] = strafestack[plname]
 				? strafestack[plname] + 1
 				: 1;
-			if (strafestack[plname] > 12) {
+
+			isTeleportedBySuspection[plname] = true;
+			player.runCommand("tp ~ ~ ~");
+
+			if (strafestack[plname] > 4) {
 				strafestack[plname] = 0;
 				CIF.ban(ni, "Speed-B");
 				CIF.detect(
 					ni,
 					"Speed-B",
-					`Strafe | Blocks per second : ${bps}`
+					`Strafe | Blocks per second : ${displayedBPS}`
 				);
 			}
+
 		} else {
 			strafestack[plname] = strafestack[plname]
 				? strafestack[plname] - 1
@@ -450,7 +460,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 				CIF.detect(
 					ni,
 					"Speed-A",
-					`Too Fast | Blocks per second : ${bps}`
+					`Too Fast | Blocks per second : ${displayedBPS}`
 				);
 			};
 		} else {
@@ -484,7 +494,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					CIF.detect(
 						ni,
 						"Speed-C",
-						`Little Fast | Blocks per second : ${bps}`
+						`Little Fast | Blocks per second : ${displayedBPS}`
 					);
 				};
 
@@ -507,13 +517,11 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	};
 
 	if (Number(distance.toFixed(2)) >= maxBPS && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname] && maxBPS !== 0) {
-		CIF.detect(ni, "teleport", "Teleported over speed limit");
+		CIF.suspect(ni, "teleport", "Teleported over speed limit");
+		isTeleportedBySuspection[plname] = true;
+		player.runCommand("tp ~ ~ ~");
 
-		lastBPS[plname] = bps;
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		movePos.y += 1.62001190185547;
-		lastWentUpBlocks[plname] = 10000000000;
 		return;
 	};
 
@@ -578,8 +586,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	const hasLevitation = player.getEffect(MobEffectIds.Levitation);
 
 	if (lastWentUpBlocks[plname] > 0 && !hasLevitation) {
-		if (lastWentUpBlocks[plname].toString().slice(0, 7) === (movePos.y - lastY).toString().slice(0, 7)) {
+		if (lastWentUpBlocks[plname].toString().slice(0, 9) === (movePos.y - lastY).toString().slice(0, 9)) {
 			Fly_c1Stack[plname]++;
+			isTeleportedBySuspection[plname] = true;
+			player.runCommand("tp ~ ~ ~");
 
 			if (Fly_c1Stack[plname] > 4) {
 				CIF.detect(ni, "Fly-C_1", "Increasing value of Y is constant");
@@ -613,7 +623,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 					setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 
-					Fly_bStack[plname] = 0;
+					if (bps > 0.1) Fly_bStack[plname] = 0;
 
 					lastWentUpBlocks[plname] = 10000000000;
 					movePos.y += 1.62001190185547;
@@ -645,6 +655,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			CIF.ban(ni, "Fly-B");
 			CIF.detect(ni, "Fly-B", "Non-Vertical Fly on Air");
 		};
+
+		isTeleportedBySuspection[plname] = true;
+		player.runCommand("tp ~ ~ ~");
 	} else {
 		Fly_bStack[plname]--;
 		if (Fly_bStack[plname] < 0) Fly_bStack[plname] = 0;
@@ -669,6 +682,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		if (Fly_c2Stack[plname] > 2) {
 			CIF.detect(ni, "Fly-C", "Y boost in midair");
 		};
+
+		isTeleportedBySuspection[plname] = true;
+		player.runCommand("tp ~ ~ ~");
 	};
 
 	lastWentUpBlocks[plname] = movePos.y - lastY;
@@ -686,8 +702,15 @@ const hasTeleport = procHacker.hooking(
 	Vec3
 )((pl, pos) => {
 	const plname = pl.getName()!;
+	if (isTeleportedBySuspection[plname] === true) {
+		isTeleportedBySuspection[plname] = false;
+		return hasTeleport(pl, pos);
+	};
+
 	isTeleported[plname] = true;
-	setTimeout(async () => {
+	clearTimeout(removeTeleportedTimeout[plname]);
+
+	removeTeleportedTimeout[plname] = setTimeout(() => {
 		isTeleported[plname] = false;
 	}, 2500);
 
