@@ -3,7 +3,7 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CANCEL } from "bdsx/common";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../../main";
-import { deviceIdMap, identityPublicKeyMap } from "../scripts/join";
+import { deviceIdMap, identityPublicKeyMap, nameMap } from "../scripts/join";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { red } from "colors";
 
@@ -59,7 +59,7 @@ CIF.log = function (message: string): void {
 
 
 CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
-    const cheaterName = ni.getActor()!.getName();
+    const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
     // if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
     //     bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
@@ -79,7 +79,7 @@ CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescript
 
 
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
-    const cheaterName = ni.getActor()!.getName();
+    const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
     this.announce(`§c${cheaterName} §6has been banned using §c${reason}`, "ALL");
     this.log(red(`${cheaterName} has been banned using ${reason}`));
@@ -94,7 +94,7 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
 
 
 CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
-    const cheaterName = ni.getActor()!.getName();
+    const cheaterName = nameMap.get(ni)!;
     this.announce(`§c${cheaterName} §6has been suspected of using §c${cheatName} §7(${cheatDescription})`);
     this.log(`${cheaterName} has been suspected of using ${cheatName} (${cheatDescription})`.yellow);
     return CANCEL;

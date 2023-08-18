@@ -5,10 +5,9 @@ import { yellow } from "colors";
 import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 import { readFileSync, readdirSync } from "fs";
-import { bedrockServer } from "bdsx/launcher";
 
 
-// export const didToNameMap = new Map<string, string>();
+export const nameMap = new Map<NetworkIdentifier, string>();
 
 export const identityPublicKeyMap = new Map<NetworkIdentifier, string>();
 
@@ -36,7 +35,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const publicIDKey = String(cert.json.value().identityPublicKey).replace(slashReg, "_");
 
     const isXboxLogined = xuid.length > 3;
-    // didToNameMap.set(deviceId, name);
+    nameMap.set(ni, name);
     identityPublicKeyMap.set(ni, publicIDKey);
     wasJoinedIn15seconds.set(ni, true);
     deviceIdMap.set(ni, deviceId);
@@ -61,13 +60,13 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
 
     if (name.length > 20) {
-        // didToNameMap.set(deviceId, "Invalid_Name");
+        nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "long_name", "Too long nickname");
         CIF.ban(ni, "Long_Name");
     };
 
     if (name === "") {
-        // didToNameMap.set(deviceId, "Invalid_Name");
+        nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "invalid_name", "Nickname is null");
         CIF.ban(ni, "Invalid_Name");
     };
@@ -77,7 +76,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     for (let i = 0; i < invisibleChars.length; i++) {
         const char = invisibleChars[i];
         if (name.includes(char)) {
-            // didToNameMap.set(deviceId, "Invalid_Name");
+            nameMap.set(ni, "Invalid_Name");
             CIF.detect(ni, "invisible_name", "Nickname includes disallowed space");
             CIF.ban(ni, "Invisible_Name");
         };

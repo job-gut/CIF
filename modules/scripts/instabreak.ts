@@ -30,7 +30,7 @@ function allowInstabreak(player: Player, block: Block): boolean {
 	const destroySpeed = getDestroySpeed(player.getMainhandSlot(), block);
 	const realDestroyTime =
 		destroyTime / (destroySpeed * (1 + 0.2 * hasteLevel));
-	return realDestroyTime < 0.05;
+	return realDestroyTime < 0.11;
 };
 
 events.blockDestructionStart.on(async (ev) => {
