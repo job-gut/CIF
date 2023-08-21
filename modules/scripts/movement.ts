@@ -99,7 +99,7 @@ declare module "bdsx/bds/player" {
 		isSpinAttacking(): boolean;
 
 		/**
-		 * Returns player's Last Blocks per second (Func from CIF)
+		 * Returns player's latest speed [Meters/Second] (Func from CIF)
 		 */
 		getLastBPS(): number;
 
@@ -670,7 +670,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && lastWentUpBlocks[plname] > 0) {
+	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && lastWentUpBlocks[plname] > 0 && !hasLevitation) {
 		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
 		setTimeout(() => {
 			Fly_c2Stack[plname]--;

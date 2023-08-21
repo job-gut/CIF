@@ -89,16 +89,16 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     const brand = model.split(" ")[0];
 
-    if (deviceId.length !== 36 && deviceOS == 7) {
+    if (deviceId.length !== 36 && deviceOS == 7 && brand !== "Switch") {
         CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Android/IOS)");
         CIF.ban(ni, "fake-os");
     };
-    if (deviceId.length !== 32 && deviceOS !== 7) {
+    if (deviceId.length !== 32 && deviceOS !== 7 && brand !== "Switch") {
         CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Windows 10)");
         CIF.ban(ni, "fake-os");
     };
 
-    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword") && model !== "Desktop DANAWA COMPUTER Co.") {
+    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword") && model !== "Desktop DANAWA COMPUTER Co." && brand !== "Switch") {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
         CIF.ban(ni, "Toolbox");
     };

@@ -175,9 +175,12 @@ events.entityHurt.on((ev) => {
 	const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
 
 	const playerViewVec = player.getViewVector();
-	const howManyMultiplyToPos = Math.max(Math.min(Math.round(playerPing / 50), 18), 1);
+	const howManyMultiplyToSpeed = Math.max(Math.min(Math.round(playerPing / 50), 20), 1);
+
+	const speed = player.getLastBPS();
+	const howManyMultiplyToPos = howManyMultiplyToSpeed * speed;
+
 	playerpos.x += playerViewVec.x * howManyMultiplyToPos;
-	playerpos.y += playerViewVec.y * howManyMultiplyToPos;
 	playerpos.z += playerViewVec.z * howManyMultiplyToPos;
 
 	const victimpos =
@@ -204,7 +207,7 @@ events.entityHurt.on((ev) => {
 	const posFromVicFeet = victim.getFeetPos().distance(headRotWhereLookingAt);
 
 	if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
-		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
+		const lastPosFromVicHead  = headRotWhereLookingAtInBodyWarn[plname][0];
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
 		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()
@@ -223,7 +226,7 @@ events.entityHurt.on((ev) => {
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
 
 	if (
-		reach >= 3 &&
+		reach > 3 &&
 		reach < 8 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
