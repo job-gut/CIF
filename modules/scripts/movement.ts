@@ -28,6 +28,9 @@ export const MovementType =
 export const lastPositions: Record<string, { x: number, y: number, z: number }[]> = {};
 
 
+const lastBPSForExportedFunc: Record<string, number> = {};
+
+
 const strafestack: Record<string, number> = {};
 const tooFastStack: Record<string, number> = {};
 const littleFastStack: Record<string, number> = {};
@@ -150,8 +153,8 @@ Player.prototype.isSpinAttacking = function () {
 
 Player.prototype.getLastBPS = function () {
 	const plname = this.getName();
-	if (!lastBPS[plname]) lastBPS[plname] = 0;
-	return lastBPS[plname];
+	if (!lastBPSForExportedFunc[plname]) lastBPSForExportedFunc[plname] = 0;
+	return lastBPSForExportedFunc[plname];
 };
 
 Player.prototype.onGround = function () {
@@ -409,6 +412,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		distance = 0;
 		return;
 	};
+
+	lastBPSForExportedFunc[plname] = bps;
 
 	if (bps > maxBPS && bps > 6 && CIFconfig.Modules.movement === true && !player.isGlidingWithElytra()) {
 		if (player.getLastBPS() === bps) {

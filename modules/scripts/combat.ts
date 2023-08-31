@@ -175,7 +175,7 @@ events.entityHurt.on((ev) => {
 	const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
 
 	const playerViewVec = player.getViewVector();
-	const howManyMultiplyToSpeed = Math.max(Math.min(Math.round(playerPing / 50), 20), 1);
+	const howManyMultiplyToSpeed = Math.max(Math.min(Math.round(playerPing / 50), 20), 2);
 
 	const speed = player.getLastBPS();
 	const howManyMultiplyToPos = howManyMultiplyToSpeed * speed;
