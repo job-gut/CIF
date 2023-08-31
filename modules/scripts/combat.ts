@@ -177,7 +177,7 @@ events.entityHurt.on((ev) => {
 	const playerViewVec = player.getViewVector();
 	const howManyMultiplyToSpeed = Math.max(Math.min(Math.round(playerPing / 50), 20), 2);
 
-	const speed = player.getLastBPS();
+	const speed = player.getLastBPS() / 20;
 	const howManyMultiplyToPos = howManyMultiplyToSpeed * speed;
 
 	playerpos.x += playerViewVec.x * howManyMultiplyToPos;
