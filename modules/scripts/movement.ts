@@ -416,7 +416,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	lastBPSForExportedFunc[plname] = bps;
 
 	if (bps > maxBPS && bps > 6 && CIFconfig.Modules.movement === true && !player.isGlidingWithElytra()) {
-		if (player.getLastBPS() === bps) {
+		if (lastBPS[plname] === bps) {
 			strafestack[plname] = strafestack[plname]
 				? strafestack[plname] + 1
 				: 1;
