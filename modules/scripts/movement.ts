@@ -374,7 +374,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		lastBPS[plname] = 0;
+		lastBPS[plname] = player.getLastBPS();
 		movePos.y += 1.62001190185547;
 		lastWentUpBlocks[plname] = 10000000000;
 		return;
@@ -424,7 +424,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			isTeleportedBySuspection[plname] = true;
 			player.runCommand("tp ~ ~ ~");
 
-			if (strafestack[plname] > 4) {
+			if (strafestack[plname] > 7) {
 				strafestack[plname] = 0;
 				CIF.ban(ni, "Speed-B");
 				CIF.detect(
@@ -669,7 +669,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (haveFished[plname]) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		lastBPS[plname] = 0;
+		lastBPS[plname] = player.getLastBPS();
 		movePos.y += 1.62001190185547;
 		lastWentUpBlocks[plname] = 10000000000;
 		return;
