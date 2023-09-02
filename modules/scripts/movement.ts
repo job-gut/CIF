@@ -309,14 +309,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 
 	if (isMovePlayerPacket(pkt)) {
 		onGround[plname] = pkt.onGround;
-
-		//respawn
-		if (pkt.mode === 1) {
-			lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-			setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-			movePos.y += 1.62001190185547;
-			return;
-		};
 	} else if (isPlayerAuthInputPacket(pkt)) {
 		onGround[plname] = pkt.headYaw === -0.07840000092983246;
 	};

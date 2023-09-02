@@ -169,7 +169,7 @@ events.entityHurt.on((ev) => {
 		};
 	};
 
-	const playerpos = player.getFeetPos();
+	const playerpos = player.getPosition();
 
 	const playerPing = peer.GetLastPing(player.getNetworkIdentifier().address);
 	const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
@@ -223,8 +223,8 @@ events.entityHurt.on((ev) => {
 
 	lastAttackPlayer[plname] = victim.getNameTag();
 
-	const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
-
+	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
+	
 	if (
 		reach > 3 &&
 		reach < 8 &&

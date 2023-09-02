@@ -1,9 +1,17 @@
-export let CIFVersion = "23v9.2.0218";
+export let CIFVersion = "23v9.2.1310";
 
 
 import * as fs from "fs";
 import * as http from "http";
 import { exec } from "child_process";
+
+
+process.on("uncaughtException", ((err)=> {
+	if (err.message.includes("ETIMEDOUT")) { 
+		console.warn("CIF 메인 서버에 연결 할 수 없습니다".red);
+	};
+}));
+
 
 function createNewFile(): void {
 	fs.writeFileSync("../CIFoptions.txt",
