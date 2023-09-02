@@ -1,4 +1,4 @@
-export let CIFVersion = "23v9.2.1310";
+export let CIFVersion = "23v9.2.1652";
 
 
 import * as fs from "fs";
@@ -11,6 +11,8 @@ process.on("uncaughtException", ((err)=> {
 		console.warn("CIF 메인 서버에 연결 할 수 없습니다".red);
 	};
 }));
+
+process.on("unhandledRejection", ((err)=> {}));
 
 
 function createNewFile(): void {
