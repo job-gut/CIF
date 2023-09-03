@@ -203,7 +203,6 @@ function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
 class FishingHook extends Actor {
 }
 
-<<<<<<< HEAD
 const getOwner = procHacker.js("?getOwner@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
 const getFishingTarget = procHacker.js("?getFishingTarget@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
 function onRetrieve(hook: FishingHook): number {
@@ -221,25 +220,6 @@ function onRetrieve(hook: FishingHook): number {
 	return result;
 }
 const _onRetrieve = procHacker.hooking("?retrieve@FishingHook@@QEAAHXZ", int32_t, null, FishingHook)(onRetrieve);
-=======
-const fishHook = procHacker.hooking(
-	"?_pullCloser@FishingHook@@IEAAXAEAVActor@@M@Z",
-	void_t,
-	null,
-	Actor,
-	float32_t
-)((actor, strength) => {
-	if (actor.isPlayer()) {
-		const name = actor.getName();
-		haveFished[name] = true;
-		setTimeout(() => {
-			haveFished[name] = false;
-		}, 2500);
-	};
-
-	return fishHook(actor, strength);
-});
->>>>>>> 1765f4462e3b05e790147120c3706eebddac0d1a
 
 const startGlide = procHacker.hooking(
 	"?startGliding@Player@@QEAAXXZ",
