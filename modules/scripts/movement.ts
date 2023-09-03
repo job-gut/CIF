@@ -203,7 +203,6 @@ function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
 class FishingHook extends Actor {
 }
 
-const getOwner = procHacker.js("?getOwner@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
 const getFishingTarget = procHacker.js("?getFishingTarget@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
 function onRetrieve(hook: FishingHook): number {
 	const result = _onRetrieve(hook);
