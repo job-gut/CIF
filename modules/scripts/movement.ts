@@ -213,7 +213,7 @@ const fishHook = procHacker.hooking(
 		haveFished[name] = true;
 		setTimeout(() => {
 			haveFished[name] = false;
-		}, 1000);
+		}, 2500);
 	};
 
 	return fishHook(actor, strength);
