@@ -8,7 +8,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket, PlayerAuthInputPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
-import { bool_t, float32_t, void_t } from "bdsx/nativetype";
+import { bool_t, float32_t, int32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
 import { CIFconfig } from "../util/configManager";
@@ -194,24 +194,26 @@ function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
 	return (<PlayerAuthInputPacket>pkt).moveX !== undefined;
 };
 
+class FishingHook extends Actor {
+}
 
-const fishHook = procHacker.hooking(
-	"?_pullCloser@FishingHook@@IEAAXAEAVActor@@M@Z",
-	void_t,
-	null,
-	Actor,
-	float32_t
-)((actor, strength) => {
-	if (actor.isPlayer()) {
-		const name = actor.getName();
-		haveFished[name] = true;
-		setTimeout(() => {
-			haveFished[name] = false;
-		}, 1000);
-	};
-
-	return fishHook(actor, strength);
-});
+const getOwner = procHacker.js("?getOwner@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
+const getFishingTarget = procHacker.js("?getFishingTarget@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
+function onRetrieve(hook: FishingHook): number {
+	const result = _onRetrieve(hook);
+	if (result === 3) {
+		const target = getFishingTarget(hook);
+		if (target !== null && target.isPlayer()) {
+			const name = target.getName();
+			haveFished[name] = true;
+			setTimeout(() => {
+				haveFished[name] = false;
+			}, 1000);
+		}
+	}
+	return result;
+}
+const _onRetrieve = procHacker.hooking("?retrieve@FishingHook@@QEAAHXZ", int32_t, null, FishingHook)(onRetrieve);
 
 const startGlide = procHacker.hooking(
 	"?startGliding@Player@@QEAAXXZ",
@@ -267,7 +269,7 @@ function setLastPositions(playerName: string, lastPosition: { x: number, y: numb
 		lastPositions[playerName] = array;
 		return;
 	};
-	
+
 	lastPositions[playerName] = lastPositions[playerName].splice(0, 19);
 	lastPositions[playerName].unshift(lastPosition);
 };
@@ -362,7 +364,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		wasJoinedIn15seconds.get(ni) ||
 		player.isFlying() ||
 		pushedByPiston[plname] ||
-		isRespawned[plname]||
+		isRespawned[plname] ||
 
 		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
 	) {
@@ -444,7 +446,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			tooFastStack[plname] = tooFastStack[plname]
 				? tooFastStack[plname] + 1
 				: 1;
-			
+
 			if (tooFastStack[plname] > 7) {
 				tooFastStack[plname] = 0;
 				CIF.detect(
