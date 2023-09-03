@@ -12,7 +12,7 @@ import { RakNet } from "bdsx/bds/raknet";
 
 let peer: RakNet.RakPeer;
 
-events.serverOpen.on(()=> {
+events.serverOpen.on(() => {
 	peer = bedrockServer.rakPeer;
 });
 
@@ -38,7 +38,7 @@ function mismatchWarn(player: Player): CANCEL {
 		if (MismatchAuraWarn.get(name)! < 0) MismatchAuraWarn.set(name, 0);
 	}, 3000);
 
-	if (MismatchAuraWarn.get(name)! > 4) {
+	if (MismatchAuraWarn.get(name)! > 2) {
 		CIF.ban(player.getNetworkIdentifier(), "Aura-A");
 		return CIF.detect(
 			player.getNetworkIdentifier(),
@@ -63,7 +63,7 @@ function sameRotWarn(player: Player): CANCEL {
 		if (sameRotAuraWarn.get(name)! < 0) sameRotAuraWarn.set(name, 0);
 	}, 3000);
 
-	if (sameRotAuraWarn.get(name)! > 3) { 
+	if (sameRotAuraWarn.get(name)! > 3) {
 		sameRotAuraWarn.set(name, 0);
 		CIF.suspect(player.getNetworkIdentifier(), "Aura-B", "Attacking Same Body Position");
 	};
@@ -116,53 +116,15 @@ function isMismatchAttack(
 		Math.pow(distanceX, 2) + Math.pow(distanceZ, 2)
 	);
 
-	if (hitRange > 1) {
+	if (hitRange > 1.25) {
 		return true;
 	};
 
 	return false;
 };
 
-
-events.playerAttack.on((ev) => {
-	if (CIFconfig.Modules.combat !== true) return;
-
-	
-	const victim = ev.victim;
-	if (!victim.isPlayer()) return;
-	if (ev.player.getGameType() === GameType.Creative) return;
-	if (ev.player.getPlatform() === BuildPlatform.ANDROID || ev.player.getPlatform() === BuildPlatform.IOS) return;
-
-	const player = ev.player as ServerPlayer;
-	const name = player.getName()!;
-
-	const prevRotations = lastRotations.get(name);
-
-	if (prevRotations === undefined || prevRotations.length !== 3) return;
-
-	const check1 = isMismatchAttack(player, victim);
-	const check2 = isMismatchAttack(
-		player,
-		victim,
-		getVectorByRotation(prevRotations[1])
-	);
-
-	const check3 = isMismatchAttack(
-		player,
-		victim,
-		getVectorByRotation(prevRotations[2])
-	);
-
-	if (check1 && check2 && check3) {
-		return mismatchWarn(player);
-	} else if (check1) {
-		return CANCEL;
-	};
-});
-
 events.entityHurt.on((ev) => {
 	if (CIFconfig.Modules.combat !== true) return;
-
 
 	const cuz = ev.damageSource.cause;
 
@@ -179,21 +141,52 @@ events.entityHurt.on((ev) => {
 	if (player.getGameType() === GameType.Creative) return;
 	if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
 
-	const playerpos = player.getFeetPos();
+	if (player.getPlatform() !== BuildPlatform.ANDROID && player.getPlatform() !== BuildPlatform.IOS) {
+		const name = player.getName()!;
+
+		const prevRotations = lastRotations.get(name);
+
+		if (prevRotations !== undefined && prevRotations.length === 3) {
+
+			const check1 = isMismatchAttack(player, victim);
+			const check2 = isMismatchAttack(
+				player,
+				victim,
+				getVectorByRotation(prevRotations[1])
+			);
+
+			const check3 = isMismatchAttack(
+				player,
+				victim,
+				getVectorByRotation(prevRotations[2])
+			);
+
+			if (check1 && check2 && check3) {
+				return mismatchWarn(player);
+			} else if (check1) {
+				return CANCEL;
+			};
+		};
+	};
+
+	const playerpos = player.getPosition();
 
 	const playerPing = peer.GetLastPing(player.getNetworkIdentifier().address);
 	const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
-	
+
 	const playerViewVec = player.getViewVector();
-	const howManyMultiplyToPos = Math.max(Math.min(Math.round(playerPing/50), 18), 1);
+	const howManyMultiplyToSpeed = Math.max(Math.min(Math.round(playerPing / 50), 20), 2);
+
+	const speed = player.getLastBPS() / 20;
+	const howManyMultiplyToPos = howManyMultiplyToSpeed * speed;
+
 	playerpos.x += playerViewVec.x * howManyMultiplyToPos;
-	playerpos.y += playerViewVec.y * howManyMultiplyToPos;
 	playerpos.z += playerViewVec.z * howManyMultiplyToPos;
 
-	const victimpos = 
-		playerpos.distance(lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 17) + 2, 3)])
-		> playerpos.distance(victim.getFeetPos()) ?
-		victim.getFeetPos() : lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing/50), 17) + 2, 3)];
+	const victimpos =
+		playerpos.distance(lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing / 50), 17) + 2, 3)])
+			> playerpos.distance(victim.getFeetPos()) ?
+			victim.getFeetPos() : lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing / 50), 17) + 2, 3)];
 
 
 	const result1 = Math.pow(playerpos.x - victimpos.x, 2);
@@ -214,7 +207,7 @@ events.entityHurt.on((ev) => {
 	const posFromVicFeet = victim.getFeetPos().distance(headRotWhereLookingAt);
 
 	if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
-		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
+		const lastPosFromVicHead  = headRotWhereLookingAtInBodyWarn[plname][0];
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
 		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()
@@ -230,20 +223,18 @@ events.entityHurt.on((ev) => {
 
 	lastAttackPlayer[plname] = victim.getNameTag();
 
-	const reach = Number(Math.sqrt(result1 + result2).toFixed(2));
-
+	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
+	
 	if (
 		reach > 3 &&
+		reach < 8 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
-		if (reach >= 4.75) {
-			CIF.ban(player.getNetworkIdentifier(), "Reach");
-		};
 
-		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increase Reach | ${reach}`);
+		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increases Reach | ${reach}`);
 	};
 
 	headPos.x -= addThisPos.x;

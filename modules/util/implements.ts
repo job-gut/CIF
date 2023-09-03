@@ -1,11 +1,9 @@
 import { CommandPermissionLevel } from "bdsx/bds/command";
 import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
-import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { CANCEL } from "bdsx/common";
 import { bedrockServer } from "bdsx/launcher";
 import { CIF } from "../../main";
-import { deviceIdMap, identityPublicKeyMap } from "../scripts/join";
-import { MovementType } from "../scripts/movement";
+import { deviceIdMap, identityPublicKeyMap, nameMap } from "../scripts/join";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { red } from "colors";
 
@@ -46,7 +44,7 @@ CIF.announce = function (message: string, target: CommandPermissionLevel | "ALL"
 
     for (const member of users) {
         if (this.wasDetected[member.getName()] === true) continue;
-        member.sendMessage(`§d[CIF]§r ${message}`);
+        member.sendMessage(`§c[§fCIF§c] ${message}`);
     };
 };
 
@@ -61,30 +59,30 @@ CIF.log = function (message: string): void {
 
 
 CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
-    const cheaterName = ni.getActor()!.getName();
+    const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
     // if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
     //     bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
     // };
 
-    this.announce(`§c[§fCIF§c] §c${cheaterName} §6was blocked all-packets using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} was blocked all-packets using ${cheatName} (${cheatDescription})`.yellow);
+    this.announce(`§c${cheaterName} §6has been punished using §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.magenta);
     return CANCEL;
 };
 
 
 CIF.ipDetect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): void {
     const ip = ni.getAddress().split("|")[0];
-    this.announce(`§c[§fCIF§c] §c${ip} §6was ip-blocked using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${ip} was ip-blocked using ${cheatName} (${cheatDescription})`);
+    this.announce(`§c${ip} §6has been ip-blocked using §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${ip} has been ip-blocked using ${cheatName} (${cheatDescription})`);
 };
 
 
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
-    const cheaterName = ni.getActor()!.getName();
+    const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
-    this.announce(`§c[§fCIF§c] §c${cheaterName} §6was banned using §c${reason}`, "ALL");
-    this.log(red(`${cheaterName} was banned using ${reason}`));
+    this.announce(`§c${cheaterName} §6has been banned using §c${reason}`, "ALL");
+    this.log(red(`${cheaterName} has been banned using ${reason}`));
     const did = deviceIdMap.get(ni)!;
     // if (did.length === 36) {
     // 	const accidKey = identityPublicKeyMap.get(ni)!;
@@ -96,15 +94,17 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
 
 
 CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
-    const cheaterName = ni.getActor()!.getName();
-    this.announce(`§c[§fCIF§c] §c${cheaterName} §6is suspected by §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} is suspected by ${cheatName} (${cheatDescription})`.yellow);
+    const cheaterName = nameMap.get(ni)!;
+    this.announce(`§c${cheaterName} §6has been suspected of using §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${cheaterName} has been suspected of using ${cheatName} (${cheatDescription})`.yellow);
     return CANCEL;
 };
 
 
 CIF.resetDetected = function (plname: string): void {
-    this.wasDetected[plname] = false;
+	bedrockServer.serverInstance.nextTick().then(()=> {
+		CIF.wasDetected[plname] = false;
+	});
 };
 
 

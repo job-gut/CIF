@@ -72,6 +72,17 @@ for (let i = 0; i < 200; i++) {
 				CIF.announce(ni.getActor()?.getName() + " could try to crash server");
 				return CANCEL;
 			};
+
+			if (size >= UINTmax) {
+				writeFileSync(`../CIFcrasherLogs/${dateWithZero()}.log`, 
+				"Crasher Detected : "+
+				pktid+
+				`\n${ni.getActor()?.getName() || "Couldn't Get Name"}`+
+				"\npacketRaw");
+				CIF.log(ni.getActor()?.getName() + " could try to crash server");
+				CIF.announce(ni.getActor()?.getName() + " could try to crash server");
+				return CANCEL;
+			};
 		} catch {};
 	});
 

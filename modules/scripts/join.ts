@@ -5,10 +5,9 @@ import { yellow } from "colors";
 import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 import { readFileSync, readdirSync } from "fs";
-import { bedrockServer } from "bdsx/launcher";
 
 
-// export const didToNameMap = new Map<string, string>();
+export const nameMap = new Map<NetworkIdentifier, string>();
 
 export const identityPublicKeyMap = new Map<NetworkIdentifier, string>();
 
@@ -36,7 +35,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const publicIDKey = String(cert.json.value().identityPublicKey).replace(slashReg, "_");
 
     const isXboxLogined = xuid.length > 3;
-    // didToNameMap.set(deviceId, name);
+    nameMap.set(ni, name);
     identityPublicKeyMap.set(ni, publicIDKey);
     wasJoinedIn15seconds.set(ni, true);
     deviceIdMap.set(ni, deviceId);
@@ -51,7 +50,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
             const bannedReason = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[1];
             CIF.wasDetected[name] = true;
             // bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
-            CIF.announce(`§c[§fCIF§c] §c${name} §6failed to connect §7(§c${bannedReason}§7)`);
+            CIF.announce(`§c${name} §6failed to connect §7(§c${bannedReason}§7)`);
             CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
         };
     };
@@ -61,13 +60,13 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
 
     if (name.length > 20) {
-        // didToNameMap.set(deviceId, "Invalid_Name");
+        nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "long_name", "Too long nickname");
         CIF.ban(ni, "Long_Name");
     };
 
     if (name === "") {
-        // didToNameMap.set(deviceId, "Invalid_Name");
+        nameMap.set(ni, "Invalid_Name");
         CIF.detect(ni, "invalid_name", "Nickname is null");
         CIF.ban(ni, "Invalid_Name");
     };
@@ -77,7 +76,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     for (let i = 0; i < invisibleChars.length; i++) {
         const char = invisibleChars[i];
         if (name.includes(char)) {
-            // didToNameMap.set(deviceId, "Invalid_Name");
+            nameMap.set(ni, "Invalid_Name");
             CIF.detect(ni, "invisible_name", "Nickname includes disallowed space");
             CIF.ban(ni, "Invisible_Name");
         };
@@ -90,16 +89,16 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     const brand = model.split(" ")[0];
 
-    if (deviceId.length !== 36 && deviceOS == 7) {
+    if (deviceId.length !== 36 && deviceOS == 7 && brand !== "Switch") {
         CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Android/IOS)");
         CIF.ban(ni, "fake-os");
     };
-    if (deviceId.length !== 32 && deviceOS !== 7) {
+    if (deviceId.length !== 32 && deviceOS !== 7 && brand !== "Switch") {
         CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Windows 10)");
         CIF.ban(ni, "fake-os");
     };
 
-    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword") && model !== "Desktop DANAWA COMPUTER Co.") {
+    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword") && model !== "Desktop DANAWA COMPUTER Co." && brand !== "Switch") {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
         CIF.ban(ni, "Toolbox");
     };

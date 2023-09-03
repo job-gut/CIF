@@ -30,7 +30,7 @@ function allowInstabreak(player: Player, block: Block): boolean {
 	const destroySpeed = getDestroySpeed(player.getMainhandSlot(), block);
 	const realDestroyTime =
 		destroyTime / (destroySpeed * (1 + 0.2 * hasteLevel));
-	return realDestroyTime < 0.05;
+	return realDestroyTime < 0.11;
 };
 
 events.blockDestructionStart.on(async (ev) => {
@@ -88,9 +88,10 @@ function instabreakWarn(player: ServerPlayer): CANCEL {
 
 	if (instabreakwarn[playerName] > 2) {
 		const ni = player.getNetworkIdentifier();
-		CIF.ban(ni, "Instabreak");
-		CIF.detect(ni, "Instabreak", "Break block instantly");
-		instabreakwarn[playerName] = 0;
+		// CIF.ban(ni, "Instabreak");
+		// CIF.detect(ni, "Instabreak", "Break block instantly");
+		// instabreakwarn[playerName] = 0;
+		return CIF.suspect(ni, "Instabreak", "Break block instantly");
 	};
 
 	setTimeout(() => {

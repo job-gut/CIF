@@ -1,3 +1,3 @@
 node_modules
-options.txt
 *.js
+/modules/scripts/reloadedScript.ts
