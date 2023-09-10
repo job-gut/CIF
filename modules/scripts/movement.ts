@@ -668,7 +668,9 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && lastWentUpBlocks[plname] > 0 && !hasLevitation) {
+
+	player.sendMessage(`${lastWentUpBlocks[plname]}, ${movePos.y - lastY}`);
+	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && !hasLevitation) {
 		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
 		setTimeout(() => {
 			Fly_c2Stack[plname]--;
@@ -684,6 +686,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	};
 
 	lastWentUpBlocks[plname] = movePos.y - lastY;
+	if (lastWentUpBlocks[plname] < 0) lastWentUpBlocks[plname] = 0;
+
 	lastBPS[plname] = bps;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
