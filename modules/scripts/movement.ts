@@ -668,8 +668,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-
-	player.sendMessage(`${lastWentUpBlocks[plname]}, ${movePos.y - lastY}`);
+	
 	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && !hasLevitation) {
 		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
 		setTimeout(() => {
