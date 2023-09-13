@@ -47,6 +47,7 @@ const isSpinAttacking: Record<string, boolean> = {};
 const onGround: Record<string, boolean> = {};
 const usedElytra: Record<string, boolean> = {};
 const lastpos: Record<string, number[]> = {};
+const jumpedTick: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
@@ -588,7 +589,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 			player.runCommand("tp ~ ~ ~");
 
 			if (Fly_c1Stack[plname] > 4) {
-				CIF.detect(ni, "Fly-C_1", "Increasing value of Y is constant");
+				CIF.detect(ni, "Fly-C", "Increasing value of Y is constant");
 			};
 		} else {
 			Fly_c1Stack[plname]--;
@@ -606,6 +607,30 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	if (region.getBlock(BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })).getName() !== "minecraft:air") {
 		lastWentUpBlocks[plname] = 10000000000;
 	};
+
+
+	const currentTick = player.getLevel().getCurrentTick();
+
+	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && 
+		!hasLevitation && !onGround
+		&& currentTick - jumpedTick[plname] > 19) {
+		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
+		setTimeout(() => {
+			Fly_c2Stack[plname]--;
+			if (Fly_c2Stack[plname] < 0) Fly_c2Stack[plname] = 0;
+		}, 4990).unref();
+
+		if (Fly_c2Stack[plname] > 2) {
+			CIF.ban(ni, "AirJump");
+			CIF.detect(ni, "AirJump", "Y boost in mid-air");
+		};
+
+		isTeleportedBySuspection[plname] = true;
+		player.runCommand("tp ~ ~ ~");
+	};
+
+	lastWentUpBlocks[plname] = movePos.y - lastY;
+	if (lastWentUpBlocks[plname] < 0) lastWentUpBlocks[plname] = 0;
 
 	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
 		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
@@ -668,26 +693,6 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		return;
 	};
 
-
-	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && !hasLevitation) {
-		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
-		setTimeout(() => {
-			Fly_c2Stack[plname]--;
-			if (Fly_c2Stack[plname] < 0) Fly_c2Stack[plname] = 0;
-		}, 4990).unref();
-
-		if (Fly_c2Stack[plname] > 2) {
-			CIF.ban(ni, "Air_Jump");
-			CIF.detect(ni, "Fly-C", "Y boost in mid-air");
-		};
-
-		isTeleportedBySuspection[plname] = true;
-		player.runCommand("tp ~ ~ ~");
-	};
-
-	lastWentUpBlocks[plname] = movePos.y - lastY;
-	if (lastWentUpBlocks[plname] < 0) lastWentUpBlocks[plname] = 0;
-
 	lastBPS[plname] = bps;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
@@ -745,4 +750,13 @@ events.playerRespawn.on((ev) => {
 		isRespawned[plname] = false;
 		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
 	}, 2500);
+});
+
+events.playerJump.on((ev)=> {
+	const pl = ev.player;
+	const plname = pl.getName();
+
+	const tick = pl.getLevel().getCurrentTick();
+
+	jumpedTick[plname] = tick;
 });
