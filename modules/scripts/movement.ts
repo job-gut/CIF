@@ -1,5 +1,5 @@
 import { AbilitiesIndex } from "bdsx/bds/abilities";
-import { Actor } from "bdsx/bds/actor";
+import { Actor, Mob } from "bdsx/bds/actor";
 import { Block, BlockActor } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot } from "bdsx/bds/inventory";
@@ -15,6 +15,8 @@ import { CIFconfig } from "../util/configManager";
 import { CIF } from "../../main";
 import { wasJoinedIn15seconds } from "./join";
 import { MobEffectIds } from "bdsx/bds/effects";
+import { VoidPointer } from "bdsx/core";
+import { PlayerJumpEvent } from "bdsx/event_impl/entityevent";
 
 const UINTMAX = 0xffffffff;
 
@@ -261,6 +263,17 @@ const pistonPush = procHacker.hooking(
 
 	return pistonPush(blockActor, actor, pos);
 });
+
+const MovMovementProxy$_getMob = procHacker.js("?handleJumpEffects@Player@@SAXAEAUIPlayerMovementProxy@@@Z", Mob, null, VoidPointer);
+function onMobJump(movementProxy: VoidPointer, blockSourceInterface: VoidPointer): void {
+    const mob = MovMovementProxy$_getMob(movementProxy);
+    if (mob instanceof Player) {
+        const event = new PlayerJumpEvent(mob);
+        events.playerJump.fire(event);
+    }
+    return _onMobJump(movementProxy, blockSourceInterface);
+}
+const _onMobJump = procHacker.hooking("?jumpFromGround@Mob@@IEAAXAEBVIConstBlockSource@@@Z", void_t, null, VoidPointer, VoidPointer)(onMobJump);
 
 function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): void {
 	const currentValue = lastPositions[playerName];
@@ -760,3 +773,4 @@ events.playerJump.on((ev)=> {
 
 	jumpedTick[plname] = tick;
 });
+
