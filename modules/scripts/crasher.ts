@@ -29,7 +29,7 @@ events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
         return CIF.detect(ni, "crasher", "Invalid LevelSoundPacket");
     };
 
-	if (pkt.extraData === -1 && !pkt.entityType === !wasJoinedIn15seconds[ni.getActor()!.getName()]) {
+	if (pkt.extraData === -1 && !pkt.entityType === !wasJoinedIn15seconds.get(ni)) {
 		return CIF.suspect(ni, "SwingSound", "Illegal Sound on Swing Motion");
 	};
 
