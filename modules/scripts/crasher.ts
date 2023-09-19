@@ -3,6 +3,7 @@ import { events } from "bdsx/event";
 import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 import { CANCEL } from "bdsx/common";
+import { wasJoinedIn15seconds } from "./join";
 
 const PPSsound: Record<string, number> = {};
 const PPSact: Record<string, number> = {};
@@ -28,7 +29,7 @@ events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
         return CIF.detect(ni, "crasher", "Invalid LevelSoundPacket");
     };
 
-	if (pkt.extraData === -1 && !pkt.entityType) {
+	if (pkt.extraData === -1 && !pkt.entityType === !wasJoinedIn15seconds.get(ni)) {
 		return CIF.suspect(ni, "SwingSound", "Illegal Sound on Swing Motion");
 	};
 
