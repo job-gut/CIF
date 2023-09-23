@@ -4,9 +4,12 @@ import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 import { CANCEL } from "bdsx/common";
 import { wasJoinedIn15seconds } from "./join";
+import { bedrockServer } from "bdsx/launcher";
 
 const PPSsound: Record<string, number> = {};
 const PPSact: Record<string, number> = {};
+
+const spamStack: Record<string, number> = {};
 
 events.packetRaw(MinecraftPacketIds.ClientCacheBlobStatus).on((ptr, size, ni) => {
 	if (CIFconfig.Modules.crasher !== true) return;
@@ -84,4 +87,38 @@ events.packetRaw(MinecraftPacketIds.PlayerList).on((ptr, size, ni)=> {
 		CIF.ban(ni, "Crasher");
 		return CIF.detect(ni, "Crasher", "Send Invalid PlayerList Packet")
 	}
+});
+
+events.packetBefore(MinecraftPacketIds.CommandRequest).on((pkt, ni)=> {
+	const command = pkt.command;
+	const pl = ni.getActor()!;
+	const plname = pl.getName();
+	if (command.includes("execute") && pl.getCommandPermissionLevel() > 0) return;
+
+	const countOfAllEntitys = command.split("@e").length - 1;
+	const countOfAllPlayers = command.split("@a").length - 1;
+	const countOfRandomPlayers = command.split("@r").length - 1;
+	const countOfNearbyPlayers = command.split("@p").length - 1;
+
+	if (countOfAllEntitys > 2 ||
+	countOfAllPlayers > 2 ||
+	countOfRandomPlayers > 2 ||
+	countOfNearbyPlayers > 2
+		) {
+		if (typeof spamStack[plname] !== "number") spamStack[plname] = 0;
+
+		spamStack[plname]++;
+
+		if (spamStack[plname] > 2) {
+			CIF.detect(ni, "Spammer", "Suspected as a command spammer");
+			bedrockServer.serverInstance.disconnectClient(ni, "§c도배를 시도하지 마세요!");
+			
+			return CANCEL;
+		};
+
+		pl.sendMessage(`§c도배를 시도하지 마세요!\n앞으로 §e${3-spamStack[plname]} §c번 시도시 추방됩니다`);
+		pl.playSound("random.orb");
+
+		return CANCEL;
+	};
 });
