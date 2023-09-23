@@ -1,5 +1,5 @@
 import { AbilitiesIndex } from "bdsx/bds/abilities";
-import { Actor, Mob } from "bdsx/bds/actor";
+import { Actor } from "bdsx/bds/actor";
 import { Block, BlockActor } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot } from "bdsx/bds/inventory";
@@ -8,7 +8,7 @@ import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { MovePlayerPacket, PlayerActionPacket, PlayerAuthInputPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
-import { bool_t, float32_t, int32_t, void_t } from "bdsx/nativetype";
+import { bool_t, int32_t, void_t } from "bdsx/nativetype";
 import { procHacker } from "bdsx/prochacker";
 import { serverProperties } from "bdsx/serverproperties";
 import { CIFconfig } from "../util/configManager";
@@ -264,7 +264,7 @@ const pistonPush = procHacker.hooking(
 	return pistonPush(blockActor, actor, pos);
 });
 
-const MovMovementProxy$_getMob = procHacker.js("?handleJumpEffects@Player@@SAXAEAUIPlayerMovementProxy@@@Z", Mob, null, VoidPointer);
+const MovMovementProxy$_getMob = procHacker.js("?getEntity@?$DirectActorProxyImpl@UIPlayerMovementProxy@@@@UEAAAEAVEntityContext@@XZ", Actor, null, VoidPointer);
 function onMobJump(movementProxy: VoidPointer, blockSourceInterface: VoidPointer): void {
     const mob = MovMovementProxy$_getMob(movementProxy);
     if (mob instanceof Player) {

@@ -39,7 +39,7 @@ const receivePacket = procHacker.hooking(
     //     return 1;
     // };
 
-    // const id = data.valueptr.getUint8();
+    //const pktid = data.valueptr.getUint8();
 
     return receivePacket(conn, data, networkSystem, time_point);
 });
