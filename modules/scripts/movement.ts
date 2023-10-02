@@ -349,6 +349,11 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		player.getGameType() !== GameType.SurvivalSpectator &&
 		CIFconfig.Modules.movement === true
 	) {
+
+		if (isTeleported[plname] === true && isTeleportedBySuspection[plname] === true) {
+			player.teleport(player.getFeetPos(), undefined,);
+		} else if (isTeleported[plname] === true && !isTeleportedBySuspection[plname]) return;
+		
 		player.teleport(player.getFeetPos(), undefined,);
 	};
 
