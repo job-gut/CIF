@@ -255,9 +255,9 @@ const pistonPush = procHacker.hooking(
 )((blockActor, actor, pos) => {
 	if (actor.isPlayer()) {
 		const name = actor.getName();
-		pushedByPiston[name] = true
+		pushedByPiston[name] = true;
 		setTimeout(() => {
-			pushedByPiston[name] = false
+			pushedByPiston[name] = false;
 		}, 1000);
 	};
 
