@@ -365,10 +365,10 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	) {
 
 		if (isTeleported[plname] === true && isTeleportedBySuspection[plname] === true) {
-			player.teleport(player.getFeetPos(), undefined,);
+			player.teleport(player.getPosition(), undefined,);
 		} else if (isTeleported[plname] === true && !isTeleportedBySuspection[plname]) return;
 		
-		player.teleport(player.getFeetPos(), undefined,);
+		player.teleport(player.getPosition(), undefined,);
 	};
 
 	if (
