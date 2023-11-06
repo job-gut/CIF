@@ -88,6 +88,8 @@ function instabreakWarn(player: ServerPlayer): CANCEL {
 
 	if (instabreakwarn[playerName] > 2) {
 		const ni = player.getNetworkIdentifier();
+
+		if (instabreakwarn[playerName] > 3) return CANCEL;
 		// CIF.ban(ni, "Instabreak");
 		// CIF.detect(ni, "Instabreak", "Break block instantly");
 		// instabreakwarn[playerName] = 0;

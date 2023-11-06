@@ -15,8 +15,7 @@ import { CIFconfig } from "../util/configManager";
 import { CIF } from "../../main";
 import { wasJoinedIn15seconds } from "./join";
 import { MobEffectIds } from "bdsx/bds/effects";
-import { VoidPointer } from "bdsx/core";
-import { PlayerJumpEvent } from "bdsx/event_impl/entityevent";
+import { bedrockServer } from "bdsx/launcher";
 
 const UINTMAX = 0xffffffff;
 
@@ -224,7 +223,7 @@ function onRetrieve(hook: FishingHook): number {
 const _onRetrieve = procHacker.hooking("?retrieve@FishingHook@@QEAAHXZ", int32_t, null, FishingHook)(onRetrieve);
 
 const startGlide = procHacker.hooking(
-	"?startGliding@Player@@QEAAXXZ",
+	"?tryStartGliding@Player@@QEAA_NXZ",
 	void_t,
 	null,
 	Player
@@ -255,25 +254,25 @@ const pistonPush = procHacker.hooking(
 )((blockActor, actor, pos) => {
 	if (actor.isPlayer()) {
 		const name = actor.getName();
-		pushedByPiston[name] = true
+		pushedByPiston[name] = true;
 		setTimeout(() => {
-			pushedByPiston[name] = false
+			pushedByPiston[name] = false;
 		}, 1000);
 	};
 
 	return pistonPush(blockActor, actor, pos);
 });
 
-const MovMovementProxy$_getMob = procHacker.js("?getEntity@?$DirectActorProxyImpl@UIPlayerMovementProxy@@@@UEAAAEAVEntityContext@@XZ", Actor, null, VoidPointer);
-function onMobJump(movementProxy: VoidPointer, blockSourceInterface: VoidPointer): void {
-    const mob = MovMovementProxy$_getMob(movementProxy);
-    if (mob instanceof Player) {
-        const event = new PlayerJumpEvent(mob);
-        events.playerJump.fire(event);
-    }
-    return _onMobJump(movementProxy, blockSourceInterface);
-}
-const _onMobJump = procHacker.hooking("?jumpFromGround@Mob@@IEAAXAEBVIConstBlockSource@@@Z", void_t, null, VoidPointer, VoidPointer)(onMobJump);
+// const MovMovementProxy$_getMob = procHacker.js("?getEntity@?$DirectActorProxyImpl@UIPlayerMovementProxy@@@@UEAAAEAVEntityContext@@XZ", Actor, null, VoidPointer);
+// function onMobJump(movementProxy: VoidPointer, blockSourceInterface: VoidPointer): void {
+//     const mob = MovMovementProxy$_getMob(movementProxy);
+//     if (mob instanceof Player) {
+//         const event = new PlayerJumpEvent(mob);
+//         events.playerJump.fire(event);
+//     }
+//     return _onMobJump(movementProxy, blockSourceInterface);
+// }
+// const _onMobJump = procHacker.hooking("?jumpFromGround@Mob@@IEAAXAEBVIConstBlockSource@@@Z", void_t, null, VoidPointer, VoidPointer)(onMobJump);
 
 function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): void {
 	const currentValue = lastPositions[playerName];
@@ -292,6 +291,19 @@ function setLastPositions(playerName: string, lastPosition: { x: number, y: numb
 	lastPositions[playerName] = lastPositions[playerName].splice(0, 19);
 	lastPositions[playerName].unshift(lastPosition);
 };
+
+
+events.playerJump.on((ev)=> {
+	const pl = ev.player;
+	const plname = pl.getName();
+
+	const tick = pl.getLevel().getCurrentTick();
+
+	if (!pl.onGround()) CIF.detect(pl.getNetworkIdentifier(), "AirJump-B", "Jumps if player isn't on ground");
+
+	jumpedTick[plname] = tick;
+});
+
 
 events.packetBefore(MovementType).on((pkt, ni) => {
 	const player = ni.getActor();
@@ -323,9 +335,18 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 	};
 
 	if (isMovePlayerPacket(pkt)) {
-		onGround[plname] = pkt.onGround;
+		const og = pkt.onGround;
+		
+		bedrockServer.serverInstance.nextTick().then(()=> {
+			onGround[plname] = og;
+		});
+
 	} else if (isPlayerAuthInputPacket(pkt)) {
-		onGround[plname] = pkt.headYaw === -0.07840000092983246;
+		const og =pkt.delta.y === -0.07840000092983246;
+		
+		bedrockServer.serverInstance.nextTick().then(()=> {
+			onGround[plname] = og;
+		});
 	};
 
 	const rotation = {
@@ -342,6 +363,7 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 		return;
 	};
+
 
 	//PHASE
 	const region = player.getRegion()!;
@@ -639,8 +661,8 @@ events.packetBefore(MovementType).on((pkt, ni) => {
 		}, 4990).unref();
 
 		if (Fly_c2Stack[plname] > 2) {
-			CIF.ban(ni, "AirJump");
-			CIF.detect(ni, "AirJump", "Y boost in mid-air");
+			CIF.ban(ni, "AirJump-A");
+			CIF.detect(ni, "AirJump-A", "Y boost in mid-air");
 		};
 
 		isTeleportedBySuspection[plname] = true;
@@ -769,13 +791,3 @@ events.playerRespawn.on((ev) => {
 		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
 	}, 2500);
 });
-
-events.playerJump.on((ev)=> {
-	const pl = ev.player;
-	const plname = pl.getName();
-
-	const tick = pl.getLevel().getCurrentTick();
-
-	jumpedTick[plname] = tick;
-});
-

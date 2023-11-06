@@ -9,17 +9,16 @@ import { procHacker } from "bdsx/prochacker";
 import { CIF } from "../../main";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 import { events } from "bdsx/event";
-import { bedrockServer } from "bdsx/launcher";
+
 
 const receivePacket = procHacker.hooking(
-    "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEAVNetworkSystem@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
+    "?receivePacket@NetworkConnection@@QEAA?AW4DataStatus@NetworkPeer@@AEAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AEBV?$shared_ptr@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@5@@Z",
     int32_t,
     null,
     NetworkConnection,
     CxxStringWrapper,
-    NetworkSystem,
     VoidPointer,
-)((conn, data, networkSystem, time_point) => {
+)((conn, data, time_point) => {
     // const address = conn.networkIdentifier.getAddress();
 
     //Block All Packets from Detected Player
@@ -41,7 +40,7 @@ const receivePacket = procHacker.hooking(
 
     //const pktid = data.valueptr.getUint8();
 
-    return receivePacket(conn, data, networkSystem, time_point);
+    return receivePacket(conn, data, time_point);
 });
 
 events.networkDisconnected.on(ni => {
