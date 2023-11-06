@@ -1,4 +1,4 @@
-export let CIFVersion = "23v10.2.1817";
+export let CIFVersion = "23v11.6.1928";
 
 
 import * as fs from "fs";
