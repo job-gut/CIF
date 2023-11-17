@@ -299,7 +299,7 @@ events.playerJump.on((ev)=> {
 
 	const tick = pl.getLevel().getCurrentTick();
 
-	if (!pl.onGround()) CIF.detect(pl.getNetworkIdentifier(), "AirJump-B", "Jumps if player isn't on ground");
+	// if (CIFconfig.Modules.movement) if (!pl.onGround() && !pl.isFlying() && pl.getGameType() !== GameType.Creative) CIF.detect(pl.getNetworkIdentifier(), "AirJump-B", "Jumps if player isn't on ground");
 
 	jumpedTick[plname] = tick;
 });
