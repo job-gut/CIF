@@ -23,53 +23,53 @@ const lastAttackPlayer: Record<string, string> = {};
 
 const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 
-function mismatchWarn(player: Player): CANCEL {
-	const name = player.getName();
+// function mismatchWarn(player: Player): CANCEL {
+// 	const name = player.getName();
 
-	if (MismatchAuraWarn.get(name) === undefined) {
-		MismatchAuraWarn.set(name, 1);
-		return CANCEL;
-	};
+// 	if (MismatchAuraWarn.get(name) === undefined) {
+// 		MismatchAuraWarn.set(name, 1);
+// 		return CANCEL;
+// 	};
 
-	MismatchAuraWarn.set(name, MismatchAuraWarn.get(name)! + 1);
+// 	MismatchAuraWarn.set(name, MismatchAuraWarn.get(name)! + 1);
 
-	setTimeout(async () => {
-		MismatchAuraWarn.set(name, MismatchAuraWarn.get(name)! - 1);
-		if (MismatchAuraWarn.get(name)! < 0) MismatchAuraWarn.set(name, 0);
-	}, 3000);
+// 	setTimeout(async () => {
+// 		MismatchAuraWarn.set(name, MismatchAuraWarn.get(name)! - 1);
+// 		if (MismatchAuraWarn.get(name)! < 0) MismatchAuraWarn.set(name, 0);
+// 	}, 3000);
 
-	if (MismatchAuraWarn.get(name)! > 2) {
-		CIF.ban(player.getNetworkIdentifier(), "Aura-A");
-		return CIF.detect(
-			player.getNetworkIdentifier(),
-			"Aura-A",
-			"Mismatch head rotation"
-		);
-	};
+// 	if (MismatchAuraWarn.get(name)! > 2) {
+// 		CIF.ban(player.getNetworkIdentifier(), "Aura-A");
+// 		return CIF.detect(
+// 			player.getNetworkIdentifier(),
+// 			"Aura-A",
+// 			"Mismatch head rotation"
+// 		);
+// 	};
 
-	return CANCEL;
-};
+// 	return CANCEL;
+// };
 
-function sameRotWarn(player: Player): CANCEL {
-	const name = player.getName();
-	if (sameRotAuraWarn.get(name) === undefined) {
-		sameRotAuraWarn.set(name, 1);
-	};
+// function sameRotWarn(player: Player): CANCEL {
+// 	const name = player.getName();
+// 	if (sameRotAuraWarn.get(name) === undefined) {
+// 		sameRotAuraWarn.set(name, 1);
+// 	};
 
-	sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! + 1);
+// 	sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! + 1);
 
-	setTimeout(async () => {
-		sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! - 1);
-		if (sameRotAuraWarn.get(name)! < 0) sameRotAuraWarn.set(name, 0);
-	}, 3000);
+// 	setTimeout(async () => {
+// 		sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! - 1);
+// 		if (sameRotAuraWarn.get(name)! < 0) sameRotAuraWarn.set(name, 0);
+// 	}, 3000);
 
-	if (sameRotAuraWarn.get(name)! > 3) {
-		sameRotAuraWarn.set(name, 0);
-		CIF.suspect(player.getNetworkIdentifier(), "Aura-B", "Attacking Same Body Position");
-	};
+// 	if (sameRotAuraWarn.get(name)! > 3) {
+// 		sameRotAuraWarn.set(name, 0);
+// 		CIF.suspect(player.getNetworkIdentifier(), "Aura-B", "Attacking Same Body Position");
+// 	};
 
-	return CANCEL;
-};
+// 	return CANCEL;
+// };
 
 function degreesToRadians(degrees: number): number {
 	return (degrees * Math.PI) / 180;
@@ -162,7 +162,7 @@ events.entityHurt.on((ev) => {
 			);
 
 			if (check1 && check2 && check3) {
-				return mismatchWarn(player);
+				// return mismatchWarn(player);
 			} else if (check1) {
 				return CANCEL;
 			};
@@ -207,7 +207,7 @@ events.entityHurt.on((ev) => {
 	const posFromVicFeet = victim.getFeetPos().distance(headRotWhereLookingAt);
 
 	if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
-		const lastPosFromVicHead  = headRotWhereLookingAtInBodyWarn[plname][0];
+		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
 		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
 
 		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()
@@ -215,7 +215,7 @@ events.entityHurt.on((ev) => {
 			headPos.x -= addThisPos.x;
 			headPos.y -= addThisPos.y;
 			headPos.z -= addThisPos.z;
-			return sameRotWarn(player);
+			// return sameRotWarn(player);
 		};
 	};
 
@@ -224,9 +224,9 @@ events.entityHurt.on((ev) => {
 	lastAttackPlayer[plname] = victim.getNameTag();
 
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
-	
+
 	if (
-		reach > 3 &&
+		reach > 3.5 &&
 		reach < 8 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {
