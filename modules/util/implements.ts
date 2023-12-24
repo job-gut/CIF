@@ -75,7 +75,7 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
 
 const maxFlags: Record<string, number> = {};
 const moduleFlags: Record<string, number> = {};
-const playerFlags: Record<string, typeof moduleFlags> = {};
+const playerFlags: Record<string, typeof moduleFlags | undefined> = {};
 
 CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDescription: string, maxFlag: number): CANCEL {
 	maxFlags[moduleName] = maxFlag;
@@ -84,10 +84,10 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 	const plname = pl.getName();
 
 	if (!playerFlags[plname]) playerFlags[plname] = moduleFlags;
-	if (typeof playerFlags[plname][moduleName] !== "number") playerFlags[plname][moduleName] = 0;
+	if (typeof playerFlags[plname]![moduleName] !== "number") playerFlags[plname]![moduleName] = 0;
 
-	playerFlags[plname][moduleName]++;
-	if (maxFlags[moduleName] <= playerFlags[plname][moduleName]) {
+	playerFlags[plname]![moduleName]++;
+	if (maxFlags[moduleName] <= playerFlags[plname]![moduleName]) {
 
 		if (CIFconfig.Penalties.onlyAlert) {
 			CIF.suspect(ni, moduleName, moduleDescription);
@@ -101,12 +101,15 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 		};
 
 		if (CIFconfig.Penalties.blockAllPackets) CIF.detect(ni, moduleName, moduleDescription);
+
+		playerFlags[plname]![moduleName] = 0;
+		playerFlags[plname] = undefined;
 	};
 
 	setTimeout(() => {
-		playerFlags[plname][moduleName]--;
+		playerFlags[plname]![moduleName]--;
 
-		if (playerFlags[plname][moduleName] < 0) playerFlags[plname][moduleName] = 0;
+		if (playerFlags[plname]![moduleName] < 0) playerFlags[plname]![moduleName] = 0;
 	}, 15000);
 
 	return CANCEL;

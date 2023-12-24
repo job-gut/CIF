@@ -52,7 +52,10 @@ const lastpos: Record<string, number[]> = {};
 const jumpedTick: Record<string, number> = {};
 
 const lastDeltaXZ: Record<string, number> = {};
+const lastDeltaY: Record<string, number> = {};
 const lastYaw: Record<string, number> = {};
+
+const airTicks: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
@@ -127,6 +130,16 @@ declare module "bdsx/bds/player" {
 		 * Returns if player is under any blocks (Func from CIF)
 		 */
 		isUnderAnyBlock(): boolean;
+
+		/**
+		 * Returns if player is on climbable blocks (Func from CIF)
+		 */
+		onClimbable(): boolean;
+
+		/**
+		 * Returns if player is on block that makes player falling slower (Func from CIF)
+		 */
+		onSlowFallingBlock(): boolean;
 	}
 };
 
@@ -173,6 +186,56 @@ Player.prototype.isGlidingWithElytra = function () {
 	const plname = this.getName();
 	if (!usedElytra[plname]) usedElytra[plname] = false;
 	return usedElytra[plname];
+};
+
+Player.prototype.onClimbable = function () {
+	const player: ServerPlayer = this;
+
+	const region = player.getRegion()!;
+
+	const feetPos = player.getFeetPos();
+	const headPos = player.getPosition();
+
+	const currentPosBlock = region.getBlock(
+		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
+	);
+	const currentHeadPosBlock = region.getBlock(
+		BlockPos.create(headPos.x, headPos.y, headPos.z)
+	);
+
+	if (currentPosBlock.getName().includes("ladder")
+		|| currentPosBlock.getName().includes("vine")
+		|| currentPosBlock.getName().includes("powder_snow")
+		|| currentHeadPosBlock.getName().includes("ladder")
+		|| currentHeadPosBlock.getName().includes("vine")
+		|| currentHeadPosBlock.getName().includes("powder_snow")
+	) return true;
+
+	return false;
+};
+
+Player.prototype.onSlowFallingBlock = function () {
+	const player: ServerPlayer = this;
+
+	const region = player.getRegion()!;
+
+	const feetPos = player.getFeetPos();
+	const headPos = player.getPosition();
+
+	const currentPosBlock = region.getBlock(
+		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
+	);
+	const currentHeadPosBlock = region.getBlock(
+		BlockPos.create(headPos.x, headPos.y, headPos.z)
+	);
+
+	if (currentPosBlock.getName().includes("honey")
+		|| currentPosBlock.getName().includes("web")
+		|| currentHeadPosBlock.getName().includes("honey")
+		|| currentHeadPosBlock.getName().includes("web")
+	) return true;
+
+	return false;
 };
 
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
@@ -297,7 +360,27 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const movePos = pkt.pos;
 	movePos.y -= 1.62001190185547;
 
-	const og = pkt.delta.y === -0.07840000092983246;
+	if (typeof airTicks[plname] !== "number") airTicks[plname] = 0;
+
+	const groundY = 1/64;
+
+	// const region = pl.getRegion()!;
+	// const currentPosBlock = region.getBlock(
+	// 	BlockPos.create(round0point5(movePos.x), movePos.y-0.1, round0point5(movePos.z))
+	// ).getName()
+	// const currentPosBlock2 = region.getBlock(
+	// 	BlockPos.create(round0point5(movePos.x), movePos.y-0.6, round0point5(movePos.z))
+	// ).getName();
+
+	// pl.sendMessage(""+round0point5(movePos.x)+", "+round0point5(movePos.z));
+	if ((Math.abs(movePos.y) % groundY < 0.0001) && pkt.delta.y + 0.07840000092983246 === 0) {
+		airTicks[plname] = 0;
+	} else {
+		airTicks[plname]++;
+	};
+
+	
+	const og = (Math.abs(movePos.y) % groundY < 0.0001) && pkt.delta.y + 0.07840000092983246 === 0
 
 	onGround[plname] = og;
 
@@ -309,39 +392,99 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	appendRotationRecord(pl, rotation);
 
 	const deltaXZ = Math.sqrt(pkt.delta.x ** 2 + pkt.delta.z ** 2);
-	const lastdelta = lastDeltaXZ[plname];
+	const ZXlastDelta = lastDeltaXZ[plname];
+
+	const YlastDelta = lastDeltaY[plname];
 
 	const yaw = pkt.yaw;
 	const deltaYaw = Math.abs(yaw - lastYaw[plname]);
 
-	const accel = Math.abs(deltaXZ - lastdelta);
+	const accel = Math.abs(deltaXZ - ZXlastDelta);
 	const squaredAccel = accel * 100;
 
-	const prediction = lastdelta * 0.91;
+	const prediction = ZXlastDelta * 0.91;
 	const predDiff = deltaXZ - prediction - 0.0256;
+	const deltaY = pkt.delta.y + 0.07840000092983246;
+
+	const accelY = deltaY - YlastDelta;
 
 	if (CIFconfig.Modules.movement) {
+
 		if (pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) {
 
-			if (deltaYaw > 1.5 && deltaXZ > .150 && squaredAccel < 1.0E-5) {
-				CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 5);
+			if (pl.getAbilities().getAbility(AbilitiesIndex.MayFly)
+				|| pl.getAbilities().getAbility(AbilitiesIndex.Flying)
+				|| pl.isFlying()) {
 
-				const lastposit = lastpos[plname];
-				pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+				if (deltaYaw > 1.5 && deltaXZ > .150 && squaredAccel < 1.0E-5) {
+					CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 5);
+
+					const lastposit = lastpos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+				};
+
+				if ((predDiff > 0 && !pl.onGround() && airTicks[plname] > 1)) {
+					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 9);
+
+					const lastposit = lastpos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+				};
+
+
+
+				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
+					!pl.hasEffect(MobEffectIds.Levitation)) {
+
+					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
+						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 5);
+
+						const lastposit = lastpos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+					};
+
+					if (airTicks[plname] > 19 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5) {
+						CIF.failAndFlag(ni, "Fly-D", `Glides less, less`, 5);
+
+						const lastposit = lastpos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+					};
+
+					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0) {
+						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
+
+						const lastposit = lastpos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					};
+
+
+
+					if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
+						if (airTicks[plname] > 19 && !pl.onGround() && deltaY < -0.5 && accelY === 0) {
+							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 5);
+
+							const lastposit = lastpos[plname];
+							pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+						};
+					};
+
+
+					// if (!pl.onGround() && deltaY === 0 && deltaXZ > 0) {
+					// 	CIF.failAndFlag(ni, "Fly-B", `No Y changes`, 10);
+
+					// 	const lastposit = lastpos[plname];
+					// 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					// };
+				};
 			};
 
-			if ((predDiff > 0 && !pl.onGround() && pkt.delta.y < 0.33)) {
-				CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 9);
-
-				const lastposit = lastpos[plname];
-				pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-			};
 		};
+
 	};
 
 
 
 	lastDeltaXZ[plname] = deltaXZ;
+	lastDeltaY[plname] = deltaY;
 	lastYaw[plname] = yaw;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
