@@ -7,8 +7,8 @@ function abstractFunction(): never {
     throw Error(`Failed to load "implements.ts"`);
 };
 
-if (serverProperties["server-authoritative-movement"] === "server-auth-with-rewind") {
-	console.error(new Error("server-auth 또는 client-auth 를 사용해주세요"));
+if (serverProperties["server-authoritative-movement"] === "server-auth-with-rewind" || serverProperties["server-authoritative-movement"] === "client-auth") {
+	console.error(new Error("server-auth 를 사용해주세요"));
 	exec("pause");
 	throw "";
 };
@@ -50,15 +50,9 @@ export namespace CIF {
         abstractFunction();
     };
 
-
-    /**
-     * CVE 감지 때 쓰는 함수
-     * @description CIF.ban() 은 이 함수에서 호출 안 함
-     */
-    export function ipDetect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string): void {
-        abstractFunction();
-    };
-
+	export function failAndFlag(ni: NetworkIdentifier, cheatName: string, cheatDescription: string, maxFlags: number): CANCEL {
+		abstractFunction();
+	};
 
 	export function suspect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
 		abstractFunction();

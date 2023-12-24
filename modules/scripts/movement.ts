@@ -16,6 +16,7 @@ import { CIF } from "../../main";
 import { wasJoinedIn15seconds } from "./join";
 import { MobEffectIds } from "bdsx/bds/effects";
 import { bedrockServer } from "bdsx/launcher";
+import { GameRuleId } from "bdsx/bds/gamerules";
 
 const UINTMAX = 0xffffffff;
 
@@ -49,6 +50,12 @@ const onGround: Record<string, boolean> = {};
 const usedElytra: Record<string, boolean> = {};
 const lastpos: Record<string, number[]> = {};
 const jumpedTick: Record<string, number> = {};
+
+const lastDeltaXZ: Record<string, number> = {};
+const lastDeltaY: Record<string, number> = {};
+const lastYaw: Record<string, number> = {};
+
+const airTicks: Record<string, number> = {};
 
 const isTeleported: Record<string, boolean> = {};
 const isRespawned: Record<string, boolean> = {};
@@ -123,6 +130,16 @@ declare module "bdsx/bds/player" {
 		 * Returns if player is under any blocks (Func from CIF)
 		 */
 		isUnderAnyBlock(): boolean;
+
+		/**
+		 * Returns if player is on climbable blocks (Func from CIF)
+		 */
+		onClimbable(): boolean;
+
+		/**
+		 * Returns if player is on block that makes player falling slower (Func from CIF)
+		 */
+		onSlowFallingBlock(): boolean;
 	}
 };
 
@@ -171,6 +188,56 @@ Player.prototype.isGlidingWithElytra = function () {
 	return usedElytra[plname];
 };
 
+Player.prototype.onClimbable = function () {
+	const player: ServerPlayer = this;
+
+	const region = player.getRegion()!;
+
+	const feetPos = player.getFeetPos();
+	const headPos = player.getPosition();
+
+	const currentPosBlock = region.getBlock(
+		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
+	);
+	const currentHeadPosBlock = region.getBlock(
+		BlockPos.create(headPos.x, headPos.y, headPos.z)
+	);
+
+	if (currentPosBlock.getName().includes("ladder")
+		|| currentPosBlock.getName().includes("vine")
+		|| currentPosBlock.getName().includes("powder_snow")
+		|| currentHeadPosBlock.getName().includes("ladder")
+		|| currentHeadPosBlock.getName().includes("vine")
+		|| currentHeadPosBlock.getName().includes("powder_snow")
+	) return true;
+
+	return false;
+};
+
+Player.prototype.onSlowFallingBlock = function () {
+	const player: ServerPlayer = this;
+
+	const region = player.getRegion()!;
+
+	const feetPos = player.getFeetPos();
+	const headPos = player.getPosition();
+
+	const currentPosBlock = region.getBlock(
+		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
+	);
+	const currentHeadPosBlock = region.getBlock(
+		BlockPos.create(headPos.x, headPos.y, headPos.z)
+	);
+
+	if (currentPosBlock.getName().includes("honey")
+		|| currentPosBlock.getName().includes("web")
+		|| currentHeadPosBlock.getName().includes("honey")
+		|| currentHeadPosBlock.getName().includes("web")
+	) return true;
+
+	return false;
+};
+
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 	const pl = ni.getActor()!;
 	if (!pl) return;
@@ -180,18 +247,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 	} else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
 		isSpinAttacking[plname] = false;
 	};
-
-	if (pkt.action === PlayerActionPacket.Actions.StartGlide) {
-		// usedElytra[plname] = true;
-
-		if (pl.getArmor(ArmorSlot.Torso).getRawNameId() !== "elytra") {
-			return CIF.detect(ni, "Fly-E", "Glide Without Elytra");
-		};
-
-	}
-	// else if (pkt.action === PlayerActionPacket.Actions.StopGlide) {
-	// 	usedElytra[plname] = false;
-	// };
 });
 
 function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
@@ -202,25 +257,25 @@ function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
 	return (<PlayerAuthInputPacket>pkt).moveX !== undefined;
 };
 
-class FishingHook extends Actor {
-}
+// class FishingHook extends Actor {
+// }
 
-const getFishingTarget = procHacker.js("?getFishingTarget@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
-function onRetrieve(hook: FishingHook): number {
-	const result = _onRetrieve(hook);
-	if (result === 3) {
-		const target = getFishingTarget(hook);
-		if (target !== null && target.isPlayer()) {
-			const name = target.getName();
-			haveFished[name] = true;
-			setTimeout(() => {
-				haveFished[name] = false;
-			}, 1000);
-		}
-	}
-	return result;
-}
-const _onRetrieve = procHacker.hooking("?retrieve@FishingHook@@QEAAHXZ", int32_t, null, FishingHook)(onRetrieve);
+// const getFishingTarget = procHacker.js("?getFishingTarget@FishingHook@@QEAAPEAVActor@@XZ", Actor, null, FishingHook);
+// function onRetrieve(hook: FishingHook): number {
+// 	const result = _onRetrieve(hook);
+// 	if (result === 3) {
+// 		const target = getFishingTarget(hook);
+// 		if (target !== null && target.isPlayer()) {
+// 			const name = target.getName();
+// 			haveFished[name] = true;
+// 			setTimeout(() => {
+// 				haveFished[name] = false;
+// 			}, 1000);
+// 		}
+// 	}
+// 	return result;
+// }
+// const _onRetrieve = procHacker.hooking("?retrieve@FishingHook@@QEAAHXZ", int32_t, null, FishingHook)(onRetrieve);
 
 const startGlide = procHacker.hooking(
 	"?tryStartGliding@Player@@QEAA_NXZ",
@@ -244,35 +299,24 @@ const stopGlide = procHacker.hooking(
 	return stopGlide(player);
 });
 
-const pistonPush = procHacker.hooking(
-	"?moveEntityLastProgress@PistonBlockActor@@QEAAXAEAVActor@@VVec3@@@Z",
-	void_t,
-	null,
-	BlockActor,
-	Actor,
-	Vec3
-)((blockActor, actor, pos) => {
-	if (actor.isPlayer()) {
-		const name = actor.getName();
-		pushedByPiston[name] = true;
-		setTimeout(() => {
-			pushedByPiston[name] = false;
-		}, 1000);
-	};
+// const pistonPush = procHacker.hooking(
+// 	"?moveEntityLastProgress@PistonBlockActor@@QEAAXAEAVActor@@VVec3@@@Z",
+// 	void_t,
+// 	null,
+// 	BlockActor,
+// 	Actor,
+// 	Vec3
+// )((blockActor, actor, pos) => {
+// 	if (actor.isPlayer()) {
+// 		const name = actor.getName();
+// 		pushedByPiston[name] = true;
+// 		setTimeout(() => {
+// 			pushedByPiston[name] = false;
+// 		}, 1000);
+// 	};
 
-	return pistonPush(blockActor, actor, pos);
-});
-
-// const MovMovementProxy$_getMob = procHacker.js("?getEntity@?$DirectActorProxyImpl@UIPlayerMovementProxy@@@@UEAAAEAVEntityContext@@XZ", Actor, null, VoidPointer);
-// function onMobJump(movementProxy: VoidPointer, blockSourceInterface: VoidPointer): void {
-//     const mob = MovMovementProxy$_getMob(movementProxy);
-//     if (mob instanceof Player) {
-//         const event = new PlayerJumpEvent(mob);
-//         events.playerJump.fire(event);
-//     }
-//     return _onMobJump(movementProxy, blockSourceInterface);
-// }
-// const _onMobJump = procHacker.hooking("?jumpFromGround@Mob@@IEAAXAEBVIConstBlockSource@@@Z", void_t, null, VoidPointer, VoidPointer)(onMobJump);
+// 	return pistonPush(blockActor, actor, pos);
+// });
 
 function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): void {
 	const currentValue = lastPositions[playerName];
@@ -293,7 +337,7 @@ function setLastPositions(playerName: string, lastPosition: { x: number, y: numb
 };
 
 
-events.playerJump.on((ev)=> {
+events.playerJump.on((ev) => {
 	const pl = ev.player;
 	const plname = pl.getName();
 
@@ -305,489 +349,198 @@ events.playerJump.on((ev)=> {
 });
 
 
-events.packetBefore(MovementType).on((pkt, ni) => {
-	const player = ni.getActor();
-	if (!player) return;
+events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
+	const pl = ni.getActor();
+	if (!pl) return;
 
-	if (CIFconfig.Modules.crasher === true) {
+	pl.syncAbilities();
 
-		if (pkt.pos.x > UINTMAX || pkt.pos.y > UINTMAX || pkt.pos.z > UINTMAX) {
-			CIF.ban(ni, "crasher");
-			return CIF.detect(ni, "crasher", "Illegal Position");
-		};
-
-		if (isNaN(pkt.pitch) || isNaN(pkt.yaw)) {
-			CIF.ban(ni, "Crasher");
-			return CIF.detect(ni, "crasher", "Illegal Head Pos");
-		};
-	}
-
-	const plname = player.getName();
+	const plname = pl.getName();
 
 	const movePos = pkt.pos;
 	movePos.y -= 1.62001190185547;
 
-	if (CIFconfig.Modules.movement !== true) {
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		movePos.y += 1.62001190185547;
-		return;
+	if (typeof airTicks[plname] !== "number") airTicks[plname] = 0;
+
+	const groundY = 1/64;
+
+	// const region = pl.getRegion()!;
+	// const currentPosBlock = region.getBlock(
+	// 	BlockPos.create(round0point5(movePos.x), movePos.y-0.1, round0point5(movePos.z))
+	// ).getName()
+	// const currentPosBlock2 = region.getBlock(
+	// 	BlockPos.create(round0point5(movePos.x), movePos.y-0.6, round0point5(movePos.z))
+	// ).getName();
+
+	// pl.sendMessage(""+round0point5(movePos.x)+", "+round0point5(movePos.z));
+	if (/*(Math.abs(movePos.y) % groundY < 0.0001) &&*/ pkt.delta.y + 0.07840000092983246 === 0) {
+		airTicks[plname] = 0;
+	} else {
+		airTicks[plname]++;
 	};
 
-	if (isMovePlayerPacket(pkt)) {
-		const og = pkt.onGround;
-		
-		bedrockServer.serverInstance.nextTick().then(()=> {
-			onGround[plname] = og;
-		});
+	
+	const og = /*(Math.abs(movePos.y) % groundY < 0.0001) &&*/ pkt.delta.y + 0.07840000092983246 === 0
 
-	} else if (isPlayerAuthInputPacket(pkt)) {
-		const og =pkt.delta.y === -0.07840000092983246;
-		
-		bedrockServer.serverInstance.nextTick().then(()=> {
-			onGround[plname] = og;
-		});
-	};
+	onGround[plname] = og;
 
 	const rotation = {
 		x: pkt.headYaw,
 		y: pkt.pitch,
 	};
 
-	appendRotationRecord(player, rotation);
+	appendRotationRecord(pl, rotation);
 
-	const gamemode = player.getGameType();
-	if (gamemode !== 2 && gamemode !== 0) {
-		movePos.y += 1.62001190185547;
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		return;
-	};
+	const deltaXZ = Math.sqrt(pkt.delta.x ** 2 + pkt.delta.z ** 2);
+	const ZXlastDelta = lastDeltaXZ[plname];
 
+	const YlastDelta = lastDeltaY[plname];
 
-	//PHASE
-	const region = player.getRegion()!;
-	const currentPosBlock = region.getBlock(
-		BlockPos.create(movePos.x, movePos.y, movePos.z)
-	);
-	const currentHeadPosBlock = region.getBlock(
-		BlockPos.create(movePos.x, movePos.y + 1.62001190185547, movePos.z)
-	);
+	const yaw = pkt.yaw;
+	const deltaYaw = Math.abs(yaw - lastYaw[plname]);
 
-	if (
-		currentPosBlock.isSolid() &&
-		currentHeadPosBlock.isSolid() &&
-		!currentPosBlock.getName().includes("air") &&
-		!currentHeadPosBlock.getName().includes("air") &&
-		player.getGameType() !== GameType.Spectator &&
-		player.getGameType() !== GameType.CreativeSpectator &&
-		player.getGameType() !== GameType.Creative &&
-		player.getGameType() !== GameType.SurvivalSpectator &&
-		CIFconfig.Modules.movement === true
-	) {
+	const accel = Math.abs(deltaXZ - ZXlastDelta);
+	const squaredAccel = accel * 100;
 
-		if (isTeleported[plname] === true && isTeleportedBySuspection[plname] === true) {
-			player.teleport(player.getPosition(), undefined,);
-		} else if (isTeleported[plname] === true && !isTeleportedBySuspection[plname]) return;
-		
-		player.teleport(player.getPosition(), undefined,);
-	};
+	const prediction = ZXlastDelta * 0.91;
+	const predDiff = deltaXZ - prediction - 0.0256;
+	const deltaY = pkt.delta.y + 0.07840000092983246;
 
-	if (
-		isTeleported[plname] ||
-		player.isSpinAttacking() ||
-		player.isGlidingWithElytra() ||
-		isKnockbacked[plname] ||
-		isSpinAttacking[plname] ||
-		wasJoinedIn15seconds.get(ni) ||
-		player.isFlying() ||
-		pushedByPiston[plname] ||
-		isRespawned[plname] ||
+	const accelY = deltaY - YlastDelta;
 
-		player.getAbilities().getAbility(AbilitiesIndex.MayFly).value.boolVal
-	) {
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		lastBPS[plname] = player.getLastBPS();
-		movePos.y += 1.62001190185547;
-		lastWentUpBlocks[plname] = 10000000000;
-		return;
-	};
+	if (CIFconfig.Modules.movement) {
 
-	const lastPos = lastpos[plname];
-	const plSpeed = player.getSpeed();
+		if (pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) {
 
-	//Normal Speed ≒ 0.13
-	//5.62 is max speed without any speed effects and while sprinting.
-	const maxBPS = plSpeed * 45;
+			if (pl.getAbilities().getAbility(AbilitiesIndex.MayFly)
+				|| pl.getAbilities().getAbility(AbilitiesIndex.Flying)
+				|| pl.isFlying()) {
 
-	let bps: number;
-	let distance: number;
-	let displayedBPS: number;
+				if (deltaYaw > 1.5 && deltaXZ > .150 && squaredAccel < 1.0E-5) {
+					CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 5);
 
-	if (typeof lastPos[0] === "number") {
-		const x1 = lastPos[0];
-		const x2 = movePos.x;
-		const y1 = lastPos[2];
-		const y2 = movePos.z;
-
-		const xDiff = Math.pow(x1 - x2, 2);
-		const yDiff = Math.pow(y1 - y2, 2);
-		distance = Math.sqrt(xDiff + yDiff);
-
-		bps = Number((distance * 20).toFixed(5));
-		displayedBPS = Number(String(distance * 20).slice(0, 4));
-	} else {
-		bps = 0;
-		lastBPS[plname] = bps;
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		movePos.y += 1.62001190185547;
-		distance = 0;
-		return;
-	};
-
-	lastBPSForExportedFunc[plname] = bps;
-
-	if (bps > maxBPS && bps > 6 && CIFconfig.Modules.movement === true && !player.isGlidingWithElytra()) {
-		if (lastBPS[plname] === bps) {
-			strafestack[plname] = strafestack[plname]
-				? strafestack[plname] + 1
-				: 1;
-
-			isTeleportedBySuspection[plname] = true;
-			player.runCommand("tp ~ ~ ~");
-
-			if (strafestack[plname] > 7) {
-				strafestack[plname] = 0;
-				CIF.ban(ni, "Speed-B");
-				CIF.detect(
-					ni,
-					"Speed-B",
-					`Strafe | Blocks per second : ${displayedBPS}`
-				);
-			}
-
-		} else {
-			strafestack[plname] = strafestack[plname]
-				? strafestack[plname] - 1
-				: 0;
-			if (strafestack[plname] < 0) strafestack[plname] = 0;
-		};
-
-		if (player.onIce() && player.isRiding()) {
-			//Just for Exception
-		} else if (!player.onIce() && player.isRiding()) {
-			//TODO: get Max BPS and check If player uses entity speed
-		};
-
-		if (
-			!player.onIce() &&
-			!player.isRiding() &&
-			!isKnockbacked[plname] &&
-			!haveFished[plname] &&
-			bps >= plSpeed * 150
-		) {
-			tooFastStack[plname] = tooFastStack[plname]
-				? tooFastStack[plname] + 1
-				: 1;
-
-			if (tooFastStack[plname] > 7) {
-				tooFastStack[plname] = 0;
-				CIF.detect(
-					ni,
-					"Speed-A",
-					`Too Fast | Blocks per second : ${displayedBPS}`
-				);
-			};
-		} else {
-			tooFastStack[plname] = tooFastStack[plname]
-				? tooFastStack[plname] - 1
-				: 0;
-			if (tooFastStack[plname] < 0) tooFastStack[plname] = 0;
-		};
-
-		if (
-			!player.onIce() &&
-			!player.isRiding() &&
-			!isKnockbacked[plname] &&
-			!haveFished[plname] &&
-			bps > plSpeed * 61.5 &&
-			!player.isUnderAnyBlock()
-		) {
-			littleFastStack[plname] = littleFastStack[plname]
-				? littleFastStack[plname] + 1
-				: 1;
-
-			if (littleFastStack[plname] > 5) {
-				littleFastWarn[plname] = littleFastWarn[plname]
-					? littleFastWarn[plname] + 1
-					: 1;
-				littleFastStack[plname] = 0;
-
-				if (littleFastWarn[plname] > 2) {
-					littleFastWarn[plname] = 0;
-					CIF.ban(ni, "Speed-C");
-					CIF.detect(
-						ni,
-						"Speed-C",
-						`Little Fast | Blocks per second : ${displayedBPS}`
-					);
+					const lastposit = lastpos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
 				};
 
-				setTimeout(() => {
-					littleFastWarn[plname]--;
-					if (littleFastWarn[plname] < 0) littleFastWarn[plname] = 0;
-				}, 3000);
-			};
-		} else {
-			littleFastStack[plname] = 0;
-		};
-	};
+				if ((predDiff > 0 && !pl.onGround() && airTicks[plname] > 1)) {
+					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 9);
 
-	if (typeof Fly_bStack[plname] !== "number") {
-		Fly_bStack[plname] = 0;
-	};
-
-	if (typeof respawnedPos[plname] !== "object") {
-		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
-	};
-
-	if (Number(distance.toFixed(2)) >= maxBPS && !isRespawned[plname] && respawnedPos[plname].distance(movePos) > 2 && !isTeleported[plname] && maxBPS !== 0) {
-		CIF.suspect(ni, "teleport", "Teleported over speed limit");
-		isTeleportedBySuspection[plname] = true;
-		player.runCommand("tp ~ ~ ~");
-
-		movePos.y += 1.62001190185547;
-		return;
-	};
-
-	const lastY = lastPos[1];
-
-	let waterStack = 0;
-
-	outerFor: for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
-		for (let y = movePos.y - 1; y === movePos.y; y++) {
-			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
-				const block = region.getBlock(
-					BlockPos.create({ x: x, y: y, z: z })
-				);
-				const blockName = block.getName();
-				if (!blockName.includes("water")) {
-					break outerFor;
+					const lastposit = lastpos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
 				};
-				lastWentUpBlocks[plname] = 10000000000;
-				waterStack++;
-			};
-		};
-	};
 
-	const underblock = region.getBlock(
-		BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })
-	);
-	const blockName = underblock.getName();
-	if (blockName.includes("water") && waterStack === 18) {
-		if (player.onGround()) {
-			CIF.ban(ni, "WaterWalker");
-			CIF.detect(ni, "WaterWalker", "Walks on water like a solid block");
-		};
-	};
 
-	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
-		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
-			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
-				const block = region.getBlock(
-					BlockPos.create({ x: x, y: y, z: z })
-				);
-				const blockName = block.getName();
-				if (blockName === "minecraft:ladder" || blockName === "minecraft:vine" ||
-					blockName === "minecraft:scaffolding" ||
-					blockName.includes("water") || blockName.includes("lava")
-				) {
-					lastBPS[plname] = bps;
-					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-					setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 
-					Fly_c1Stack[plname] = 0;
+				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
+					!pl.hasEffect(MobEffectIds.Levitation)) {
 
-					lastWentUpBlocks[plname] = 10000000000;
-					movePos.y += 1.62001190185547;
-					return;
+					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
+						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 5);
+
+						const lastposit = lastpos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+					};
+
+					if (airTicks[plname] > 19 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5) {
+						CIF.failAndFlag(ni, "Fly-D", `Glides less, less`, 5);
+
+						const lastposit = lastpos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+					};
+
+					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0) {
+						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
+
+						const lastposit = lastpos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					};
+
+
+
+					if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
+						if (airTicks[plname] > 19 && !pl.onGround() && deltaY < -0.5 && accelY === 0) {
+							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 5);
+
+							const lastposit = lastpos[plname];
+							pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+						};
+					};
+
+
+					// if (!pl.onGround() && deltaY === 0 && deltaXZ > 0) {
+					// 	CIF.failAndFlag(ni, "Fly-B", `No Y changes`, 10);
+
+					// 	const lastposit = lastpos[plname];
+					// 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					// };
 				};
 			};
-		};
-	};
 
-	if (typeof Fly_c1Stack[plname] !== "number") Fly_c1Stack[plname] = 0;
-
-	const hasLevitation = player.getEffect(MobEffectIds.Levitation);
-
-	if (lastWentUpBlocks[plname] > 0 && !hasLevitation) {
-		if (lastWentUpBlocks[plname].toString().slice(0, 9) === (movePos.y - lastY).toString().slice(0, 9)) {
-			Fly_c1Stack[plname]++;
-			isTeleportedBySuspection[plname] = true;
-			player.runCommand("tp ~ ~ ~");
-
-			if (Fly_c1Stack[plname] > 4) {
-				CIF.detect(ni, "Fly-C", "Increasing value of Y is constant");
-			};
-		} else {
-			Fly_c1Stack[plname]--;
-			if (Fly_c1Stack[plname] < 0) Fly_c1Stack[plname] = 0;
-		};
-	} else if (lastWentUpBlocks[plname] < 0) {
-		if (Fly_c1Stack[plname] < 0) Fly_c1Stack[plname] = 0;
-	};
-
-	if (typeof lastWentUpBlocks[plname] !== "number") lastWentUpBlocks[plname] = 0;
-	if (lastWentUpBlocks[plname] === 10000000000) {
-		lastWentUpBlocks[plname] = movePos.y - lastY;
-	};
-
-	if (region.getBlock(BlockPos.create({ x: movePos.x, y: movePos.y - 1, z: movePos.z })).getName() !== "minecraft:air") {
-		lastWentUpBlocks[plname] = 10000000000;
-	};
-
-
-	const currentTick = player.getLevel().getCurrentTick();
-
-	if (lastWentUpBlocks[plname] < movePos.y - lastY && movePos.y - lastY > 0 && 
-		!hasLevitation && !onGround
-		&& currentTick - jumpedTick[plname] > 19) {
-		Fly_c2Stack[plname] = typeof Fly_c2Stack[plname] !== "number" ? 1 : Fly_c2Stack[plname] + 1;
-		setTimeout(() => {
-			Fly_c2Stack[plname]--;
-			if (Fly_c2Stack[plname] < 0) Fly_c2Stack[plname] = 0;
-		}, 4990).unref();
-
-		if (Fly_c2Stack[plname] > 2) {
-			CIF.ban(ni, "AirJump-A");
-			CIF.detect(ni, "AirJump-A", "Y boost in mid-air");
 		};
 
-		isTeleportedBySuspection[plname] = true;
-		player.runCommand("tp ~ ~ ~");
 	};
 
-	lastWentUpBlocks[plname] = movePos.y - lastY;
-	if (lastWentUpBlocks[plname] < 0) lastWentUpBlocks[plname] = 0;
 
-	for (let x = movePos.x - 1; x <= movePos.x + 1; x++) {
-		for (let y = movePos.y - 1; y <= movePos.y + 1; y++) {
-			for (let z = movePos.z - 1; z <= movePos.z + 1; z++) {
-				const block = region.getBlock(
-					BlockPos.create({ x: x, y: y, z: z })
-				);
-				const blockName = block.getName();
-				if (blockName !== "minecraft:air") {
-					lastBPS[plname] = bps;
-					lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-					setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 
-					if (bps > 0.1) Fly_bStack[plname] = 0;
-
-					lastWentUpBlocks[plname] = 10000000000;
-					movePos.y += 1.62001190185547;
-					return;
-				};
-			};
-		};
-	};
-
-	if (movePos.y < -61) {
-		lastBPS[plname] = bps;
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-
-		Fly_bStack[plname] = 0;
-
-		lastWentUpBlocks[plname] = 10000000000;
-		movePos.y += 1.62001190185547;
-		return;
-	};
-
-	if (lastY === movePos.y && !isTeleported[plname]) {
-		if (lastPos[0] === movePos.x && lastPos[2] === movePos.z) return;
-
-		Fly_bStack[plname]++;
-
-		if (Fly_bStack[plname] > 14) {
-			Fly_bStack[plname] = 0;
-			CIF.ban(ni, "Fly-B");
-			CIF.detect(ni, "Fly-B", "Non-Vertical Fly on Air");
-		};
-
-		isTeleportedBySuspection[plname] = true;
-		player.runCommand("tp ~ ~ ~");
-	} else {
-		Fly_bStack[plname]--;
-		if (Fly_bStack[plname] < 0) Fly_bStack[plname] = 0;
-	};
-
-	if (haveFished[plname]) {
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		lastBPS[plname] = player.getLastBPS();
-		movePos.y += 1.62001190185547;
-		lastWentUpBlocks[plname] = 10000000000;
-		return;
-	};
-
-	lastBPS[plname] = bps;
+	lastDeltaXZ[plname] = deltaXZ;
+	lastDeltaY[plname] = deltaY;
+	lastYaw[plname] = yaw;
 	lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
+
 	movePos.y += 1.62001190185547;
 });
 
-const hasTeleport = procHacker.hooking(
-	"?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z",
-	void_t,
-	null,
-	ServerPlayer,
-	Vec3
-)((pl, pos) => {
-	const plname = pl.getName()!;
-	if (isTeleportedBySuspection[plname] === true) {
-		isTeleportedBySuspection[plname] = false;
-		return hasTeleport(pl, pos);
-	};
+// const hasTeleport = procHacker.hooking(
+// 	"?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z",
+// 	void_t,
+// 	null,
+// 	ServerPlayer,
+// 	Vec3
+// )((pl, pos) => {
+// 	const plname = pl.getName()!;
+// 	if (isTeleportedBySuspection[plname] === true) {
+// 		isTeleportedBySuspection[plname] = false;
+// 		return hasTeleport(pl, pos);
+// 	};
 
-	isTeleported[plname] = true;
-	clearTimeout(removeTeleportedTimeout[plname]);
+// 	isTeleported[plname] = true;
+// 	clearTimeout(removeTeleportedTimeout[plname]);
 
-	removeTeleportedTimeout[plname] = setTimeout(() => {
-		isTeleported[plname] = false;
-	}, 2500);
+// 	removeTeleportedTimeout[plname] = setTimeout(() => {
+// 		isTeleported[plname] = false;
+// 	}, 2500);
 
-	return hasTeleport(pl, pos);
-});
+// 	return hasTeleport(pl, pos);
+// });
 
-events.entityKnockback.on((ev) => {
-	if (!ev.target.isPlayer()) return;
+// events.entityKnockback.on((ev) => {
+// 	if (!ev.target.isPlayer()) return;
 
-	const pl = ev.target as ServerPlayer;
-	const plname = pl.getName();
-	isKnockbacked[plname] = true;
-	damagedTime[plname] = Date.now();
-	setTimeout(() => {
-		const now = Date.now();
-		if (now - damagedTime[plname] > 1800) isKnockbacked[plname] = false;
-	}, 2500);
-});
+// 	const pl = ev.target as ServerPlayer;
+// 	const plname = pl.getName();
+// 	isKnockbacked[plname] = true;
+// 	damagedTime[plname] = Date.now();
+// 	setTimeout(() => {
+// 		const now = Date.now();
+// 		if (now - damagedTime[plname] > 1800) isKnockbacked[plname] = false;
+// 	}, 2500);
+// });
 
-events.playerRespawn.on((ev) => {
-	const pl = ev.player;
-	const plname = pl.getName();
+// events.playerRespawn.on((ev) => {
+// 	const pl = ev.player;
+// 	const plname = pl.getName();
 
-	const x = pl.getFeetPos().x;
-	const y = pl.getFeetPos().y;
-	const z = pl.getFeetPos().z;
+// 	const x = pl.getFeetPos().x;
+// 	const y = pl.getFeetPos().y;
+// 	const z = pl.getFeetPos().z;
 
-	isRespawned[plname] = true;
-	respawnedPos[plname] = Vec3.create(pl.getFeetPos());
-	lastpos[plname] = [x, y, z];
-	setTimeout(() => {
-		isRespawned[plname] = false;
-		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
-	}, 2500);
-});
+// 	isRespawned[plname] = true;
+// 	respawnedPos[plname] = Vec3.create(pl.getFeetPos());
+// 	lastpos[plname] = [x, y, z];
+// 	setTimeout(() => {
+// 		isRespawned[plname] = false;
+// 		respawnedPos[plname] = Vec3.create({ x: 99999, y: 99999, z: 99999 });
+// 	}, 2500);
+// });

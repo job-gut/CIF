@@ -26,7 +26,7 @@ export namespace CIFconfig {
 		ban: true,
 		kick: true,
 		blockAllPackets: true,
-		onlyAlert: true,
+		onlyAlert: false,
 	};
 };
 
@@ -64,7 +64,7 @@ xp = true
 ban = true
 kick = true
 blockAllPackets = true
-onlyAlert = true
+onlyAlert = false
 auto_update = true
 `
 	);
