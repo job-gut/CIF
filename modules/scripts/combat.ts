@@ -224,9 +224,11 @@ events.entityHurt.on((ev) => {
 	lastAttackPlayer[plname] = victim.getNameTag();
 
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
+	player.sendMessage(``+reach);
+	victim.sendMessage(``+reach);
 
 	if (
-		reach > 3.5 &&
+		reach > 3.01 &&
 		reach < 8 &&
 		!isMismatchAttack(player, victim, player.getViewVector(), reach)
 	) {

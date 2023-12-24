@@ -5,6 +5,7 @@ import { yellow } from "colors";
 import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 import { readFileSync, readdirSync } from "fs";
+import { BuildPlatform } from "bdsx/common";
 
 
 export const nameMap = new Map<NetworkIdentifier, string>();
@@ -98,7 +99,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.ban(ni, "fake-os");
     };
 
-    if (brand.toUpperCase() !== brand && deviceOS !== 2 && model !== "To Be Filled By O.E.M. To Be Filled By O.E.M." && !model.includes("ASUS") && !model.includes("SAMSUNG") && !model.includes("OnePlus") && model !== "System Product Name System manufacturer" && model !== "System devices (Standard system devices)" && model !== "To be filled by O.E.M. To be filled by O.E.M." && !model.includes("Sword") && model !== "Desktop DANAWA COMPUTER Co." && brand !== "Switch") {
+    if (brand.toUpperCase() !== brand && deviceOS === BuildPlatform.ANDROID && !model.includes("Sword") && brand !== "Switch" && !model.includes("Xiomi")) {
         CIF.detect(ni, "toolbox", "Join with Toolbox");
         CIF.ban(ni, "Toolbox");
     };
@@ -107,8 +108,8 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     if (deviceId.length === 36) {
         if (deviceId.includes("g") || deviceId.includes("h") || deviceId.includes("i") || deviceId.includes("j") || deviceId.includes("k") || deviceId.includes("l") || deviceId.includes("m") || deviceId.includes("n") || deviceId.includes("o") || deviceId.includes("p") || deviceId.includes("q") || deviceId.includes("r") || deviceId.includes("s") || deviceId.includes("t") || deviceId.includes("u") || deviceId.includes("v") || deviceId.includes("w") || deviceId.includes("x") || deviceId.includes("y") || deviceId.includes("z")) {
-            CIF.detect(ni, "zephyr", "Zephyr DeviceId Spoof");
-            return CIF.ban(ni, "Zephyr DeviceId Spoof");
+            CIF.detect(ni, "Invalid_did", "Device id includes strange letter(s)");
+            return CIF.ban(ni, "Invalid_did");
         };
     };
 
