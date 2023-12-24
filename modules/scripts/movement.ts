@@ -373,14 +373,14 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	// ).getName();
 
 	// pl.sendMessage(""+round0point5(movePos.x)+", "+round0point5(movePos.z));
-	if ((Math.abs(movePos.y) % groundY < 0.0001) && pkt.delta.y + 0.07840000092983246 === 0) {
+	if (/*(Math.abs(movePos.y) % groundY < 0.0001) &&*/ pkt.delta.y + 0.07840000092983246 === 0) {
 		airTicks[plname] = 0;
 	} else {
 		airTicks[plname]++;
 	};
 
 	
-	const og = (Math.abs(movePos.y) % groundY < 0.0001) && pkt.delta.y + 0.07840000092983246 === 0
+	const og = /*(Math.abs(movePos.y) % groundY < 0.0001) &&*/ pkt.delta.y + 0.07840000092983246 === 0
 
 	onGround[plname] = og;
 
