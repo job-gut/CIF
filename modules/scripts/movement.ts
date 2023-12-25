@@ -243,10 +243,12 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 	const pl = ni.getActor()!;
 	if (!pl) return;
 	const plname = pl.getName();
-	if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack) {
+	if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack && pl.getMainhandSlot().getRawNameId().includes("trident")) {
 		isSpinAttacking[plname] = true;
 	} else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
-		isSpinAttacking[plname] = false;
+		setTimeout(() => {
+			isSpinAttacking[plname] = false;
+		}, 150);
 	};
 });
 
@@ -460,7 +462,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation)) {
+					!pl.hasEffect(MobEffectIds.Levitation) && !pl.isGlidingWithElytra() && !pl.isSpinAttacking()) {
 
 					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 5);
