@@ -513,7 +513,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 
 					if (airTicks[plname] > 5 && accelY > 0 && !nearGround && !isKnockbacked[plname]) {
-						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 3);
+						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 5);
 
 						const lastposit = lastpos[plname];
 						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
