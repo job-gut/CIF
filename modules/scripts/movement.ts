@@ -383,15 +383,15 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		actualOnGround = true;
 	};
 
-	if (region.getBlock(BlockPos.create(movePos.x - 0.6, movePos.y - 0.499, movePos.z - 0.6)).getName() !== "minecraft:air" ||
-	region.getBlock(BlockPos.create(movePos.x - 0.6, movePos.y - 0.499, movePos.z + 0.6)).getName() !== "minecraft:air" ||
-	region.getBlock(BlockPos.create(movePos.x + 0.6, movePos.y - 0.499, movePos.z + 0.6)).getName() !== "minecraft:air" ||
-	region.getBlock(BlockPos.create(movePos.x + 0.6, movePos.y, movePos.z - 0.6)).getName() !== "minecraft:air" ||
+	if (region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.499, movePos.z - 1)).getName() !== "minecraft:air" ||
+	region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.499, movePos.z + 1)).getName() !== "minecraft:air" ||
+	region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.499, movePos.z + 1)).getName() !== "minecraft:air" ||
+	region.getBlock(BlockPos.create(movePos.x + 1, movePos.y, movePos.z - 1)).getName() !== "minecraft:air" ||
 	region.getBlock(BlockPos.create(movePos.x, movePos.y - .499, movePos.z)).getName() !== "minecraft:air" ||
-	region.getBlock(BlockPos.create(movePos.x - 0.6, movePos.y - .499, movePos.z)).getName() !== "minecraft:air" ||
-	region.getBlock(BlockPos.create(movePos.x, movePos.y - - .499, movePos.z + 0.6)).getName() !== "minecraft:air" ||
-	region.getBlock(BlockPos.create(movePos.x + 0.6, movePos.y - 0.499, movePos.z)).getName() !== "minecraft:air" ||
-	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.499, movePos.z - 0.6)).getName() !== "minecraft:air") {
+	region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - .499, movePos.z)).getName() !== "minecraft:air" ||
+	region.getBlock(BlockPos.create(movePos.x, movePos.y - - .499, movePos.z + 1)).getName() !== "minecraft:air" ||
+	region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.499, movePos.z)).getName() !== "minecraft:air" ||
+	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.499, movePos.z - 1)).getName() !== "minecraft:air") {
 		nearGround = true;
 	};
 
