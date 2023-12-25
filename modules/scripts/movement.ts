@@ -540,7 +540,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 				};
 
-				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > 2) {
+				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > 2 && !isKnockbacked[plname]) {
 					CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
 
 					let lastposit = lastpos[plname];
@@ -558,7 +558,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					cancelled = true;
 				};
 
-				if ((predDiff > 0 && !pl.onGround() && airTicks[plname] > 2 && !nearGround)) {
+				if (predDiff > 0 && !pl.onGround() && airTicks[plname] > 2 && !nearGround && !isKnockbacked[plname]) {
 					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 3);
 
 					let lastposit = lastpos[plname];
