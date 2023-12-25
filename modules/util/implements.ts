@@ -109,7 +109,7 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 		playerFlags[plname]![moduleName]--;
 
 		if (playerFlags[plname]![moduleName] < 0) playerFlags[plname]![moduleName] = 0;
-	}, 15000);
+	}, 15000).unref();
 
 	return CANCEL;
 };

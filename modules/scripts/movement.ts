@@ -66,10 +66,11 @@ const groundTicks: Record<string, number> = {};
 
 const lagbackPos: Record<string, number[]> = {};
 
-const isTeleported: Record<string, boolean> = {};
+const hasTeleportedServerSidely: Record<string, boolean> = {};
+const ticksAfterTeleport: Record<string, number> = {};
+
 const isRespawned: Record<string, boolean> = {};
 const respawnedPos: Record<string, Vec3> = {};
-const isTeleportedBySuspection: Record<string, boolean> = {};
 
 const haveFished: Record<string, boolean> = {};
 const isKnockbacked: Record<string, boolean> = {};
@@ -376,6 +377,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	if (typeof averageActualBPS[plname] !== "number") averageActualBPS[plname] = 0;
 	if (typeof averageMaxBPS[plname] !== "number") averageMaxBPS[plname] = 0;
 	if (typeof averageStacks[plname] !== "number") averageStacks[plname] = 0;
+	if (typeof ticksAfterTeleport[plname] !== "number") ticksAfterTeleport[plname] = 0;
 
 	const region = pl.getRegion()!;
 
@@ -444,7 +446,22 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const accelY = deltaY - YlastDelta;
 
 	const maxBPS = pl.getSpeed() * 43.5;
+	const maxJumpBPS = pl.getSpeed() * 102;
+
 	const ActualBPS = ZXlastDelta * 36.65;
+
+	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
+
+	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
+
+	if (hasTeleportedServerSidely[plname] === true && !isTeleported) ticksAfterTeleport[plname]++;
+	else { 
+		ticksAfterTeleport[plname] = 0; 
+		hasTeleportedServerSidely[plname] = false
+	};
+
+	if (!lastpos[plname]) lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+	const realBPS = Math.sqrt((movePos.x - lastpos[plname][0]) ** 2 + (movePos.z - lastpos[plname][2]) ** 2) * 20;
 
 	if (groundTicks[plname] > 4) {
 		averageStacks[plname]++;
@@ -462,7 +479,38 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 			if (!pl.getAbilities().getAbility(AbilitiesIndex.MayFly).getBool() &&
 				!pl.getAbilities().getAbility(AbilitiesIndex.Flying).getBool()
 				&& !pl.isFlying()
-				&& !pl.onClimbable()) {
+				&& !pl.onClimbable()
+				&& !pl.isGlidingWithElytra() && !pl.isSpinAttacking()) {
+
+
+				//DISABLER
+
+
+				if ((pkt.getInput(PlayerAuthInputPacket.InputData.Up) ||
+					pkt.getInput(PlayerAuthInputPacket.InputData.Left) ||
+					pkt.getInput(PlayerAuthInputPacket.InputData.Right) ||
+					pkt.getInput(PlayerAuthInputPacket.InputData.Down)) && !isTeleported && deltaXZ === 0
+					&& realBPS > 3) {
+					CIF.failAndFlag(ni, "Disabler-A", "No DeltaXZ while pressing key", 10);
+
+					let lastposit = lastpos[plname];
+					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					cancelled = true;
+				};
+
+
+				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 2) {
+					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
+
+					let lastposit = lastpos[plname];
+					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					cancelled = true;
+				};
+
+
+				//SPEED
 
 
 				if (averageStacks[plname] >= 4) {
@@ -483,9 +531,17 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 				};
 
+				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0) {
+					CIF.failAndFlag(ni, "Speed-B", `Too Fast`, 3);
+
+					let lastposit = lastpos[plname];
+					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					cancelled = true;
+				};
 
 				if (deltaYaw > 1.5 && deltaXZ > .150 && squaredAccel < 1.0E-5) {
-					CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 5);
+					CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 3);
 
 					let lastposit = lastpos[plname];
 					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -494,7 +550,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				};
 
 				if ((predDiff > 0 && !pl.onGround() && airTicks[plname] > 2 && !nearGround)) {
-					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 5);
+					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 3);
 
 					let lastposit = lastpos[plname];
 					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -503,13 +559,14 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				};
 
 
+				// FLY
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation) && !pl.isGlidingWithElytra() && !pl.isSpinAttacking()) {
+					!pl.hasEffect(MobEffectIds.Levitation)) {
 
 					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
-						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 5);
+						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -518,8 +575,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 19 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5) {
-						CIF.failAndFlag(ni, "Fly-D", `Glides less, less`, 5);
+					if (airTicks[plname] > 29 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5) {
+						CIF.failAndFlag(ni, "Fly-D", `Glides less, less`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -528,8 +585,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0) {
-						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
+					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0 && !nearGround) {
+						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -542,7 +599,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 					if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
 						if (airTicks[plname] > 19 && !pl.onGround() && deltaY < -0.5 && accelY === 0) {
-							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 5);
+							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 3);
 
 							let lastposit = lastpos[plname];
 							if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -554,7 +611,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 					if (!actualOnGround && deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 1) {
-						CIF.failAndFlag(ni, "Fly-B", `No Y changes in mid-air`, 5);
+						CIF.failAndFlag(ni, "Fly-B", `No Y changes in mid-air`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -564,7 +621,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 
 					if (airTicks[plname] > 5 && accelY > 0 && !nearGround && !isKnockbacked[plname]) {
-						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 10);
+						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 5);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -583,9 +640,10 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		lagbackPos[plname] = [movePos.x, movePos.y, movePos.z];
 	};
 
+	lastDeltaXZ[plname] = deltaXZ;
+	lastDeltaY[plname] = deltaY;
+
 	if (!cancelled) {
-		lastDeltaXZ[plname] = deltaXZ;
-		lastDeltaY[plname] = deltaY;
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
 	} else {
@@ -597,28 +655,20 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	lastYaw[plname] = yaw;
 });
 
-// const hasTeleport = procHacker.hooking(
-// 	"?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z",
-// 	void_t,
-// 	null,
-// 	ServerPlayer,
-// 	Vec3
-// )((pl, pos) => {
-// 	const plname = pl.getName()!;
-// 	if (isTeleportedBySuspection[plname] === true) {
-// 		isTeleportedBySuspection[plname] = false;
-// 		return hasTeleport(pl, pos);
-// 	};
+const hasTeleport = procHacker.hooking(
+	"?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z",
+	void_t,
+	null,
+	ServerPlayer,
+	Vec3
+)((pl, pos) => {
+	const plname = pl.getName()!;
 
-// 	isTeleported[plname] = true;
-// 	clearTimeout(removeTeleportedTimeout[plname]);
+	hasTeleportedServerSidely[plname] = true;
+	ticksAfterTeleport[plname] = 0;
 
-// 	removeTeleportedTimeout[plname] = setTimeout(() => {
-// 		isTeleported[plname] = false;
-// 	}, 2500);
-
-// 	return hasTeleport(pl, pos);
-// });
+	return hasTeleport(pl, pos);
+});
 
 events.entityKnockback.on((ev) => {
 	if (!ev.target.isPlayer()) return;
