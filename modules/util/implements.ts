@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { red } from "colors";
 import { StringMappingType } from "typescript";
 import { CIFconfig } from "./configManager";
+import { showFlag } from "../../debug/debug";
 
 
 /**
@@ -87,6 +88,12 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 	if (typeof playerFlags[plname]![moduleName] !== "number") playerFlags[plname]![moduleName] = 0;
 
 	playerFlags[plname]![moduleName]++;
+
+	if (showFlag) {
+		this.announce(`§c${plname} §6has been flagged by §eAnti §c${moduleName} §f(${playerFlags[plname]![moduleName]}/${maxFlags[moduleName]})`);
+    	this.log(`${plname} has been flagged by ${moduleName} (${playerFlags[plname]![moduleName]}/${maxFlags[moduleName]})`.yellow);
+	};
+
 	if (maxFlags[moduleName] <= playerFlags[plname]![moduleName]) {
 		playerFlags[plname]![moduleName] = 0;
 		playerFlags[plname] = undefined;
@@ -106,7 +113,7 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 	};
 
 	setTimeout(() => {
-		playerFlags[plname]![moduleName]--;
+		if (playerFlags[plname] && playerFlags[plname]![moduleName]) playerFlags[plname]![moduleName]--;
 
 		if (playerFlags[plname]![moduleName] < 0) playerFlags[plname]![moduleName] = 0;
 	}, 15000).unref();

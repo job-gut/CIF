@@ -7,7 +7,11 @@ import { CIFconfig, CIFconfigNames } from "../modules/util/configManager";
 import { bool_t } from "bdsx/nativetype";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
 
+export let showFlag = false;
+
 //debug code
+
+if (CIFconfig.Modules.Debug)
 events.serverOpen.on(() => {
  
     const debugCommand = command.register('cif_dbg', 'command for testing some CIF modules', CommandPermissionLevel.Operator);
@@ -44,5 +48,12 @@ events.serverOpen.on(() => {
         target: PlayerCommandSelector,
         cheatName: CommandMessage,
         cheatDescription: CommandMessage
+    });
+    debugCommand.overload((param, origin, output) => {
+        showFlag = param.enabled;
+        
+    }, {
+        detect: command.enum("showflags", "showflags"),
+        enabled: bool_t
     });
 });
