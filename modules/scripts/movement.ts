@@ -460,6 +460,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const ActualBPS = ZXlastDelta * 36.65;
 
 	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
+	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
 
 	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
 
@@ -656,7 +657,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					//High Jump
 
 
-					if (deltaY > 0.4116) {
+					if (deltaY > 0.4116 && isJumping) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
 						let lastposit = lastpos[plname];
