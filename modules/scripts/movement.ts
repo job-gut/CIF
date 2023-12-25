@@ -526,7 +526,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				if ((pkt.getInput(PlayerAuthInputPacket.InputData.Up) ||
 					pkt.getInput(PlayerAuthInputPacket.InputData.Left) ||
 					pkt.getInput(PlayerAuthInputPacket.InputData.Right) ||
-					pkt.getInput(PlayerAuthInputPacket.InputData.Down)) && !isTeleported && deltaXZ === 0
+					pkt.getInput(PlayerAuthInputPacket.InputData.Down)) && !isTeleported && deltaXZ === 0 && ZXlastDelta === 0
 					&& realBPS > 3) {
 					CIF.failAndFlag(ni, "Disabler-A", "No DeltaXZ while pressing key", 16);
 
