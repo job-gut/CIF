@@ -531,7 +531,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					averageActualBPS[plname] = 0;
 					averageStacks[plname] = 0;
 
-					if (avrActualBPS - avrMaxBPS > 0.5 && pl.onGround() && groundTicks[plname] > 4) {
+					if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname]) {
 						CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
 
 						let lastposit = lastpos[plname];
