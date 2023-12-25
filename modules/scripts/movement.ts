@@ -460,6 +460,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const ActualBPS = ZXlastDelta * 36.65;
 
 	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
+	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
 
 	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
 
@@ -540,7 +541,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 				};
 
-				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > 2) {
+				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > 2 && !isKnockbacked[plname]) {
 					CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
 
 					let lastposit = lastpos[plname];
@@ -558,7 +559,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					cancelled = true;
 				};
 
-				if ((predDiff > 0 && !pl.onGround() && airTicks[plname] > 2 && !nearGround)) {
+				if (predDiff > 0 && !pl.onGround() && airTicks[plname] > 2 && !nearGround && !isKnockbacked[plname]) {
 					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 3);
 
 					let lastposit = lastpos[plname];
@@ -656,7 +657,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					//High Jump
 
 
-					if (deltaY > 0.4116) {
+					if (deltaY > 0.4116 && isJumping) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
 						let lastposit = lastpos[plname];
