@@ -528,7 +528,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					pkt.getInput(PlayerAuthInputPacket.InputData.Right) ||
 					pkt.getInput(PlayerAuthInputPacket.InputData.Down)) && !isTeleported && deltaXZ === 0
 					&& realBPS > 3) {
-					CIF.failAndFlag(ni, "Disabler-A", "No DeltaXZ while pressing key", 10);
+					CIF.failAndFlag(ni, "Disabler-A", "No DeltaXZ while pressing key", 16);
 
 					let lastposit = lastpos[plname];
 					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
