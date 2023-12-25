@@ -494,7 +494,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	if (!lastpos[plname]) lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	const realBPS = Math.sqrt((movePos.x - lastpos[plname][0]) ** 2 + (movePos.z - lastpos[plname][2]) ** 2) * 20;
 
-	if (groundTicks[plname] > 4 && !isStartJump && !isJumping && !isChangingHeight && movePos.y === lastpos[plname][1]) {
+	if (groundTicks[plname] > 4 && !isStartJump && !isJumping) {
 		averageStacks[plname]++;
 
 		if (averageStacks[plname] > 0) {
@@ -558,7 +558,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					averageActualBPS[plname] = 0;
 					averageStacks[plname] = 0;
 
-					if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname] && !isChangingHeight) {
+					if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname]) {
 						CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
 
 						let lastposit = lastpos[plname];
