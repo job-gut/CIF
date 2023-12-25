@@ -94,29 +94,37 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
     	this.log(`${plname} has been flagged by ${moduleName} (${playerFlags[plname]![moduleName]}/${maxFlags[moduleName]})`.yellow);
 	};
 
+	const flagRemove = setTimeout(() => {
+		if (playerFlags[plname] && playerFlags[plname]![moduleName]) playerFlags[plname]![moduleName]--;
+
+		if (playerFlags[plname]![moduleName] < 0) playerFlags[plname]![moduleName] = 0;
+	}, 15000).unref();
+
 	if (maxFlags[moduleName] <= playerFlags[plname]![moduleName]) {
 		playerFlags[plname]![moduleName] = 0;
 		playerFlags[plname] = undefined;
 
 		if (CIFconfig.Penalties.onlyAlert) {
+			clearTimeout(flagRemove);
+
 			CIF.suspect(ni, moduleName, moduleDescription);
 			return CANCEL;
 		};
 
 		if (CIFconfig.Penalties.ban) {
+			clearTimeout(flagRemove);
+
 			CIF.ban(ni, moduleName);
 			CIF.detect(ni, moduleName, moduleDescription);
 			return CANCEL;
 		};
 
-		if (CIFconfig.Penalties.blockAllPackets) CIF.detect(ni, moduleName, moduleDescription);
+		if (CIFconfig.Penalties.blockAllPackets) {
+			clearTimeout(flagRemove);
+
+			CIF.detect(ni, moduleName, moduleDescription);
+		};
 	};
-
-	setTimeout(() => {
-		if (playerFlags[plname] && playerFlags[plname]![moduleName]) playerFlags[plname]![moduleName]--;
-
-		if (playerFlags[plname]![moduleName] < 0) playerFlags[plname]![moduleName] = 0;
-	}, 15000).unref();
 
 	return CANCEL;
 };

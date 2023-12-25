@@ -568,7 +568,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 				};
 
-				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > 2 && !isKnockbacked[plname]) {
+				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > .75 && !isKnockbacked[plname]) {
 					CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
 
 					let lastposit = lastpos[plname];
