@@ -598,7 +598,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 29 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5) {
+					if (airTicks[plname] > 29 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5 && !isKnockbacked[plname]) {
 						CIF.failAndFlag(ni, "Fly-D", `Glides less, less`, 3);
 
 						let lastposit = lastpos[plname];
@@ -679,6 +679,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 	lastDeltaXZ[plname] = deltaXZ;
 	lastDeltaY[plname] = deltaY;
+
+	lastBPSForExportedFunc[plname] = ActualBPS;
 
 	if (!cancelled) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
