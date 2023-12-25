@@ -512,7 +512,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 2 && accelY > 0 && !nearGround) {
+					if (airTicks[plname] > 2 && accelY > 0 && !nearGround && !isKnockbacked[plname]) {
 						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 3);
 
 						const lastposit = lastpos[plname];
@@ -566,18 +566,18 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 // 	return hasTeleport(pl, pos);
 // });
 
-// events.entityKnockback.on((ev) => {
-// 	if (!ev.target.isPlayer()) return;
+events.entityKnockback.on((ev) => {
+	if (!ev.target.isPlayer()) return;
 
-// 	const pl = ev.target as ServerPlayer;
-// 	const plname = pl.getName();
-// 	isKnockbacked[plname] = true;
-// 	damagedTime[plname] = Date.now();
-// 	setTimeout(() => {
-// 		const now = Date.now();
-// 		if (now - damagedTime[plname] > 1800) isKnockbacked[plname] = false;
-// 	}, 2500);
-// });
+	const pl = ev.target as ServerPlayer;
+	const plname = pl.getName();
+	isKnockbacked[plname] = true;
+	damagedTime[plname] = Date.now();
+	setTimeout(() => {
+		const now = Date.now();
+		if (now - damagedTime[plname] > 1800) isKnockbacked[plname] = false;
+	}, 2500);
+});
 
 // events.playerRespawn.on((ev) => {
 // 	const pl = ev.player;
