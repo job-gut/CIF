@@ -88,6 +88,8 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 
 	playerFlags[plname]![moduleName]++;
 	if (maxFlags[moduleName] <= playerFlags[plname]![moduleName]) {
+		playerFlags[plname]![moduleName] = 0;
+		playerFlags[plname] = undefined;
 
 		if (CIFconfig.Penalties.onlyAlert) {
 			CIF.suspect(ni, moduleName, moduleDescription);
@@ -101,9 +103,6 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 		};
 
 		if (CIFconfig.Penalties.blockAllPackets) CIF.detect(ni, moduleName, moduleDescription);
-
-		playerFlags[plname]![moduleName] = 0;
-		playerFlags[plname] = undefined;
 	};
 
 	setTimeout(() => {
