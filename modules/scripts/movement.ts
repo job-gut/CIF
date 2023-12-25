@@ -452,7 +452,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				};
 
 				if ((predDiff > 0 && !pl.onGround() && airTicks[plname] > 1)) {
-					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 9);
+					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 20);
 
 					const lastposit = lastpos[plname];
 					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
