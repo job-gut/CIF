@@ -370,7 +370,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const plname = pl.getName();
 
 	const movePos = pkt.pos;
-	movePos.y -= 1.62001190185547;
+	movePos.y -= 1.41001190185547;
 
 	if (typeof airTicks[plname] !== "number") airTicks[plname] = 0;
 	if (typeof groundTicks[plname] !== "number") groundTicks[plname] = 0;
@@ -384,7 +384,16 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	let actualOnGround = false;
 	let nearGround = false;
 
-	if (region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.501, movePos.z - 0.3)).getName() !== "minecraft:air" ||
+	if (region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.1, movePos.z - 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.1, movePos.z + 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.1, movePos.z + 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.1, movePos.z - 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.501, movePos.z - 0.3)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.501, movePos.z + 0.3)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.501, movePos.z + 0.3)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.501, movePos.z - 0.3)).getName() !== "minecraft:air" ||
@@ -531,8 +540,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 				};
 
-				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0) {
-					CIF.failAndFlag(ni, "Speed-B", `Too Fast`, 3);
+				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > 2) {
+					CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
 
 					let lastposit = lastpos[plname];
 					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -559,11 +568,24 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				};
 
 
+				// TP
+
+
+				if (realBPS / 20 > deltaXZ * 5 && !isTeleported && realBPS / 20 >= 0.6) {
+					CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
+
+					let lastposit = lastpos[plname];
+					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					cancelled = true;
+				};
+
+
 				// FLY
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation)) {
+					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost)) {
 
 					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
@@ -629,6 +651,20 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 						cancelled = true;
 					};
+
+
+					//High Jump
+
+
+					if (deltaY > 0.4116) {
+						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
+
+						let lastposit = lastpos[plname];
+						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+
+						cancelled = true;
+					};
 				};
 			};
 
@@ -651,7 +687,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		setLastPositions(plname, { x: lastpos[plname][0], y: lastpos[plname][1], z: lastpos[plname][2] });
 	};
 
-	movePos.y += 1.62001190185547;
+	movePos.y += 1.41001190185547;
 	lastYaw[plname] = yaw;
 });
 
