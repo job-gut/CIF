@@ -445,6 +445,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 	onGround[plname] = og;
 
+	if (pl.onClimbable() || pl.onSlowFallingBlock()) onGround[plname] = true;
+
 	const rotation = {
 		x: pkt.headYaw,
 		y: pkt.pitch,
@@ -477,6 +479,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
 	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
 
+	const isStartJump = pkt.getInput(PlayerAuthInputPacket.InputData.StartJumping);
+
 	const isChangingHeight = pkt.getInput(PlayerAuthInputPacket.InputData.ChangeHeight);
 
 	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
@@ -490,11 +494,17 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	if (!lastpos[plname]) lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 	const realBPS = Math.sqrt((movePos.x - lastpos[plname][0]) ** 2 + (movePos.z - lastpos[plname][2]) ** 2) * 20;
 
-	if (groundTicks[plname] > 4) {
+	if (groundTicks[plname] > 4 && !isStartJump && !isJumping && !isChangingHeight && movePos.y === lastpos[plname][1]) {
 		averageStacks[plname]++;
 
-		averageMaxBPS[plname] += maxBPS;
-		averageActualBPS[plname] += ActualBPS;
+		if (averageStacks[plname] > 0) {
+			averageMaxBPS[plname] += maxBPS;
+			averageActualBPS[plname] += ActualBPS;
+		};
+	} else {
+		averageMaxBPS[plname] = -0;
+		averageActualBPS[plname] = 0;
+		averageStacks[plname] = -5;
 	};
 
 	let cancelled = false;
@@ -625,8 +635,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0 && !nearGround) {
-						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 3);
+					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0.05 && accelY === 0 && !nearGround) {
+						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
