@@ -56,6 +56,7 @@ const jumpedTick: Record<string, number> = {};
 const lastDeltaXZ: Record<string, number> = {};
 const lastDeltaY: Record<string, number> = {};
 const lastYaw: Record<string, number> = {};
+const lastAccel: Record<string, number> = {};
 
 const averageMaxBPS: Record<string, number> = {};
 const averageActualBPS: Record<string, number> = {};
@@ -462,8 +463,9 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const yaw = pkt.yaw;
 	const deltaYaw = Math.abs(yaw - lastYaw[plname]);
 
-	const accel = Math.abs(deltaXZ - ZXlastDelta);
-	const squaredAccel = accel * 100;
+	const accel = deltaXZ - ZXlastDelta;
+	const AbsSquaredAccel = Math.abs(accel) * 100;
+	const squaredLastAccel = lastAccel[plname] * 100;
 
 	const prediction = ZXlastDelta * 0.91;
 	const predDiff = deltaXZ - prediction - 0.0256;
@@ -472,7 +474,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const accelY = deltaY - YlastDelta;
 
 	const maxBPS = pl.getSpeed() * 43.5;
-	const maxJumpBPS = pl.getSpeed() * 102;
+	const maxJumpBPS = pl.getSpeed() * 93;
 
 	const ActualBPS = ZXlastDelta * 36.65;
 
@@ -567,8 +569,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 				};
-
-				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && accel > .75 && !isKnockbacked[plname]) {
+				
+				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && squaredLastAccel >= 6 && !isKnockbacked[plname]) {
 					CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
 
 					let lastposit = lastpos[plname];
@@ -577,7 +579,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					cancelled = true;
 				};
 
-				if (deltaYaw > 1.5 && deltaXZ > .150 && squaredAccel < 1.0E-5) {
+				if (deltaYaw > 1.5 && deltaXZ > .150 && AbsSquaredAccel < 1.0E-5) {
 					CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 3);
 
 					let lastposit = lastpos[plname];
@@ -635,7 +637,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0.05 && accelY === 0 && !nearGround) {
+					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0.05 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
 
 						let lastposit = lastpos[plname];
@@ -670,7 +672,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 9 && accelY > 0 && deltaY > 0 && !nearGround && !isKnockbacked[plname]) {
+					if (airTicks[plname] > 9 && accelY > 0 && deltaY > 0 && !isKnockbacked[plname]) {
 						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 5);
 
 						let lastposit = lastpos[plname];
@@ -712,8 +714,10 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	if (!cancelled) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
 		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
+		lastAccel[plname] = accel;
 	} else {
 		lastpos[plname] = lastpos[plname];
+		lastAccel[plname] = lastAccel[plname];
 		setLastPositions(plname, { x: lastpos[plname][0], y: lastpos[plname][1], z: lastpos[plname][2] });
 	};
 
@@ -745,8 +749,8 @@ events.entityKnockback.on((ev) => {
 	damagedTime[plname] = Date.now();
 	setTimeout(() => {
 		const now = Date.now();
-		if (now - damagedTime[plname] > 1800) isKnockbacked[plname] = false;
-	}, 2500);
+		if (now - damagedTime[plname] > 150) isKnockbacked[plname] = false;
+	}, 250);
 });
 
 // events.playerRespawn.on((ev) => {
