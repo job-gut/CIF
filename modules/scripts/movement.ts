@@ -209,6 +209,9 @@ Player.prototype.onClimbable = function () {
 	const currentPosBlock = region.getBlock(
 		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
 	);
+	const currentUnderPosBlock = region.getBlock(
+		BlockPos.create(feetPos.x, feetPos.y - 1, feetPos.z)
+	);
 	const currentHeadPosBlock = region.getBlock(
 		BlockPos.create(headPos.x, headPos.y, headPos.z)
 	);
@@ -219,6 +222,9 @@ Player.prototype.onClimbable = function () {
 		|| currentHeadPosBlock.getName().includes("ladder")
 		|| currentHeadPosBlock.getName().includes("vine")
 		|| currentHeadPosBlock.getName().includes("powder_snow")
+		|| currentUnderPosBlock.getName().includes("ladder")
+		|| currentUnderPosBlock.getName().includes("vine")
+		|| currentUnderPosBlock.getName().includes("powder_snow")
 	) return true;
 
 	return false;
@@ -370,7 +376,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const plname = pl.getName();
 
 	const movePos = pkt.pos;
-	movePos.y -= 1.41001190185547;
+	movePos.y -= 1.6;
 
 	if (typeof airTicks[plname] !== "number") airTicks[plname] = 0;
 	if (typeof groundTicks[plname] !== "number") groundTicks[plname] = 0;
@@ -393,27 +399,36 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.3)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.3)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.501, movePos.z - 0.3)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.501, movePos.z + 0.3)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.501, movePos.z + 0.3)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.501, movePos.z - 0.3)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.501, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.501, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.501, movePos.z + 0.3)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.501, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.501, movePos.z - 0.3)).getName() !== "minecraft:air") {
+		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.7, movePos.z - 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.7, movePos.z + 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.7, movePos.z + 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.7, movePos.z - 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 0.3, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z + 0.3)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.3, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z - 0.3)).getName() !== "minecraft:air") {
 		actualOnGround = true;
 	};
 
-	if (region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.501, movePos.z - 1)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.501, movePos.z + 1)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.501, movePos.z + 1)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y, movePos.z - 1)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - .501, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - .501, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - - .501, movePos.z + 1)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.501, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.501, movePos.z - 1)).getName() !== "minecraft:air") {
+	if (region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.1, movePos.z - 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.1, movePos.z + 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.1, movePos.z + 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.1, movePos.z - 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.7, movePos.z - 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.7, movePos.z + 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.7, movePos.z + 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.7, movePos.z - 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 1, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z + 1)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 1, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z - 1)).getName() !== "minecraft:air") {
 		nearGround = true;
 	};
 
@@ -461,6 +476,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
 	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
+
+	const isChangingHeight = pkt.getInput(PlayerAuthInputPacket.InputData.ChangeHeight);
 
 	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
 
@@ -531,7 +548,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					averageActualBPS[plname] = 0;
 					averageStacks[plname] = 0;
 
-					if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname]) {
+					if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname] && !isChangingHeight) {
 						CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
 
 						let lastposit = lastpos[plname];
@@ -586,7 +603,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost)) {
+					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported) {
 
 					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
@@ -657,7 +674,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					//High Jump
 
 
-					if (deltaY > 0.4116 && isJumping) {
+					if (deltaY > 0.42 && isJumping) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
 						let lastposit = lastpos[plname];
@@ -690,7 +707,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		setLastPositions(plname, { x: lastpos[plname][0], y: lastpos[plname][1], z: lastpos[plname][2] });
 	};
 
-	movePos.y += 1.41001190185547;
+	movePos.y += 1.6;
 	lastYaw[plname] = yaw;
 });
 
