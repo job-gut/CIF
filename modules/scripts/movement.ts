@@ -512,7 +512,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 2 && accelY > 0 && !nearGround && !isKnockbacked[plname]) {
+					if (airTicks[plname] > 5 && accelY > 0 && !nearGround && !isKnockbacked[plname]) {
 						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 3);
 
 						const lastposit = lastpos[plname];
