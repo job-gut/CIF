@@ -9,6 +9,9 @@ import { ActorDamageCause } from "bdsx/bds/actor";
 import { MobEffectIds } from "bdsx/bds/effects";
 import { bedrockServer } from "bdsx/launcher";
 import { RakNet } from "bdsx/bds/raknet";
+import { ComplexInventoryTransaction } from "bdsx/bds/inventory";
+import { MinecraftPacketIds } from "bdsx/bds/packetids";
+import { AnimatePacket } from "bdsx/bds/packets";
 
 let peer: RakNet.RakPeer;
 
@@ -123,6 +126,78 @@ function isMismatchAttack(
 	return false;
 };
 
+
+const instantSwingArmStack: Record<string, number> = {};
+const instantTransactionStack: Record<string, number> = {};
+
+events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni, pktid)=> {
+	const pl = ni.getActor()!;
+	const plname = pl.getName();
+	
+	if (pkt.action === AnimatePacket.Actions.SwingArm) instantSwingArmStack[plname]++;
+});
+
+events.packetBefore(MinecraftPacketIds.InventoryTransaction).on((pkt, ni, pktid)=> {
+	const pl = ni.getActor()!;
+	const plname = pl.getName();
+
+	if (pkt.transaction?.type === ComplexInventoryTransaction.Type.ItemUseOnEntityTransaction) instantTransactionStack[plname]++;
+	if (pkt.transaction?.type === ComplexInventoryTransaction.Type.ItemUseTransaction) instantTransactionStack[plname]--;
+});
+
+events.levelTick.on((ev)=> {
+	const pls = ev.level.getPlayers();
+
+	for (const pl of pls) {
+		const plname = pl.getName();
+
+		instantSwingArmStack[plname] = 0;
+		instantTransactionStack[plname] = 0;
+	};
+});
+
+events.playerAttack.on((ev) => {
+	if (CIFconfig.Modules.combat) {
+
+		const pl = ev.player;
+		const plname = pl.getName()!;
+
+		const vic = ev.victim;
+		if (vic.isPlayer()) {
+
+			if (instantSwingArmStack[plname] === 1) {
+				if (instantTransactionStack[plname] === 2) {
+					instantSwingArmStack[plname] = 0;
+					instantTransactionStack[plname] = 0;
+
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-2C", "Invalid packet sequence (Prax Client)", 2);
+				};
+
+				if (instantTransactionStack[plname] === 1) {
+					instantSwingArmStack[plname] = 0;
+					instantTransactionStack[plname] = 0;
+
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-1C", "Invalid packet sequence (Borion Client)", 4);
+				};
+			};
+
+			if (instantSwingArmStack[plname] === 0) {
+				if (instantTransactionStack[plname] === 1) {
+					instantSwingArmStack[plname] = 0;
+					instantTransactionStack[plname] = 0;
+
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-1C", "Invalid packet sequence (Borion Client)", 4);
+				};
+			};
+
+			instantSwingArmStack[plname] = 0;
+			instantTransactionStack[plname] = 0;
+		};
+	};
+});
+
+
+
 events.entityHurt.on((ev) => {
 	if (CIFconfig.Modules.combat !== true) return;
 
@@ -224,8 +299,8 @@ events.entityHurt.on((ev) => {
 	lastAttackPlayer[plname] = victim.getNameTag();
 
 	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
-	player.sendMessage(``+reach);
-	victim.sendMessage(``+reach);
+	player.sendMessage(`` + reach);
+	victim.sendMessage(`` + reach);
 
 	if (
 		reach > 3.01 &&

@@ -2,10 +2,10 @@ import { AbilitiesIndex } from "bdsx/bds/abilities";
 import { Actor } from "bdsx/bds/actor";
 import { Block, BlockActor } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
-import { ArmorSlot } from "bdsx/bds/inventory";
+import { ArmorSlot, ComplexInventoryTransaction } from "bdsx/bds/inventory";
 import { Packet } from "bdsx/bds/packet";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { MovePlayerPacket, PlayerActionPacket, PlayerAuthInputPacket } from "bdsx/bds/packets";
+import { AnimatePacket, MovePlayerPacket, PlayerActionPacket, PlayerAuthInputPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
 import { bool_t, int32_t, void_t } from "bdsx/nativetype";
@@ -637,7 +637,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0.05 && accelY === 0) {
+					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
 
 						let lastposit = lastpos[plname];
