@@ -163,7 +163,7 @@ events.playerAttack.on((ev) => {
 		const plname = pl.getName()!;
 
 		const vic = ev.victim;
-		if (vic.isPlayer()) {
+		if (vic.isPlayer() && pl.getPlatform() === BuildPlatform.WINDOWS_10) {
 
 			if (instantSwingArmStack[plname] === 1) {
 				if (instantTransactionStack[plname] === 2) {
