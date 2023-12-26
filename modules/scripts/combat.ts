@@ -9,6 +9,9 @@ import { ActorDamageCause } from "bdsx/bds/actor";
 import { MobEffectIds } from "bdsx/bds/effects";
 import { bedrockServer } from "bdsx/launcher";
 import { RakNet } from "bdsx/bds/raknet";
+import { ComplexInventoryTransaction } from "bdsx/bds/inventory";
+import { MinecraftPacketIds } from "bdsx/bds/packetids";
+import { AnimatePacket } from "bdsx/bds/packets";
 
 let peer: RakNet.RakPeer;
 
@@ -19,12 +22,12 @@ events.serverOpen.on(() => {
 const MismatchAuraWarn = new Map<string, number>();
 const sameRotAuraWarn = new Map<string, number>();
 
-const lastAttackPlayer: Record<string, string> = {};
+const lastAttackpl: Record<string, string> = {};
 
 const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 
-// function mismatchWarn(player: Player): CANCEL {
-// 	const name = player.getName();
+// function mismatchWarn(pl: pl): CANCEL {
+// 	const name = pl.getName();
 
 // 	if (MismatchAuraWarn.get(name) === undefined) {
 // 		MismatchAuraWarn.set(name, 1);
@@ -39,9 +42,9 @@ const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 // 	}, 3000);
 
 // 	if (MismatchAuraWarn.get(name)! > 2) {
-// 		CIF.ban(player.getNetworkIdentifier(), "Aura-A");
+// 		CIF.ban(pl.getNetworkIdentifier(), "Aura-A");
 // 		return CIF.detect(
-// 			player.getNetworkIdentifier(),
+// 			pl.getNetworkIdentifier(),
 // 			"Aura-A",
 // 			"Mismatch head rotation"
 // 		);
@@ -50,8 +53,8 @@ const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 // 	return CANCEL;
 // };
 
-// function sameRotWarn(player: Player): CANCEL {
-// 	const name = player.getName();
+// function sameRotWarn(pl: pl): CANCEL {
+// 	const name = pl.getName();
 // 	if (sameRotAuraWarn.get(name) === undefined) {
 // 		sameRotAuraWarn.set(name, 1);
 // 	};
@@ -65,7 +68,7 @@ const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
 
 // 	if (sameRotAuraWarn.get(name)! > 3) {
 // 		sameRotAuraWarn.set(name, 0);
-// 		CIF.suspect(player.getNetworkIdentifier(), "Aura-B", "Attacking Same Body Position");
+// 		CIF.suspect(pl.getNetworkIdentifier(), "Aura-B", "Attacking Same Body Position");
 // 	};
 
 // 	return CANCEL;
@@ -87,28 +90,28 @@ function getVectorByRotation(rotation: { x: number; y: number }): Vec3 {
 };
 
 function isMismatchAttack(
-	player: ServerPlayer,
+	pl: ServerPlayer,
 	victim: ServerPlayer,
-	viewVector: Vec3 = player.getViewVector(),
+	viewVector: Vec3 = pl.getViewVector(),
 	distance: number | undefined = undefined
 ): boolean {
 	const victimPos = victim.getFeetPos();
 	victimPos.y += 0.9;
 
-	const playerPos = player.getPosition();
+	const plPos = pl.getPosition();
 
-	if (victimPos.distance(playerPos) < 1) {
+	if (victimPos.distance(plPos) < 1) {
 		return false;
 	};
 
-	let reach = playerPos.distance(victimPos);
+	let reach = plPos.distance(victimPos);
 
 	if (distance) reach = distance;
 
 	viewVector.multiply(reach);
-	viewVector.x += playerPos.x;
-	viewVector.y += playerPos.y;
-	viewVector.z += playerPos.z;
+	viewVector.x += plPos.x;
+	viewVector.y += plPos.y;
+	viewVector.z += plPos.z;
 
 	const distanceX = Math.abs(viewVector.x - victimPos.x) / reach;
 	const distanceZ = Math.abs(viewVector.z - victimPos.z) / reach;
@@ -123,123 +126,184 @@ function isMismatchAttack(
 	return false;
 };
 
-events.entityHurt.on((ev) => {
-	if (CIFconfig.Modules.combat !== true) return;
 
-	const cuz = ev.damageSource.cause;
+const instantSwingArmStack: Record<string, number> = {};
+const instantTransactionStack: Record<string, number> = {};
 
-	if (cuz !== ActorDamageCause.EntityAttack) return;
+events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni, pktid)=> {
+	const pl = ni.getActor()!;
+	const plname = pl.getName();
+	
+	if (pkt.action === AnimatePacket.Actions.SwingArm) instantSwingArmStack[plname]++;
+});
 
-	const player = ev.damageSource.getDamagingEntity()! as ServerPlayer;
-	const plname = player.getName();
+events.packetBefore(MinecraftPacketIds.InventoryTransaction).on((pkt, ni, pktid)=> {
+	const pl = ni.getActor()!;
+	const plname = pl.getName();
 
-	const victim = ev.entity;
+	if (pkt.transaction?.type === ComplexInventoryTransaction.Type.ItemUseOnEntityTransaction) instantTransactionStack[plname]++;
+	if (pkt.transaction?.type === ComplexInventoryTransaction.Type.ItemUseTransaction) instantTransactionStack[plname]--;
+});
 
-	if (!player.isPlayer()) return;
-	if (!victim.isPlayer()) return;
-	if (victim.getGameType() === GameType.Creative) return;
-	if (player.getGameType() === GameType.Creative) return;
-	if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
+events.levelTick.on((ev)=> {
+	const pls = ev.level.getPlayers();
 
-	if (player.getPlatform() !== BuildPlatform.ANDROID && player.getPlatform() !== BuildPlatform.IOS) {
-		const name = player.getName()!;
+	for (const pl of pls) {
+		const plname = pl.getName();
 
-		const prevRotations = lastRotations.get(name);
+		instantSwingArmStack[plname] = 0;
+		instantTransactionStack[plname] = 0;
+	};
+});
 
-		if (prevRotations !== undefined && prevRotations.length === 3) {
+events.playerAttack.on((ev) => {
+	if (CIFconfig.Modules.combat) {
 
-			const check1 = isMismatchAttack(player, victim);
-			const check2 = isMismatchAttack(
-				player,
-				victim,
-				getVectorByRotation(prevRotations[1])
-			);
+		const pl = ev.player;
+		const plname = pl.getName()!;
 
-			const check3 = isMismatchAttack(
-				player,
-				victim,
-				getVectorByRotation(prevRotations[2])
-			);
+		const vic = ev.victim;
+		if (vic.isPlayer() && pl.getPlatform() === BuildPlatform.WINDOWS_10) {
 
-			if (check1 && check2 && check3) {
-				// return mismatchWarn(player);
-			} else if (check1) {
-				return CANCEL;
+			if (instantSwingArmStack[plname] === 1) {
+				if (instantTransactionStack[plname] === 2) {
+					instantSwingArmStack[plname] = 0;
+					instantTransactionStack[plname] = 0;
+
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-2C", "Invalid packet sequence (Prax Client)", 2);
+				};
+
+				if (instantTransactionStack[plname] === 1) {
+					instantSwingArmStack[plname] = 0;
+					instantTransactionStack[plname] = 0;
+
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-1C", "Invalid packet sequence (Borion Client)", 4);
+				};
+			};
+
+			if (instantSwingArmStack[plname] === 0) {
+				if (instantTransactionStack[plname] === 1) {
+					instantSwingArmStack[plname] = 0;
+					instantTransactionStack[plname] = 0;
+
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-1C", "Invalid packet sequence (Borion Client)", 4);
+				};
+			};
+
+			instantSwingArmStack[plname] = 0;
+			instantTransactionStack[plname] = 0;
+		};
+
+	
+		const victim = ev.victim;
+	
+		if (!pl.isPlayer()) return;
+		if (!victim.isPlayer()) return;
+		if (victim.getGameType() === GameType.Creative) return;
+		if (pl.getGameType() === GameType.Creative) return;
+		if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
+	
+		if (pl.getPlatform() !== BuildPlatform.ANDROID && pl.getPlatform() !== BuildPlatform.IOS) {
+			const name = pl.getName()!;
+	
+			const prevRotations = lastRotations.get(name);
+	
+			if (prevRotations !== undefined && prevRotations.length === 3) {
+	
+				const check1 = isMismatchAttack(pl, victim);
+				const check2 = isMismatchAttack(
+					pl,
+					victim,
+					getVectorByRotation(prevRotations[1])
+				);
+	
+				const check3 = isMismatchAttack(
+					pl,
+					victim,
+					getVectorByRotation(prevRotations[2])
+				);
+	
+				if (check1 && check2 && check3) {
+					// return mismatchWarn(pl);
+				} else if (check1) {
+					return CANCEL;
+				};
 			};
 		};
-	};
-
-	const playerpos = player.getPosition();
-
-	const playerPing = peer.GetLastPing(player.getNetworkIdentifier().address);
-	const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
-
-	const playerViewVec = player.getViewVector();
-	const howManyMultiplyToSpeed = Math.max(Math.min(Math.round(playerPing / 50), 20), 2);
-
-	const speed = player.getLastBPS() / 20;
-	const howManyMultiplyToPos = howManyMultiplyToSpeed * speed;
-
-	playerpos.x += playerViewVec.x * howManyMultiplyToPos;
-	playerpos.z += playerViewVec.z * howManyMultiplyToPos;
-
-	const victimpos =
-		playerpos.distance(lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing / 50), 17) + 2, 3)])
-			> playerpos.distance(victim.getFeetPos()) ?
-			victim.getFeetPos() : lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing / 50), 17) + 2, 3)];
-
-
-	const result1 = Math.pow(playerpos.x - victimpos.x, 2);
-	const result2 = Math.pow(playerpos.z - victimpos.z, 2);
-
-	const distance = Math.sqrt(result1 + result2);
-
-	const headPos = player.getPosition();
-	const addThisPos = player.getViewVector().multiply(distance);
-
-	headPos.x += addThisPos.x;
-	headPos.y += addThisPos.y;
-	headPos.z += addThisPos.z;
-
-	const headRotWhereLookingAt = headPos;
-
-	const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
-	const posFromVicFeet = victim.getFeetPos().distance(headRotWhereLookingAt);
-
-	if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
-		const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
-		const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
-
-		if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackPlayer[plname] === victim.getNameTag()
-			&& !player.getRotation().equals(Vec2.create(lastRotations.get(plname)![0]))) {
+	
+		const plpos = pl.getPosition();
+	
+		const plPing = peer.GetLastPing(pl.getNetworkIdentifier().address);
+		const victimPing = peer.GetLastPing(victim.getNetworkIdentifier().address);
+	
+		const plViewVec = pl.getViewVector();
+		const howManyMultiplyToSpeed = Math.max(Math.min(Math.round(plPing / 50), 20), 2);
+	
+		const speed = pl.getLastBPS() / 20;
+		const howManyMultiplyToPos = howManyMultiplyToSpeed * speed;
+	
+		plpos.x += plViewVec.x * howManyMultiplyToPos;
+		plpos.z += plViewVec.z * howManyMultiplyToPos;
+	
+		const victimpos =
+			plpos.distance(lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing / 50), 17) + 2, 3)])
+				> plpos.distance(victim.getFeetPos()) ?
+				victim.getFeetPos() : lastPositions[victim.getName()][Math.min(Math.max(Math.round(victimPing / 50), 17) + 2, 3)];
+	
+	
+		const result1 = Math.pow(plpos.x - victimpos.x, 2);
+		const result2 = Math.pow(plpos.z - victimpos.z, 2);
+	
+		const distance = Math.sqrt(result1 + result2);
+	
+		const headPos = pl.getPosition();
+		const addThisPos = pl.getViewVector().multiply(distance);
+	
+		headPos.x += addThisPos.x;
+		headPos.y += addThisPos.y;
+		headPos.z += addThisPos.z;
+	
+		const headRotWhereLookingAt = headPos;
+	
+		const posFromVicHead = victim.getPosition().distance(headRotWhereLookingAt);
+		const posFromVicFeet = victim.getFeetPos().distance(headRotWhereLookingAt);
+	
+		if (typeof headRotWhereLookingAtInBodyWarn[plname] !== "undefined") {
+			const lastPosFromVicHead = headRotWhereLookingAtInBodyWarn[plname][0];
+			const lastPosFromVicFeet = headRotWhereLookingAtInBodyWarn[plname][1];
+	
+			if (lastPosFromVicHead === posFromVicHead && posFromVicFeet === lastPosFromVicFeet && lastAttackpl[plname] === victim.getNameTag()
+				&& !pl.getRotation().equals(Vec2.create(lastRotations.get(plname)![0]))) {
+				headPos.x -= addThisPos.x;
+				headPos.y -= addThisPos.y;
+				headPos.z -= addThisPos.z;
+				// return sameRotWarn(pl);
+			};
+		};
+	
+		headRotWhereLookingAtInBodyWarn[plname] = [posFromVicHead, posFromVicFeet];
+	
+		lastAttackpl[plname] = victim.getNameTag();
+	
+		const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
+		pl.sendMessage(`` + reach);
+		victim.sendMessage(`` + reach);
+	
+		if (
+			reach > 3.01 &&
+			reach < 8 &&
+			!isMismatchAttack(pl, victim, pl.getViewVector(), reach)
+		) {
 			headPos.x -= addThisPos.x;
 			headPos.y -= addThisPos.y;
 			headPos.z -= addThisPos.z;
-			// return sameRotWarn(player);
+	
+			return CIF.suspect(pl.getNetworkIdentifier(), "Reach", `Increases Reach | ${reach}`);
 		};
-	};
-
-	headRotWhereLookingAtInBodyWarn[plname] = [posFromVicHead, posFromVicFeet];
-
-	lastAttackPlayer[plname] = victim.getNameTag();
-
-	const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
-	player.sendMessage(``+reach);
-	victim.sendMessage(``+reach);
-
-	if (
-		reach > 3.01 &&
-		reach < 8 &&
-		!isMismatchAttack(player, victim, player.getViewVector(), reach)
-	) {
+	
 		headPos.x -= addThisPos.x;
 		headPos.y -= addThisPos.y;
 		headPos.z -= addThisPos.z;
 
-		return CIF.suspect(player.getNetworkIdentifier(), "Reach", `Increases Reach | ${reach}`);
 	};
-
-	headPos.x -= addThisPos.x;
-	headPos.y -= addThisPos.y;
-	headPos.z -= addThisPos.z;
 });
