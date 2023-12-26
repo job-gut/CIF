@@ -19,69 +19,16 @@ events.serverOpen.on(() => {
 	peer = bedrockServer.rakPeer;
 });
 
-const MismatchAuraWarn = new Map<string, number>();
-const sameRotAuraWarn = new Map<string, number>();
-
 const lastAttackpl: Record<string, string> = {};
 
 const headRotWhereLookingAtInBodyWarn: Record<string, number[]> = {};
-
-// function mismatchWarn(pl: pl): CANCEL {
-// 	const name = pl.getName();
-
-// 	if (MismatchAuraWarn.get(name) === undefined) {
-// 		MismatchAuraWarn.set(name, 1);
-// 		return CANCEL;
-// 	};
-
-// 	MismatchAuraWarn.set(name, MismatchAuraWarn.get(name)! + 1);
-
-// 	setTimeout(async () => {
-// 		MismatchAuraWarn.set(name, MismatchAuraWarn.get(name)! - 1);
-// 		if (MismatchAuraWarn.get(name)! < 0) MismatchAuraWarn.set(name, 0);
-// 	}, 3000);
-
-// 	if (MismatchAuraWarn.get(name)! > 2) {
-// 		CIF.ban(pl.getNetworkIdentifier(), "Aura-A");
-// 		return CIF.detect(
-// 			pl.getNetworkIdentifier(),
-// 			"Aura-A",
-// 			"Mismatch head rotation"
-// 		);
-// 	};
-
-// 	return CANCEL;
-// };
-
-// function sameRotWarn(pl: pl): CANCEL {
-// 	const name = pl.getName();
-// 	if (sameRotAuraWarn.get(name) === undefined) {
-// 		sameRotAuraWarn.set(name, 1);
-// 	};
-
-// 	sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! + 1);
-
-// 	setTimeout(async () => {
-// 		sameRotAuraWarn.set(name, sameRotAuraWarn.get(name)! - 1);
-// 		if (sameRotAuraWarn.get(name)! < 0) sameRotAuraWarn.set(name, 0);
-// 	}, 3000);
-
-// 	if (sameRotAuraWarn.get(name)! > 3) {
-// 		sameRotAuraWarn.set(name, 0);
-// 		CIF.suspect(pl.getNetworkIdentifier(), "Aura-B", "Attacking Same Body Position");
-// 	};
-
-// 	return CANCEL;
-// };
 
 function degreesToRadians(degrees: number): number {
 	return (degrees * Math.PI) / 180;
 };
 
 function getVectorByRotation(rotation: { x: number; y: number }): Vec3 {
-	// const x = Math.cos(degreesToRadians(rotation.x));
-	// const y = Math.sin(degreesToRadians(rotation.y));
-	// const z = Math.sin(degreesToRadians(rotation.x));
+
 	const x = Math.sin(degreesToRadians(rotation.x));
 	const y = Math.sin(degreesToRadians(rotation.y));
 	const z = Math.cos(degreesToRadians(rotation.x));
@@ -142,7 +89,10 @@ events.packetBefore(MinecraftPacketIds.InventoryTransaction).on((pkt, ni, pktid)
 	const plname = pl.getName();
 
 	if (pkt.transaction?.type === ComplexInventoryTransaction.Type.ItemUseOnEntityTransaction) instantTransactionStack[plname]++;
-	if (pkt.transaction?.type === ComplexInventoryTransaction.Type.ItemUseTransaction) instantTransactionStack[plname]--;
+	if (pkt.transaction?.type === ComplexInventoryTransaction.Type.ItemUseTransaction) {
+		instantTransactionStack[plname]--;
+		instantSwingArmStack[plname]++;
+	};
 });
 
 events.levelTick.on((ev)=> {
@@ -164,29 +114,11 @@ events.playerAttack.on((ev) => {
 
 		const vic = ev.victim;
 		if (vic.isPlayer() && pl.getPlatform() === BuildPlatform.WINDOWS_10) {
-
 			if (instantSwingArmStack[plname] === 1) {
 				if (instantTransactionStack[plname] === 2) {
 					instantSwingArmStack[plname] = 0;
 					instantTransactionStack[plname] = 0;
-
-					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-2C", "Invalid packet sequence (Prax Client)", 2);
-				};
-
-				if (instantTransactionStack[plname] === 1) {
-					instantSwingArmStack[plname] = 0;
-					instantTransactionStack[plname] = 0;
-
-					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-1C", "Invalid packet sequence (Borion Client)", 4);
-				};
-			};
-
-			if (instantSwingArmStack[plname] === 0) {
-				if (instantTransactionStack[plname] === 1) {
-					instantSwingArmStack[plname] = 0;
-					instantTransactionStack[plname] = 0;
-
-					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-1C", "Invalid packet sequence (Borion Client)", 4);
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-C", "Invalid packet sequence (Prax Client)", 4);
 				};
 			};
 
@@ -286,8 +218,6 @@ events.playerAttack.on((ev) => {
 		lastAttackpl[plname] = victim.getNameTag();
 	
 		const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
-		pl.sendMessage(`` + reach);
-		victim.sendMessage(`` + reach);
 	
 		if (
 			reach > 3.01 &&

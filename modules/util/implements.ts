@@ -78,13 +78,14 @@ const maxFlags: Record<string, number> = {};
 const moduleFlags: Record<string, number> = {};
 const playerFlags: Record<string, typeof moduleFlags | undefined> = {};
 
+
 CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDescription: string, maxFlag: number): CANCEL {
 	maxFlags[moduleName] = maxFlag;
 
 	const pl = ni.getActor()!;
 	const plname = pl.getName();
 
-	if (!playerFlags[plname]) playerFlags[plname] = moduleFlags;
+	if (!playerFlags[plname]) playerFlags[plname] = {};
 	if (typeof playerFlags[plname]![moduleName] !== "number") playerFlags[plname]![moduleName] = 0;
 
 	playerFlags[plname]![moduleName]++;
@@ -101,27 +102,22 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 	}, 15000).unref();
 
 	if (maxFlags[moduleName] <= playerFlags[plname]![moduleName]) {
-		playerFlags[plname]![moduleName] = 0;
 		playerFlags[plname] = undefined;
 
-		if (CIFconfig.Penalties.onlyAlert) {
-			clearTimeout(flagRemove);
+		clearTimeout(flagRemove);
 
+		if (CIFconfig.Penalties.onlyAlert) {
 			CIF.suspect(ni, moduleName, moduleDescription);
 			return CANCEL;
 		};
 
 		if (CIFconfig.Penalties.ban) {
-			clearTimeout(flagRemove);
-
 			CIF.ban(ni, moduleName);
 			CIF.detect(ni, moduleName, moduleDescription);
 			return CANCEL;
 		};
 
 		if (CIFconfig.Penalties.blockAllPackets) {
-			clearTimeout(flagRemove);
-
 			CIF.detect(ni, moduleName, moduleDescription);
 		};
 	};
