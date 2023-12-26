@@ -481,6 +481,9 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
 	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
 
+	const isAscend = pkt.getInput(PlayerAuthInputPacket.InputData.Ascend);
+	const isDecend = pkt.getInput(PlayerAuthInputPacket.InputData.Descend);
+
 	const isStartJump = pkt.getInput(PlayerAuthInputPacket.InputData.StartJumping);
 
 	const isChangingHeight = pkt.getInput(PlayerAuthInputPacket.InputData.ChangeHeight);
@@ -588,7 +591,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					cancelled = true;
 				};
 
-				if (predDiff > 0 && !pl.onGround() && airTicks[plname] > 2 && !nearGround && !isKnockbacked[plname]) {
+				if (predDiff > 0 && !pl.onGround() && airTicks[plname] > 2 && !isKnockbacked[plname] && isDecend && !isAscend) {
 					CIF.failAndFlag(ni, "Speed-F", `Invalid deceleration while being in air`, 3);
 
 					let lastposit = lastpos[plname];
@@ -672,7 +675,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 9 && accelY > 0 && deltaY > 0 && !isKnockbacked[plname]) {
+					if (airTicks[plname] > 9 && accelY > 0 && deltaY > 0 && !isKnockbacked[plname] && !isStartJump) {
 						CIF.failAndFlag(ni, "Fly-F", `Flew up in mid-air`, 5);
 
 						let lastposit = lastpos[plname];
