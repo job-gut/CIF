@@ -3,9 +3,8 @@ import { ServerPlayer } from "bdsx/bds/player";
 import { command } from "bdsx/command";
 import { events } from "bdsx/event";
 import { CIF } from "../main";
-import { CIFconfig, CIFconfigNames } from "../modules/util/configManager";
+import { CIFconfig } from "../modules/util/configManager";
 import { bool_t } from "bdsx/nativetype";
-import { MinecraftPacketIds } from "bdsx/bds/packetids";
 
 export let showFlag = false;
 

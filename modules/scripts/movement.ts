@@ -389,7 +389,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const region = pl.getRegion()!;
 
 	let actualOnGround = false;
-	let nearGround = false;
+	// let nearGround = false;
 
 	if (region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
@@ -412,26 +412,26 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		actualOnGround = true;
 	};
 
-	if (region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air") {
-		nearGround = true;
-	};
+	// if (region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
+	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air") {
+	// 	nearGround = true;
+	// };
 
 	const og = pkt.delta.y + 0.07840000092983246 === 0 && actualOnGround;
 
