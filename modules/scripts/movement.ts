@@ -614,7 +614,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				// TP
 
 
-				if (realBPS / 20 > deltaXZ * 5 && !isTeleported && realBPS / 20 >= 0.6) {
+				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported) {
 					CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
 
 					let lastposit = lastpos[plname];
@@ -773,8 +773,8 @@ events.entityKnockback.on((ev) => {
 	damagedTime[plname] = Date.now();
 	setTimeout(() => {
 		const now = Date.now();
-		if (now - damagedTime[plname] > 425) isKnockbacked[plname] = false;
-	}, 500);
+		if (now - damagedTime[plname] > 150) isKnockbacked[plname] = false;
+	}, 200);
 });
 
 // events.playerRespawn.on((ev) => {
