@@ -517,6 +517,20 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 		if (pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) {
 
+				
+			//AUTOJUMP
+
+			
+			if (isStartJump && !(isPressingJump || isPressingJump2 || wantJump)) {
+				CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
+
+				let lastposit = lastpos[plname];
+				if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+				pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+				cancelled = true;
+			};
+
+
 			if (!pl.getAbilities().getAbility(AbilitiesIndex.MayFly).getBool() &&
 				!pl.getAbilities().getAbility(AbilitiesIndex.Flying).getBool()
 				&& !pl.isFlying()
@@ -543,17 +557,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 2) {
 					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
-
-					let lastposit = lastpos[plname];
-					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-					cancelled = true;
-				};
-
-
-				//AUTOJUMP
-				if (isStartJump && !(isPressingJump || isPressingJump2 || wantJump)) {
-					CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
 
 					let lastposit = lastpos[plname];
 					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
