@@ -553,7 +553,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				};
 
 
-				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 2) {
+				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 3) {
 					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
 
 					let lastposit = lastpos[plname];
@@ -712,7 +712,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					//High Jump
 
 
-					if (deltaY > 0.42 && isJumping) {
+					if (deltaY > 0.42 && isJumping && accelY > 0.25) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
 						let lastposit = lastpos[plname];
@@ -780,6 +780,15 @@ events.entityKnockback.on((ev) => {
 	}, 400);
 });
 
+events.fallOnBlock.on((ev)=> {
+	const pl = ev.entity;
+
+	if (!pl.isPlayer()) return;
+
+	const plname = pl.getName();
+	
+	if (ev.block.getName() !== "minecraft:air") airTicks[plname] = 0;
+});
 // events.playerRespawn.on((ev) => {
 // 	const pl = ev.player;
 // 	const plname = pl.getName();

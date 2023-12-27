@@ -78,6 +78,7 @@ const maxFlags: Record<string, number> = {};
 const moduleFlags: Record<string, number> = {};
 const playerFlags: Record<string, typeof moduleFlags | undefined> = {};
 
+const resetFlagTimeouts: Record<string, NodeJS.Timeout[]> = {};
 
 CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDescription: string, maxFlag: number): CANCEL {
 	maxFlags[moduleName] = maxFlag;
@@ -86,6 +87,7 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 	const plname = pl.getName();
 
 	if (!playerFlags[plname]) playerFlags[plname] = {};
+	if (!resetFlagTimeouts[plname]) resetFlagTimeouts[plname] = [];
 	if (typeof playerFlags[plname]![moduleName] !== "number") playerFlags[plname]![moduleName] = 0;
 
 	playerFlags[plname]![moduleName]++;
@@ -95,21 +97,20 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
     	this.log(`${plname} has been flagged by ${moduleName} (${playerFlags[plname]![moduleName]}/${maxFlags[moduleName]})`.yellow);
 	};
 
-	let hasSuspended = false;
-
-	const flagRemove = setTimeout(() => {
-		if (hasSuspended) return;
-		
+	resetFlagTimeouts[plname].push(setTimeout(() => {
 		if (playerFlags[plname] && playerFlags[plname]![moduleName]) playerFlags[plname]![moduleName]--;
 
 		if (playerFlags[plname]![moduleName] < 0) playerFlags[plname]![moduleName] = 0;
-	}, 15000).unref();
+	}, 15000).unref());
 
 	if (maxFlags[moduleName] <= playerFlags[plname]![moduleName]) {
 		playerFlags[plname] = undefined;
-		hasSuspended = true;
 
-		clearTimeout(flagRemove);
+		for (const timeout of resetFlagTimeouts[plname]) {
+			clearTimeout(timeout);
+		};
+
+		resetFlagTimeouts[plname] = [];
 
 		if (CIFconfig.Penalties.onlyAlert) {
 			CIF.suspect(ni, moduleName, moduleDescription);
