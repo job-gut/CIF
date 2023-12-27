@@ -44,7 +44,7 @@ events.blockPlace.on((ev) => {
             warn(name);
 
             if (scaffoldWarn[name] > 2) {
-                return CIF.detect(ni, "scaffold-A", "Mismatch Head Rotation | Up/Down");
+                return CIF.detect(ni, "Scaffold-A", "Mismatch Head Rotation | Up/Down");
             };
 
             setTimeout(async () => {
@@ -60,7 +60,7 @@ events.blockPlace.on((ev) => {
                 warn(name);
 
                 if (scaffoldWarn[name] > 1) {
-                    return CIF.detect(ni, "scaffold-B", "Tower : Mismatch Head Rotation");
+                    return CIF.detect(ni, "Scaffold-B", "Tower : Mismatch Head Rotation");
                 };
 
                 setTimeout(() => {
@@ -74,6 +74,21 @@ events.blockPlace.on((ev) => {
 		lastplacedblockposY[name] = blockposy;
     };
 
+});
 
+events.itemUseOnBlock.on((ev)=> {
+	const pl = ev.actor;
+	if (!pl?.isPlayer()) return;
 
+	const clickX = ev.clickX;
+	const clickY = ev.clickY;
+	const clickZ = ev.clickZ;
+
+	if (!(clickX === 0 && clickY === 0 && clickZ === 0) && Number.isInteger(clickX) && Number.isInteger(clickY) && Number.isInteger(clickZ)) {
+		return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-1C", "Prax client scaffold", 3);
+	};
+
+	if (clickY === -2) {
+		return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-2C", "Invalid click position in a block", 2);
+	};
 });
