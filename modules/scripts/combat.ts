@@ -128,7 +128,7 @@ events.playerAttack.on((ev) => {
 
 	
 		const victim = ev.victim;
-	
+	 
 		if (!pl.isPlayer()) return;
 		if (!victim.isPlayer()) return;
 		if (victim.getGameType() === GameType.Creative) return;
