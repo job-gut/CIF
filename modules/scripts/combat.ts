@@ -118,7 +118,7 @@ events.playerAttack.on((ev) => {
 				if (instantTransactionStack[plname] === 2) {
 					instantSwingArmStack[plname] = 0;
 					instantTransactionStack[plname] = 0;
-					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-C", "Invalid packet sequence (Prax Client)", 3);
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-C", "Invalid packet sequence (Prax Client)", 8);
 				};
 			};
 
