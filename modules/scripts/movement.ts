@@ -437,7 +437,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 	onGround[plname] = og;
 
-	if (pl.onClimbable() || pl.onSlowFallingBlock()) onGround[plname] = true;
+	if (pl.onClimbable() || pl.onSlowFallingBlock() || pl.isInWater()) onGround[plname] = true;
 
 	if (pl.onGround()) {
 		airTicks[plname] = 0;
