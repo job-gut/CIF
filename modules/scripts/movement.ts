@@ -73,6 +73,8 @@ const ticksAfterTeleport: Record<string, number> = {};
 const isRespawned: Record<string, boolean> = {};
 const respawnedPos: Record<string, Vec3> = {};
 
+const isJoined: Record<string, boolean> = {};
+
 const haveFished: Record<string, boolean> = {};
 const isKnockbacked: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
@@ -631,7 +633,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported) {
+					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname]) {
 
 					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
@@ -698,7 +700,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 19 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY !== 0.4115999788045883 && deltaY !== 0.4115999788045883) {
+					if (airTicks[plname] > 19 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY !== 0.4115999788045883 
+						&& deltaY !== 0.4115999788045883) {
 						CIF.failAndFlag(ni, `Fly-F`, `Still going up after a long time`, 2);
 
 						let lastposit = lastpos[plname];
@@ -712,7 +715,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					//High Jump
 
 
-					if (deltaY > 0.42 && isJumping && accelY > 0.25) {
+					if (deltaY > 0.42 && isJumping && accelY > 0.25 && isJoined[plname]) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
 						let lastposit = lastpos[plname];
@@ -789,6 +792,34 @@ events.fallOnBlock.on((ev)=> {
 	
 	if (ev.block.getName() !== "minecraft:air") airTicks[plname] = 0;
 });
+
+events.playerJoin.on((ev)=> {
+	const pl = ev.player;
+	const plname = pl.getName();
+
+	setTimeout(() => {
+		isJoined[plname] = true;
+	}, 3000);
+});
+
+events.networkDisconnected.on((ni)=> {
+	const pl = ni.getActor()!;
+	const plname = pl.getName();
+
+	setTimeout(() => {
+		isJoined[plname] = false;
+	}, 1000);
+});
+
+events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
+	const pl = ni.getActor()!;
+	const plname = pl.getName();
+
+	setTimeout(() => {
+		isJoined[plname] = false;
+	}, 1000);
+});
+
 // events.playerRespawn.on((ev) => {
 // 	const pl = ev.player;
 // 	const plname = pl.getName();
