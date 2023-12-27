@@ -712,7 +712,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					//High Jump
 
 
-					if (deltaY > 0.42 && isJumping) {
+					if (deltaY > 0.42 && isJumping && accelY > 0.25) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
 						let lastposit = lastpos[plname];
