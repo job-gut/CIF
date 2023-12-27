@@ -601,14 +601,14 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					cancelled = true;
 				};
 
-				if (predDiff > 0 && airTicks[plname] > 2 && !isKnockbacked[plname] &&!actualOnGround) {
-					CIF.failAndFlag(ni, `Speed-F`, `Invalid deceleration while being in air`, 3);
+				// if (predDiff > 0 && airTicks[plname] > 2 && !isKnockbacked[plname] &&!actualOnGround) {
+				// 	CIF.failAndFlag(ni, `Speed-F`, `Invalid deceleration while being in air`, 3);
 
-					let lastposit = lastpos[plname];
-					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-					cancelled = true;
-				};
+				// 	let lastposit = lastpos[plname];
+				// 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+				// 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+				// 	cancelled = true;
+				// };
 
 
 				// TP
@@ -650,7 +650,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0) {
+					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0 && !isStartJump) {
 						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
 
 						let lastposit = lastpos[plname];
@@ -695,7 +695,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY !== 0.4115999788045883 && deltaY !== 0.4115999788045883) {
+					if (airTicks[plname] > 19 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY !== 0.4115999788045883 && deltaY !== 0.4115999788045883) {
 						CIF.failAndFlag(ni, `Fly-F`, `Still going up after a long time`, 2);
 
 						let lastposit = lastpos[plname];
