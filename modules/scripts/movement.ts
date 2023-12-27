@@ -211,7 +211,7 @@ Player.prototype.onClimbable = function () {
 		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
 	);
 	const currentUnderPosBlock = region.getBlock(
-		BlockPos.create(feetPos.x, feetPos.y -0.95, feetPos.z)
+		BlockPos.create(feetPos.x, feetPos.y - 0.95, feetPos.z)
 	);
 	const currentHeadPosBlock = region.getBlock(
 		BlockPos.create(headPos.x, headPos.y, headPos.z)
@@ -483,7 +483,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
 	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
 	const isPressingJump = pkt.getInput(PlayerAuthInputPacket.InputData.JumpDown);
-	const isPressingJump2 = pkt.getInput(PlayerAuthInputPacket.InputData.NorthJump);
 	const wantJump = pkt.getInput(PlayerAuthInputPacket.InputData.WantUp);
 
 	const isStartJump = pkt.getInput(PlayerAuthInputPacket.InputData.StartJumping);
@@ -491,8 +490,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
 
 	if (hasTeleportedServerSidely[plname] === true && !isTeleported) ticksAfterTeleport[plname]++;
-	else { 
-		ticksAfterTeleport[plname] = 0; 
+	else {
+		ticksAfterTeleport[plname] = 0;
 		hasTeleportedServerSidely[plname] = false
 	};
 
@@ -506,7 +505,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 			averageActualBPS[plname] += ActualBPS;
 		};
 	} else {
-		averageMaxBPS[plname] = -0;
+		averageMaxBPS[plname] = 0;
 		averageActualBPS[plname] = 0;
 		averageStacks[plname] = -5;
 	};
@@ -517,11 +516,11 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 		if (pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) {
 
-				
+
 			//AUTOJUMP
 
-			
-			if (isStartJump && !(isPressingJump || isPressingJump2 || wantJump)) {
+
+			if (isStartJump && !(isPressingJump || wantJump)) {
 				CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
 
 				let lastposit = lastpos[plname];
@@ -534,7 +533,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 			if (!pl.getAbilities().getAbility(AbilitiesIndex.MayFly).getBool() &&
 				!pl.getAbilities().getAbility(AbilitiesIndex.Flying).getBool()
 				&& !pl.isFlying()
-				&& !pl.onClimbable()
 				&& !pl.isGlidingWithElytra() && !pl.isSpinAttacking()) {
 
 
@@ -568,50 +566,52 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				//SPEED
 
 
-				if (averageStacks[plname] >= 4) {
-					const avrMaxBPS = averageMaxBPS[plname] / averageStacks[plname];
-					const avrActualBPS = averageActualBPS[plname] / averageStacks[plname];
+				if (!pl.onClimbable()) {
+					if (averageStacks[plname] >= 4) {
+						const avrMaxBPS = averageMaxBPS[plname] / averageStacks[plname];
+						const avrActualBPS = averageActualBPS[plname] / averageStacks[plname];
 
-					averageMaxBPS[plname] = 0;
-					averageActualBPS[plname] = 0;
-					averageStacks[plname] = 0;
+						averageMaxBPS[plname] = 0;
+						averageActualBPS[plname] = 0;
+						averageStacks[plname] = 0;
 
-					if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname] && !pl.onIce()) {
-						CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
+						if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname] && !pl.onIce()) {
+							CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
+
+							let lastposit = lastpos[plname];
+							if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+							pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+							cancelled = true;
+						};
+					};
+
+					if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && squaredLastAccel >= 6 && !isKnockbacked[plname] && !pl.onIce()) {
+						CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
 						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
 						cancelled = true;
 					};
+
+					if (deltaYaw > 1.5 && deltaXZ > .150 && AbsSquaredAccel < 1.0E-5) {
+						CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 3);
+
+						let lastposit = lastpos[plname];
+						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+						cancelled = true;
+					};
+
+					// if (predDiff > 0 && airTicks[plname] > 2 && !isKnockbacked[plname] &&!actualOnGround) {
+					// 	CIF.failAndFlag(ni, `Speed-F`, `Invalid deceleration while being in air`, 3);
+
+					// 	let lastposit = lastpos[plname];
+					// 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+					// 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					// 	cancelled = true;
+					// };
 				};
-				
-				if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && squaredLastAccel >= 6 && !isKnockbacked[plname] && !pl.onIce()) {
-					CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
-
-					let lastposit = lastpos[plname];
-					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-					cancelled = true;
-				};
-
-				if (deltaYaw > 1.5 && deltaXZ > .150 && AbsSquaredAccel < 1.0E-5) {
-					CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 3);
-
-					let lastposit = lastpos[plname];
-					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-					cancelled = true;
-				};
-
-				// if (predDiff > 0 && airTicks[plname] > 2 && !isKnockbacked[plname] &&!actualOnGround) {
-				// 	CIF.failAndFlag(ni, `Speed-F`, `Invalid deceleration while being in air`, 3);
-
-				// 	let lastposit = lastpos[plname];
-				// 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-				// 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-				// 	cancelled = true;
-				// };
 
 
 				// TP
@@ -776,8 +776,8 @@ events.entityKnockback.on((ev) => {
 	damagedTime[plname] = Date.now();
 	setTimeout(() => {
 		const now = Date.now();
-		if (now - damagedTime[plname] > 150) isKnockbacked[plname] = false;
-	}, 200);
+		if (now - damagedTime[plname] > 350) isKnockbacked[plname] = false;
+	}, 400);
 });
 
 // events.playerRespawn.on((ev) => {
