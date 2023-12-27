@@ -85,10 +85,6 @@ events.itemUseOnBlock.on((ev)=> {
 	const clickZ = ev.clickZ;
 
 	if (!(clickX === 0 && clickY === 0 && clickZ === 0) && Number.isInteger(clickX) && Number.isInteger(clickY) && Number.isInteger(clickZ)) {
-		return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-1C", "Prax client scaffold", 3);
-	};
-
-	if (clickY === -2) {
-		return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-2C", "Invalid click position in a block", 2);
+		return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-C", "Invalid click position in a block (Prax Client)", 3);
 	};
 });
