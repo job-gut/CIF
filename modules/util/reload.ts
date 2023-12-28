@@ -30,7 +30,3 @@ events.packetBefore(77).on((pkt, ni) => {
 		};
 	};
 });
-
-bedrockServer.afterOpen().then(() => {
-	command.find("reload").signature.permissionLevel = CommandPermissionLevel.Operator;
-});
