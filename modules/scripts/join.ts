@@ -53,7 +53,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         if (bannedPlayer === publicIDKey || bannedPlayer === deviceId) {
             const bannedReason = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[1];
             CIF.wasDetected[name] = true;
-            bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§cYou are banned by CIF§f (Auto Cheat Detection)`);
+            bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§cYou are banned by CIF\n§e(Auto Cheat Detection)`);
             CIF.announce(`§c${name} §6failed to connect §7(§c${bannedReason}§7)`);
             CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
 
@@ -68,7 +68,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 			if (bannedName === name) {
 				const bannedReason = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[1];
 				CIF.wasDetected[name] = true;
-				bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§cYou are banned by CIF§f (Auto Cheat Detection)`);
+				bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§cYou are banned by CIF\n§e(Auto Cheat Detection)`);
 				CIF.announce(`§c${name} §6failed to connect §7(§c${bannedReason}§7)`);
 				CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
 	

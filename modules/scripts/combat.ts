@@ -131,6 +131,7 @@ events.playerAttack.on((ev) => {
 	 
 		if (!pl.isPlayer()) return;
 		if (!victim.isPlayer()) return;
+		if (victim.isSimulatedPlayer()) return;
 		if (victim.getGameType() === GameType.Creative) return;
 		if (pl.getGameType() === GameType.Creative) return;
 		if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
