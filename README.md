@@ -8,3 +8,7 @@ developers : job-gut & wwwcomcom (잡것, 그1저사람)
 Beta Tester : minsuk2007, Cute babytofu, KRsuni
 
 Thanks to Testing
+
+
+You can edit configs in CIFoptions.txt
+It is in the same directory with bdsx.bat
