@@ -19,3 +19,5 @@ It is in the same directory with bdsx.bat
 **Please Report bugs on Official Discord Server**
 
 Discord: https://discord.gg/yDPDwYEVkw
+
+Donation(Sponsor): https://paypal.me/kms67487
