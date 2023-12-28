@@ -12,3 +12,10 @@ Thanks to Testing
 
 You can edit configs in CIFoptions.txt
 It is in the same directory with bdsx.bat
+
+
+**This project is still being developed**
+**So, this may causes bugs!!**
+**Please Report bugs on Official Discord Server**
+
+Discord: https://discord.gg/yDPDwYEVkw
