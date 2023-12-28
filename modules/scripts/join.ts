@@ -6,6 +6,7 @@ import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 import { readFileSync, readdirSync } from "fs";
 import { BuildPlatform } from "bdsx/common";
+import { bedrockServer } from "bdsx/launcher";
 
 
 export const nameMap = new Map<NetworkIdentifier, string>();
@@ -46,16 +47,35 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     }, 15000);
 
     const banlist = readdirSync("../CIFbanList");
+	let hasFilteredBannedPlayer = false;
+
     for (const bannedPlayer of banlist) {
         if (bannedPlayer === publicIDKey || bannedPlayer === deviceId) {
             const bannedReason = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[1];
             CIF.wasDetected[name] = true;
-            // bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§c더 이상 해당 계정으로 접속 할 수 없습니다`);
+            bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§cYou are banned by CIF§f (Auto Cheat Detection)`);
             CIF.announce(`§c${name} §6failed to connect §7(§c${bannedReason}§7)`);
             CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
+
+			hasFilteredBannedPlayer = true;
         };
     };
 
+	if (!hasFilteredBannedPlayer) {
+		for (const bannedPlayer of banlist) {
+			const bannedName = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[0];
+
+			if (bannedName === name) {
+				const bannedReason = readFileSync("../CIFbanList/" + bannedPlayer).toString().split(":")[1];
+				CIF.wasDetected[name] = true;
+				bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§cYou are banned by CIF§f (Auto Cheat Detection)`);
+				CIF.announce(`§c${name} §6failed to connect §7(§c${bannedReason}§7)`);
+				CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
+	
+				hasFilteredBannedPlayer = true;
+			};
+		};
+	};
 
     if (CIFconfig.Modules.join !== true) return;
 
@@ -91,11 +111,11 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
     const brand = model.split(" ")[0];
 
     if (deviceId.length !== 36 && deviceOS == 7 && brand !== "Switch") {
-        CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Android/IOS)");
+        CIF.detect(ni, "Fake OS", "Spoofed their OS (Real: Android/IOS)");
         CIF.ban(ni, "fake-os");
     };
     if (deviceId.length !== 32 && deviceOS !== 7 && brand !== "Switch") {
-        CIF.detect(ni, "Fake OS", "Spoof their OS (Real: Windows 10)");
+        CIF.detect(ni, "Fake OS", "Spoofed their OS (Real: Windows 10)");
         CIF.ban(ni, "fake-os");
     };
 
@@ -118,7 +138,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         firstLoginedOS[name] = deviceOS;
     } else if (isXboxLogined === true && firstLoginedDID[name] !== deviceId && firstLoginedOS[name] === deviceOS) {
         CIF.ban(ni, "deviceid_spoof")
-        return CIF.detect(ni, "deviceid_spoof", "Spoofs their deviceID");
+        return CIF.detect(ni, "deviceid_spoof", "Spoofed their deviceID");
     } else {
         firstLoginedDID[name] = deviceId;
         firstLoginedOS[name] = deviceOS;

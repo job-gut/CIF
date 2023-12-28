@@ -64,10 +64,9 @@ CIF.log = function (message: string): void {
 CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
-    // if (MovementType === MinecraftPacketIds.PlayerAuthInput) {
-    //     bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
-    // };
-
+	if (CIFconfig.Penalties.kick) {
+		bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
+	};
     this.announce(`§c${cheaterName} §6has been punished using §c${cheatName} §7(${cheatDescription})`);
     this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.magenta);
     return CANCEL;

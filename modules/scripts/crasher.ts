@@ -11,17 +11,6 @@ const PPSact: Record<string, number> = {};
 
 const spamStack: Record<string, number> = {};
 
-events.packetRaw(MinecraftPacketIds.ClientCacheBlobStatus).on((ptr, size, ni) => {
-	if (CIFconfig.Modules.crasher !== true) return;
-
-
-    if (ptr.readVarUint() >= 0xfff || ptr.readVarUint() >= 0xfff) {
-        CIF.ban(ni, "DoS");
-        return CIF.detect(ni, "DoS", "DoS using ClientCacheBlobStatus Packet");
-    };
-});
-
-
 events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
     const sound = pkt.sound;
     if (sound === 0) {
@@ -111,12 +100,13 @@ events.packetBefore(MinecraftPacketIds.CommandRequest).on((pkt, ni)=> {
 
 		if (spamStack[plname] > 2) {
 			CIF.detect(ni, "Spammer", "Suspected as a command spammer");
-			bedrockServer.serverInstance.disconnectClient(ni, "§c도배를 시도하지 마세요!");
+			bedrockServer.serverInstance.disconnectClient(ni, "§cDo not try spamming!");
 			
 			return CANCEL;
 		};
 
-		pl.sendMessage(`§c도배를 시도하지 마세요!\n앞으로 §e${3-spamStack[plname]} §c번 시도시 추방됩니다`);
+		// pl.sendMessage(`§c도배를 시도하지 마세요!\n앞으로 §e${3-spamStack[plname]} §c번 시도시 추방됩니다`);
+		pl.sendMessage(`§cDo not try spamming!\n§e${3-spamStack[plname]} §ctimes remain to get kicked`);
 		pl.playSound("random.orb");
 
 		return CANCEL;

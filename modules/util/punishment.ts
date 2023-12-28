@@ -1,6 +1,3 @@
-// const Warns: Record<string, number> = {};
-// const ipBlocked: Record<string, boolean> = {};
-
 import { NetworkConnection, NetworkSystem } from "bdsx/bds/networkidentifier";
 import { VoidPointer } from "bdsx/core";
 import { int32_t } from "bdsx/nativetype";
@@ -19,8 +16,6 @@ const receivePacket = procHacker.hooking(
     CxxStringWrapper,
     VoidPointer,
 )((conn, data, time_point) => {
-    // const address = conn.networkIdentifier.getAddress();
-
     //Block All Packets from Detected Player
     if (conn.networkIdentifier.getActor()) {
         const plname = conn.networkIdentifier.getActor()!.getName();
@@ -28,24 +23,12 @@ const receivePacket = procHacker.hooking(
             return 1;
         };
     };
-	
-    // const ip = address.split("|")[0];
-
-    // if (ipBlocked[ip]) {
-    //     conn.disconnect();
-    //     CIF.announce(`§c[§fCIF§c] §c${ip} §6tried to connect §c(IP Blocked)`);
-    //     CIF.log(`${ip} tried to connect (IP Blocked)`);
-    //     return 1;
-    // };
-
-    //const pktid = data.valueptr.getUint8();
 
     return receivePacket(conn, data, time_point);
 });
 
 events.networkDisconnected.on(ni => {
     if (ni) {
-        // Warns[ni.getAddress()] = 0;
 		const plname = ni.getActor()?.getName()!;
 		CIF.resetDetected(plname);
     };
@@ -53,7 +36,6 @@ events.networkDisconnected.on(ni => {
 
 events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 	if (ni) {
-		// Warns[ni.getAddress()] = 0;
 		const plname = ni.getActor()?.getName()!;
 		CIF.resetDetected(plname);
 	};
