@@ -12,7 +12,6 @@ process.on("uncaughtException", ((err)=> {
 	};
 }));
 
-process.on("unhandledRejection", ((err)=> {}));
 
 
 function createNewFile(): void {
@@ -124,10 +123,10 @@ export async function update(isNotFirstCall: boolean | undefined = undefined): P
 			const whatsNew = await getWhatsNew();
 			if (isNotFirstCall === true) {
 				const { CIF } = require("./main");
-				CIF.log(`CIF 가 성공적으로 업데이트 되었습니다`.green);
-				CIF.log(`업데이트 사항: ${whatsNew}`.yellow);
-				CIF.log(`업데이트 사항은 재부팅 시 적용됩니다`.magenta);
-				CIF.announce(`§aCIF 가 성공적으로 업데이트 되었습니다\n§e업데이트 사항: ${whatsNew}\n§d업데이트 사항은 재부팅 시 적용됩니다`);
+				CIF.log(`Updated CIF successfully!`.green);
+				CIF.log(`Changes: ${whatsNew}`.yellow);
+				CIF.log(`Changes will be applied after reboot`.magenta);
+				CIF.announce(`§aUpdated CIF successfully!\n§eChanges: ${whatsNew}\n§dChanges will be applied after reboot`);
 				CIFVersion = await getNewVersion();
 				return;
 			};
@@ -135,8 +134,8 @@ export async function update(isNotFirstCall: boolean | undefined = undefined): P
 			import("./modules/util/configManager");
 			import("./main").then(async () => {
 				const { CIF } = require("./main");
-				CIF.log(`CIF 가 성공적으로 업데이트 되었습니다`.green);
-				CIF.log(`업데이트 사항: ${whatsNew}`.yellow);
+				CIF.log(`Updated CIF successfully`.green);
+				CIF.log(`Changes: ${whatsNew}`.yellow);
 				CIFVersion = await getNewVersion();
 			});
 		}));
