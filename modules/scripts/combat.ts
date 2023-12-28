@@ -118,7 +118,7 @@ events.playerAttack.on((ev) => {
 				if (instantTransactionStack[plname] === 2) {
 					instantSwingArmStack[plname] = 0;
 					instantTransactionStack[plname] = 0;
-					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-C", "Invalid packet sequence (Prax Client)", 3);
+					return CIF.failAndFlag(pl.getNetworkIdentifier(), "Aura-C", "Invalid packet sequence (Prax Client)", 8);
 				};
 			};
 
@@ -135,7 +135,7 @@ events.playerAttack.on((ev) => {
 		if (pl.getGameType() === GameType.Creative) return;
 		if (victim.getEffect(MobEffectIds.InstantHealth) !== null) return;
 	
-		if (pl.getPlatform() !== BuildPlatform.ANDROID && pl.getPlatform() !== BuildPlatform.IOS) {
+		if (pl.getPlatform() === BuildPlatform.WINDOWS_10) {
 			const name = pl.getName()!;
 	
 			const prevRotations = lastRotations.get(name);
@@ -209,7 +209,6 @@ events.playerAttack.on((ev) => {
 				headPos.x -= addThisPos.x;
 				headPos.y -= addThisPos.y;
 				headPos.z -= addThisPos.z;
-				// return sameRotWarn(pl);
 			};
 		};
 	
@@ -221,13 +220,19 @@ events.playerAttack.on((ev) => {
 	
 		if (
 			reach > 3.01 &&
-			reach < 8 &&
-			!isMismatchAttack(pl, victim, pl.getViewVector(), reach)
+			reach < 8
 		) {
 			headPos.x -= addThisPos.x;
 			headPos.y -= addThisPos.y;
 			headPos.z -= addThisPos.z;
 	
+			if (reach > 4.6) {
+				CIF.ban(pl.getNetworkIdentifier(), "Reach");
+				return CIF.detect(pl.getNetworkIdentifier(), "Reach", `Increases Reach | ${reach}`);
+			};
+
+			if (reach > 3.75) return CIF.detect(pl.getNetworkIdentifier(), "Reach", `Increases Reach | ${reach}`);
+
 			return CIF.suspect(pl.getNetworkIdentifier(), "Reach", `Increases Reach | ${reach}`);
 		};
 	

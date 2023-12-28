@@ -82,6 +82,9 @@ const pushedByPiston: Record<string, boolean> = {};
 
 const removeTeleportedTimeout: Record<string, NodeJS.Timeout> = {};
 
+const PPS: Record<string, number> = {};
+let TPS: number = 0;
+
 export const lastRotations = new Map<string, { x: number; y: number }[]>();
 function appendRotationRecord(
 	player: ServerPlayer,
@@ -388,10 +391,14 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	if (typeof averageStacks[plname] !== "number") averageStacks[plname] = 0;
 	if (typeof ticksAfterTeleport[plname] !== "number") ticksAfterTeleport[plname] = 0;
 
+	if (typeof PPS[plname] !== "number") PPS[plname] = 0;
+
+	PPS[plname]++;
+
 	const region = pl.getRegion()!;
 
 	let actualOnGround = false;
-	// let nearGround = false;
+
 
 	if (region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
@@ -414,26 +421,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		actualOnGround = true;
 	};
 
-	// if (region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x - 0.5, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z + 0.5)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x + 0.5, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-	// 	region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z - 0.5)).getName() !== "minecraft:air") {
-	// 	nearGround = true;
-	// };
 
 	const og = pkt.delta.y + 0.07840000092983246 === 0 && actualOnGround;
 
@@ -555,7 +542,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				};
 
 
-				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 3) {
+				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 2) {
 					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
 
 					let lastposit = lastpos[plname];
@@ -597,7 +584,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 
 					if (deltaYaw > 1.5 && deltaXZ > .150 && AbsSquaredAccel < 1.0E-5) {
-						CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around`, 3);
+						CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around (Strafe)`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -702,7 +689,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 					if (airTicks[plname] > 19 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY !== 0.4115999788045883 
 						&& deltaY !== 0.4115999788045883) {
-						CIF.failAndFlag(ni, `Fly-F`, `Still going up after a long time`, 2);
+						CIF.failAndFlag(ni, `Fly-F`, `Flew up in mid-air`, 2);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -820,6 +807,28 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 	}, 1000);
 });
 
+events.levelTick.on((ev) => {
+	TPS++;
+
+	if (TPS === 20) {
+		for (const pl of bedrockServer.serverInstance.getPlayers()) {
+			const plname = pl.getName();
+
+			if (PPS[plname] > 26) {
+				CIF.detect(pl.getNetworkIdentifier(), "Timer-", "Fast Ticking");
+
+				PPS[plname] = 20;
+			};
+
+			if (PPS[plname] < -60) {
+				PPS[plname] = -60;
+			};
+	
+			TPS -= 20;
+			PPS[plname] -= 20;
+		};
+	};
+});
 // events.playerRespawn.on((ev) => {
 // 	const pl = ev.player;
 // 	const plname = pl.getName();

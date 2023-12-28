@@ -2,13 +2,14 @@ import { NetworkIdentifier } from "bdsx/bds/networkidentifier";
 import { CommandPermissionLevel } from "bdsx/bds/command";
 import { serverProperties } from "bdsx/serverproperties";
 import { CANCEL } from "bdsx/common";
+import { exec } from "child_process";
 
 function abstractFunction(): never {
     throw Error(`Failed to load "implements.ts"`);
 };
 
 if (serverProperties["server-authoritative-movement"] === "server-auth-with-rewind" || serverProperties["server-authoritative-movement"] === "client-auth") {
-	console.error(new Error("server-auth 를 사용해주세요"));
+	console.error(new Error("Please use 'server-auth"));
 	exec("pause");
 	throw "";
 };
@@ -35,7 +36,6 @@ export namespace CIF {
 
     /**
      * 대충 밴 함수
-     * @deprecated just define
      */
     export function ban(ni: NetworkIdentifier, reason: string): void {
         abstractFunction();
@@ -44,7 +44,7 @@ export namespace CIF {
 
     /**
      * 대충 핵 감지됐을 때 쓰는 함수
-     * @description CIF.ban() 은 이 함수에서 호출 안 함
+     * @description This function dosn't call CIF.ban()
      */
     export function detect(ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
         abstractFunction();
@@ -65,10 +65,4 @@ export namespace CIF {
 
 
     export const wasDetected: Record<string, boolean> = {};
-};
-
-import { exec } from "child_process";
-
-if (serverProperties["server-authoritative-movement"] === "client-auth") {
-	CIF.log("CIF는 server-auth 를 추천합니다");
 };

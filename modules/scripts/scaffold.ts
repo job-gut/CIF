@@ -9,82 +9,85 @@ const scaffoldWarn: Record<string, number> = {};
 const placesPerSecond: Record<string, number> = {};
 
 function warn(name: string) {
-    if (typeof scaffoldWarn[name] !== "number") scaffoldWarn[name] = 0;
-    scaffoldWarn[name]++;
+	if (typeof scaffoldWarn[name] !== "number") scaffoldWarn[name] = 0;
+	scaffoldWarn[name]++;
 
-    setTimeout(() => {
-        scaffoldWarn[name]--;
-        if (scaffoldWarn[name] < 0) {
-            scaffoldWarn[name] = 0;
-        };
-    }, 5000);
+	setTimeout(() => {
+		scaffoldWarn[name]--;
+		if (scaffoldWarn[name] < 0) {
+			scaffoldWarn[name] = 0;
+		};
+	}, 5000);
 }
 
 events.blockPlace.on((ev) => {
 	if (CIFconfig.Modules.scaffold !== true) return;
 
 
-    const player = ev.player;
-    if (!player) return;
-    if (!player.isPlayer()) return;
+	const player = ev.player;
+	if (!player) return;
+	if (!player.isPlayer()) return;
 	const name = player.getName()!;
-    const blockPos = ev.blockPos;
-    const playerPos = player.getFeetPos()!;
-    const plposy = Math.floor(playerPos.y);
-    const blockposy = Math.floor(blockPos.y);
-    const gm = player.getGameType();
-    if (gm === 1) return;
+	const blockPos = ev.blockPos;
+	const playerPos = player.getFeetPos()!;
+	const plposy = Math.floor(playerPos.y);
+	const blockposy = Math.floor(blockPos.y);
+	const gm = player.getGameType();
+	if (gm === 1) return;
 
-    if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
+	if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
 
-        const headrotation = player.getRotation();
-        const ni = player.getNetworkIdentifier()!;
-        if (headrotation.x < 0) {
+		const headrotation = player.getRotation();
+		const ni = player.getNetworkIdentifier()!;
+		if (headrotation.x < 0) {
 
-            warn(name);
+			warn(name);
 
-            if (scaffoldWarn[name] > 2) {
-                return CIF.detect(ni, "Scaffold-A", "Mismatch Head Rotation | Up/Down");
-            };
+			if (scaffoldWarn[name] > 2) {
+				return CIF.detect(ni, "Scaffold-A", "Mismatch Head Rotation | Up/Down");
+			};
 
-            setTimeout(async () => {
-                scaffoldWarn[name]--;
-                if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
-            }, 15000);
+			setTimeout(async () => {
+				scaffoldWarn[name]--;
+				if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
+			}, 15000);
 
-            return CANCEL;
-        };
+			return CANCEL;
+		};
 
-        if (headrotation.x < 0) {
-            if (lastplacedblockposY[name] + 1 === blockposy) {
-                warn(name);
+		if (headrotation.x < 0) {
+			if (lastplacedblockposY[name] + 1 === blockposy) {
+				warn(name);
 
-                if (scaffoldWarn[name] > 1) {
-                    return CIF.detect(ni, "Scaffold-B", "Tower : Mismatch Head Rotation");
-                };
+				if (scaffoldWarn[name] > 1) {
+					return CIF.detect(ni, "Scaffold-B", "Tower : Mismatch Head Rotation");
+				};
 
-                setTimeout(() => {
-                    scaffoldWarn[name]--;
-                    if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
-                }, 15000);
-                return CANCEL;
-            };
-        };
+				setTimeout(() => {
+					scaffoldWarn[name]--;
+					if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
+				}, 15000);
+				return CANCEL;
+			};
+		};
 
 		lastplacedblockposY[name] = blockposy;
-    };
+	};
 
 });
 
-events.itemUseOnBlock.on((ev)=> {
+events.itemUseOnBlock.on((ev) => {
 	const pl = ev.actor;
 	if (!pl?.isPlayer()) return;
 
-	const clickX = ev.clickX;
-	const clickY = ev.clickY;
-	const clickZ = ev.clickZ;
+	if (CIFconfig.Modules.scaffold) {
 
-	if (!(clickX === 0 && clickY === 0 && clickZ === 0) && Number.isInteger(clickX) && Number.isInteger(clickY) && Number.isInteger(clickZ)) {
-		return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-C", "Invalid click position in a block (Prax Client)", 3);
+		const clickX = ev.clickX;
+		const clickY = ev.clickY;
+		const clickZ = ev.clickZ;
+
+		if (!(clickX === 0 && clickY === 0 && clickZ === 0) && Number.isInteger(clickX) && Number.isInteger(clickY) && Number.isInteger(clickZ)) {
+			return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-C", "Invalid click position (Prax Client)", 3);
+		};
 	};
 });
