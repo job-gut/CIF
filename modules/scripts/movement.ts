@@ -324,7 +324,7 @@ const stopGlide = procHacker.hooking(
 // 		pushedByPiston[name] = true;
 // 		setTimeout(() => {
 // 			pushedByPiston[name] = false;
-// 		}, 1000);
+// 		}, 250);
 // 	};
 
 // 	return pistonPush(blockActor, actor, pos);
@@ -370,7 +370,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const plname = pl.getName();
 
 	const movePos = pkt.pos;
-	movePos.y -= 1.6;
+	movePos.y -= 2.37998962402343 - 0.759979248046875;
 
 	if (typeof airTicks[plname] !== "number") airTicks[plname] = 0;
 	if (typeof groundTicks[plname] !== "number") groundTicks[plname] = 0;
@@ -396,21 +396,24 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.7, movePos.z - 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.7, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.7, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.7, movePos.z - 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.7, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.7, movePos.z - 0.299)).getName() !== "minecraft:air") {
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air") {
 		actualOnGround = true;
 	};
 
+	if (movePos.y === Math.ceil(movePos.y / 0.5) * 0.5 && 
+		(region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air")) {
+		actualOnGround = true;
+	};
 
-	const og = pkt.delta.y + 0.07840000092983246 === 0 && actualOnGround;
+	const og = actualOnGround;
 
 	onGround[plname] = og;
 
@@ -453,7 +456,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const accelY = deltaY - YlastDelta;
 
 	const maxBPS = pl.getSpeed() * 43.5;
-	const maxJumpBPS = pl.getSpeed() * 93;
+	const maxJumpBPS = pl.getSpeed() * 107;
 
 	const ActualBPS = ZXlastDelta * 36.65;
 
@@ -494,7 +497,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 	if (CIFconfig.Modules.movement) {
 
-		if ((pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) && isJoined[plname]) {
+		if ((pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) && isJoined[plname] && !isTeleported) {
 
 
 			//AUTOJUMP
@@ -566,7 +569,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 
 					if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && squaredLastAccel >= 6 && !isKnockbacked[plname] && !pl.onIce()) {
-						CIF.failAndFlag(ni, "Speed-B", `Too Fast (${ActualBPS.toFixed(2)} BPS)`, 3);
+						CIF.failAndFlag(ni, "Speed-B", `Too Fast | BPS: ${ActualBPS.toFixed(2)}`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -575,7 +578,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 
 					if (deltaYaw > 1.5 && deltaXZ > .150 && AbsSquaredAccel < 1.0E-5) {
-						CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around (Strafe)`, 3);
+						CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around [Strafe]`, 3);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -598,7 +601,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported
-				&& movePos.distance(plRespawnPos) > 1.25) {
+					&& movePos.distance(plRespawnPos) > 1.25 && !pushedByPiston[plname]) {
 					CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
 
 					let lastposit = lastpos[plname];
@@ -679,8 +682,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 19 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY !== 0.4115999788045883 
-						&& deltaY !== 0.4115999788045883) {
+					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY > 0/*&& accelY !== 0.4115999788045883 
+						&& deltaY !== 0.4115999788045883*/) {
 						CIF.failAndFlag(ni, `Fly-F`, `Flew up in mid-air`, 2);
 
 						let lastposit = lastpos[plname];
@@ -730,7 +733,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		setLastPositions(plname, { x: lastpos[plname][0], y: lastpos[plname][1], z: lastpos[plname][2] });
 	};
 
-	movePos.y += 1.6;
+	movePos.y += 2.37998962402343 - 0.759979248046875;
 	lastYaw[plname] = yaw;
 });
 
@@ -762,17 +765,17 @@ events.entityKnockback.on((ev) => {
 	}, 400);
 });
 
-events.fallOnBlock.on((ev)=> {
-	const pl = ev.entity;
+// events.fallOnBlock.on((ev)=> {
+// 	const pl = ev.entity;
 
-	if (!pl.isPlayer()) return;
+// 	if (!pl.isPlayer()) return;
 
-	const plname = pl.getName();
-	
-	if (ev.block.getName() !== "minecraft:air") airTicks[plname] = 0;
-});
+// 	const plname = pl.getName();
 
-events.playerJoin.on((ev)=> {
+// 	if (ev.block.getName() !== "minecraft:air") airTicks[plname] = 0;
+// });
+
+events.playerJoin.on((ev) => {
 	const pl = ev.player;
 	const plname = pl.getName();
 
@@ -781,8 +784,10 @@ events.playerJoin.on((ev)=> {
 	}, 2000);
 });
 
-events.networkDisconnected.on((ni)=> {
-	const pl = ni.getActor()!;
+events.networkDisconnected.on((ni) => {
+	const pl = ni.getActor();
+	if (!pl) return;
+
 	const plname = pl.getName();
 
 	setTimeout(() => {
@@ -790,8 +795,10 @@ events.networkDisconnected.on((ni)=> {
 	}, 1000);
 });
 
-events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
-	const pl = ni.getActor()!;
+events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni) => {
+	const pl = ni.getActor();
+	if (!pl) return;
+
 	const plname = pl.getName();
 
 	setTimeout(() => {
@@ -801,7 +808,7 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 
 events.levelTick.on((ev) => {
 	TPS++;
-	
+
 	if (TPS === 20) {
 		for (const pl of ev.level.getPlayers()) {
 			const plname = pl.getName();
@@ -815,7 +822,7 @@ events.levelTick.on((ev) => {
 			if (PPS[plname] < -60) {
 				PPS[plname] = -60;
 			};
-	
+
 			PPS[plname] -= 20;
 		};
 

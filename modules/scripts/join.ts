@@ -128,9 +128,14 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     if (deviceId.length === 36) {
         if (deviceId.includes("g") || deviceId.includes("h") || deviceId.includes("i") || deviceId.includes("j") || deviceId.includes("k") || deviceId.includes("l") || deviceId.includes("m") || deviceId.includes("n") || deviceId.includes("o") || deviceId.includes("p") || deviceId.includes("q") || deviceId.includes("r") || deviceId.includes("s") || deviceId.includes("t") || deviceId.includes("u") || deviceId.includes("v") || deviceId.includes("w") || deviceId.includes("x") || deviceId.includes("y") || deviceId.includes("z")) {
-            CIF.detect(ni, "Invalid_did", "Device id includes strange letter(s)");
-            return CIF.ban(ni, "Invalid_did");
+            CIF.detect(ni, "DeviceId_Spoof-A", "Device id includes strange letter(s)");
+            CIF.ban(ni, "DeviceId_Spoof");
         };
+
+		if (deviceId.toLowerCase() !== deviceId) {
+			CIF.detect(ni, "DeviceId_Spoof-B", "Device id is Upper Case");
+            CIF.ban(ni, "DeviceId_Spoof-B");
+		};
     };
 
     if (typeof firstLoginedDID[name] !== "string" && isXboxLogined === true) {
