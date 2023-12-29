@@ -35,16 +35,6 @@ export const lastPositions: Record<string, { x: number, y: number, z: number }[]
 const lastBPSForExportedFunc: Record<string, number> = {};
 
 
-const strafestack: Record<string, number> = {};
-const tooFastStack: Record<string, number> = {};
-const littleFastStack: Record<string, number> = {};
-const littleFastWarn: Record<string, number> = {};
-const lastWentUpBlocks: Record<string, number> = {};
-
-const Fly_bStack: Record<string, number> = {};
-const Fly_c1Stack: Record<string, number> = {};
-const Fly_c2Stack: Record<string, number> = {};
-
 const lastBPS: Record<string, number> = {};
 
 const isSpinAttacking: Record<string, boolean> = {};
@@ -70,9 +60,6 @@ const lagbackPos: Record<string, number[]> = {};
 const hasTeleportedServerSidely: Record<string, boolean> = {};
 const ticksAfterTeleport: Record<string, number> = {};
 
-const isRespawned: Record<string, boolean> = {};
-const respawnedPos: Record<string, Vec3> = {};
-
 const isJoined: Record<string, boolean> = {};
 
 const haveFished: Record<string, boolean> = {};
@@ -80,7 +67,6 @@ const isKnockbacked: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
 const pushedByPiston: Record<string, boolean> = {};
 
-const removeTeleportedTimeout: Record<string, NodeJS.Timeout> = {};
 
 const PPS: Record<string, number> = {};
 let TPS: number = 0;
@@ -90,6 +76,8 @@ function appendRotationRecord(
 	player: ServerPlayer,
 	rotation: { x: number; y: number }
 ) {
+	if (!player) return;
+
 	const name = player.getName();
 	const currentRotation = lastRotations.get(name);
 	if (currentRotation === undefined) {
@@ -470,6 +458,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const ActualBPS = ZXlastDelta * 36.65;
 
 	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
+
 	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
 	const isPressingJump = pkt.getInput(PlayerAuthInputPacket.InputData.JumpDown);
 	const wantJump = pkt.getInput(PlayerAuthInputPacket.InputData.WantUp);
@@ -477,6 +466,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const isStartJump = pkt.getInput(PlayerAuthInputPacket.InputData.StartJumping);
 
 	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
+
+	const plRespawnPos = pl.getSpawnPosition();
 
 	if (hasTeleportedServerSidely[plname] === true && !isTeleported) ticksAfterTeleport[plname]++;
 	else {
@@ -503,7 +494,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 	if (CIFconfig.Modules.movement) {
 
-		if (pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) {
+		if ((pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) && isJoined[plname]) {
 
 
 			//AUTOJUMP
@@ -606,7 +597,8 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				// TP
 
 
-				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported) {
+				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported
+				&& movePos.distance(plRespawnPos) > 1.25) {
 					CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
 
 					let lastposit = lastpos[plname];
@@ -786,7 +778,7 @@ events.playerJoin.on((ev)=> {
 
 	setTimeout(() => {
 		isJoined[plname] = true;
-	}, 3000);
+	}, 2000);
 });
 
 events.networkDisconnected.on((ni)=> {
@@ -809,13 +801,10 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 
 events.levelTick.on((ev) => {
 	TPS++;
-
-	console.log(TPS);
-
+	
 	if (TPS === 20) {
 		for (const pl of ev.level.getPlayers()) {
 			const plname = pl.getName();
-			pl.sendMessage(`${PPS[plname]}`);
 
 			if (PPS[plname] > 26) {
 				CIF.detect(pl.getNetworkIdentifier(), "Timer", "Fast Ticking");
