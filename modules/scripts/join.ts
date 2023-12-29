@@ -73,6 +73,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 				CIF.log(`${name} failed to connect ` + "(".white + `${bannedReason.red})`.yellow);
 	
 				hasFilteredBannedPlayer = true;
+				break;
 			};
 		};
 	};
@@ -126,24 +127,18 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
 
     CIF.log(yellow(`${name} > IP & Port: ${ip}, XUID: ${xuid}, Model: ${model}, DeviceId: ${deviceId}`));
 
-    if (deviceId.length === 36) {
-        if (deviceId.includes("g") || deviceId.includes("h") || deviceId.includes("i") || deviceId.includes("j") || deviceId.includes("k") || deviceId.includes("l") || deviceId.includes("m") || deviceId.includes("n") || deviceId.includes("o") || deviceId.includes("p") || deviceId.includes("q") || deviceId.includes("r") || deviceId.includes("s") || deviceId.includes("t") || deviceId.includes("u") || deviceId.includes("v") || deviceId.includes("w") || deviceId.includes("x") || deviceId.includes("y") || deviceId.includes("z")) {
-            CIF.detect(ni, "DeviceId_Spoof-A", "Device id includes strange letter(s)");
-            CIF.ban(ni, "DeviceId_Spoof");
-        };
-
-		if (deviceId.toLowerCase() !== deviceId) {
-			CIF.detect(ni, "DeviceId_Spoof-B", "Device id is Upper Case");
-            CIF.ban(ni, "DeviceId_Spoof-B");
-		};
-    };
+	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+	if (!uuidRegex.test(deviceId) && deviceId.length === 36) {
+		CIF.ban(ni, "DeviceId_Spoof-A");
+		return CIF.detect(ni, "DeviceId_Spoof-A", "Invalid device ID regex");
+	};
 
     if (typeof firstLoginedDID[name] !== "string" && isXboxLogined === true) {
         firstLoginedDID[name] = deviceId;
         firstLoginedOS[name] = deviceOS;
     } else if (isXboxLogined === true && firstLoginedDID[name] !== deviceId && firstLoginedOS[name] === deviceOS) {
-        CIF.ban(ni, "deviceid_spoof")
-        return CIF.detect(ni, "deviceid_spoof", "Spoofed their deviceID");
+        CIF.ban(ni, "Deviceid_Spoof-C")
+        return CIF.detect(ni, "Deviceid_Spoof-b", "Spoofed their device ID on same account");
     } else {
         firstLoginedDID[name] = deviceId;
         firstLoginedOS[name] = deviceOS;

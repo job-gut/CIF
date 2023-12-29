@@ -6,18 +6,14 @@ import { CIFconfig } from "../util/configManager";
 const lastplacedblockposY: any = {};
 const scaffoldWarn: Record<string, number> = {};
 
-const placesPerSecond: Record<string, number> = {};
-
 function warn(name: string) {
 	if (typeof scaffoldWarn[name] !== "number") scaffoldWarn[name] = 0;
 	scaffoldWarn[name]++;
 
 	setTimeout(() => {
 		scaffoldWarn[name]--;
-		if (scaffoldWarn[name] < 0) {
-			scaffoldWarn[name] = 0;
-		};
-	}, 5000);
+		if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
+	}, 15000);
 }
 
 events.blockPlace.on((ev) => {
@@ -47,11 +43,6 @@ events.blockPlace.on((ev) => {
 				return CIF.detect(ni, "Scaffold-A", "Mismatch Head Rotation | Up/Down");
 			};
 
-			setTimeout(async () => {
-				scaffoldWarn[name]--;
-				if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
-			}, 15000);
-
 			return CANCEL;
 		};
 
@@ -62,11 +53,7 @@ events.blockPlace.on((ev) => {
 				if (scaffoldWarn[name] > 1) {
 					return CIF.detect(ni, "Scaffold-B", "Tower : Mismatch Head Rotation");
 				};
-
-				setTimeout(() => {
-					scaffoldWarn[name]--;
-					if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
-				}, 15000);
+				
 				return CANCEL;
 			};
 		};
@@ -87,7 +74,7 @@ events.itemUseOnBlock.on((ev) => {
 		const clickZ = ev.clickZ;
 
 		if (!(clickX === 0 && clickY === 0 && clickZ === 0) && Number.isInteger(clickX) && Number.isInteger(clickY) && Number.isInteger(clickZ)) {
-			return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-C", "Invalid click position (Prax Client)", 3);
+			return CIF.failAndFlag(pl.getNetworkIdentifier(), "Scaffold-C", "Invalid click position [Prax Client]", 3);
 		};
 	};
 });

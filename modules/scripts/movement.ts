@@ -400,8 +400,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		actualOnGround = true;
 	};
 
-	if (movePos.y === Math.ceil(movePos.y / 0.5) * 0.5 && 
-		(region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
+	if (region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
@@ -409,7 +408,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
 		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air")) {
+		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air") {
 		actualOnGround = true;
 	};
 
@@ -650,7 +649,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 					if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
-						if (airTicks[plname] > 19 && !pl.onGround() && deltaY < -0.5 && accelY === 0) {
+						if (airTicks[plname] > 19 && !pl.onGround() && deltaY > -0.5 && deltaY < 0) {
 							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 3);
 
 							let lastposit = lastpos[plname];
@@ -672,19 +671,10 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					// if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && !isLastPosNearGround) {
-					// 	CIF.failAndFlag(ni, `Fly-1F`, `Flew up in mid-air`, 5);
 
-					// 	let lastposit = lastpos[plname];
-					// 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					// 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-
-					// 	cancelled = true;
-					// };
-
-					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY > 0/*&& accelY !== 0.4115999788045883 
+					if (airTicks[plname] > 4 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY > 0/*&& accelY !== 0.4115999788045883 
 						&& deltaY !== 0.4115999788045883*/) {
-						CIF.failAndFlag(ni, `Fly-F`, `Flew up in mid-air`, 2);
+						CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 2);
 
 						let lastposit = lastpos[plname];
 						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
@@ -693,11 +683,14 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
+					//TODO
+					//Make Anti-Jetpack
+
 
 					//High Jump
 
 
-					if (deltaY > 0.42 && isJumping && accelY > 0.25 && isJoined[plname]) {
+					if (deltaY > 0.412 && accelY > 0.25 && isJoined[plname] && isJumping) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
 						let lastposit = lastpos[plname];
