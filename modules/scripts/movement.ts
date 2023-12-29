@@ -600,7 +600,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported
-					&& movePos.distance(plRespawnPos) > 1.25 && !pushedByPiston[plname]) {
+					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname]) {
 					CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
 
 					let lastposit = lastpos[plname];
