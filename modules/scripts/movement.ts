@@ -818,7 +818,7 @@ events.levelTick.on((ev) => {
 			pl.sendMessage(`${PPS[plname]}`);
 
 			if (PPS[plname] > 26) {
-				CIF.detect(pl.getNetworkIdentifier(), "Timer-", "Fast Ticking");
+				CIF.detect(pl.getNetworkIdentifier(), "Timer", "Fast Ticking");
 
 				PPS[plname] = 20;
 			};
