@@ -67,8 +67,8 @@ CIF.detect = function (ni: NetworkIdentifier, cheatName: string, cheatDescriptio
 	if (CIFconfig.Penalties.kick) {
 		bedrockServer.serverInstance.disconnectClient(ni, `§l§f§c[§fCIF§c]\n§b${cheatName} §6detected`);
 	};
-    this.announce(`§c${cheaterName} §6has been punished using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} has been punished using ${cheatName} (${cheatDescription})`.magenta);
+    this.announce(`§c${cheaterName} §6has been punished by §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${cheaterName} has been punished by ${cheatName} (${cheatDescription})`.magenta);
     return CANCEL;
 };
 
@@ -134,8 +134,8 @@ CIF.failAndFlag = function (ni: NetworkIdentifier, moduleName: string, moduleDes
 CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
     const cheaterName = nameMap.get(ni)!;
     this.wasDetected[cheaterName] = true;
-    this.announce(`§c${cheaterName} §6has been banned using §c${reason}`, "ALL");
-    this.log(red(`${cheaterName} has been banned using ${reason}`));
+    this.announce(`§c${cheaterName} §6has been banned by §e${reason}`, "ALL");
+    this.log(red(`${cheaterName} has been banned by ${reason}`));
     const did = deviceIdMap.get(ni)!;
     // if (did.length === 36) {
     // 	const accidKey = identityPublicKeyMap.get(ni)!;
@@ -148,8 +148,8 @@ CIF.ban = function (ni: NetworkIdentifier, reason: string): void {
 
 CIF.suspect = function (ni: NetworkIdentifier, cheatName: string, cheatDescription: string): CANCEL {
     const cheaterName = nameMap.get(ni)!;
-    this.announce(`§c${cheaterName} §6has been suspected of using §c${cheatName} §7(${cheatDescription})`);
-    this.log(`${cheaterName} has been suspected of using ${cheatName} (${cheatDescription})`.yellow);
+    this.announce(`§c${cheaterName} §6has been suspected by §c${cheatName} §7(${cheatDescription})`);
+    this.log(`${cheaterName} has been suspected by ${cheatName} (${cheatDescription})`.yellow);
     return CANCEL;
 };
 
