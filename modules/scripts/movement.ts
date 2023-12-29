@@ -810,9 +810,12 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni)=> {
 events.levelTick.on((ev) => {
 	TPS++;
 
+	console.log(TPS);
+
 	if (TPS === 20) {
-		for (const pl of bedrockServer.serverInstance.getPlayers()) {
+		for (const pl of ev.level.getPlayers()) {
 			const plname = pl.getName();
+			pl.sendMessage(`${PPS[plname]}`);
 
 			if (PPS[plname] > 26) {
 				CIF.detect(pl.getNetworkIdentifier(), "Timer-", "Fast Ticking");
@@ -824,9 +827,10 @@ events.levelTick.on((ev) => {
 				PPS[plname] = -60;
 			};
 	
-			TPS -= 20;
 			PPS[plname] -= 20;
 		};
+
+		TPS -= 20;
 	};
 });
 // events.playerRespawn.on((ev) => {
