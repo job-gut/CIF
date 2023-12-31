@@ -24,7 +24,11 @@ events.blockPlace.on((ev) => {
 	const ni = player.getNetworkIdentifier()!;
 
 	if (headrotation.x === -60 || headrotation.x === 60) {
-		return CIF.failAndFlag(ni, "Scaffold-D", "The Y of head rotation is exactly -60", 2);
+		return CIF.failAndFlag(ni, "Scaffold-D", "The Y of head rotation is exactly 60", 2);
+	};
+
+	if (headrotation.x === -90 || headrotation.x === 90) {
+		return CIF.failAndFlag(ni, "Scaffold-E", "Tower : The Y of head rotation is exactly 90", 2);
 	};	
 
 	if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
