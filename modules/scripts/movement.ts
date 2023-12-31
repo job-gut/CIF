@@ -69,7 +69,7 @@ const pushedByPiston: Record<string, boolean> = {};
 
 
 const PPS: Record<string, number> = {};
-let TPS: number = 0;
+const TPS: Record<string, number> = {};
 
 export const lastRotations = new Map<string, { x: number; y: number }[]>();
 function appendRotationRecord(
@@ -361,6 +361,15 @@ events.playerJump.on((ev) => {
 });
 
 
+function lagback(pl: ServerPlayer): void {
+	const plname = pl.getName();
+
+	let lastposit = lastpos[plname];
+	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+};
+
+
 events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	const pl = ni.getActor();
 	if (!pl) return;
@@ -380,8 +389,9 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 	if (typeof ticksAfterTeleport[plname] !== "number") ticksAfterTeleport[plname] = 0;
 
 	if (typeof PPS[plname] !== "number") PPS[plname] = 0;
+	if (isNaN(PPS[plname])) PPS[plname] = 0;
 
-	PPS[plname]++;
+	if (isJoined[plname]) PPS[plname]++;
 
 	const region = pl.getRegion()!;
 
@@ -505,9 +515,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 			if (isStartJump && !(isPressingJump || wantJump)) {
 				CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
 
-				let lastposit = lastpos[plname];
-				if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-				pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+				lagback(pl);
 				cancelled = true;
 			};
 
@@ -528,9 +536,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					&& realBPS > 3) {
 					CIF.failAndFlag(ni, "Disabler-A", "No DeltaXZ while pressing key", 5);
 
-					let lastposit = lastpos[plname];
-					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					lagback(pl);
 					cancelled = true;
 				};
 
@@ -538,9 +544,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 2) {
 					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
 
-					let lastposit = lastpos[plname];
-					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					lagback(pl);
 					cancelled = true;
 				};
 
@@ -560,9 +564,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname] && !pl.onIce()) {
 							CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
 
-							let lastposit = lastpos[plname];
-							if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-							pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+							lagback(pl);
 							cancelled = true;
 						};
 					};
@@ -570,18 +572,14 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && squaredLastAccel >= 6 && !isKnockbacked[plname] && !pl.onIce()) {
 						CIF.failAndFlag(ni, "Speed-B", `Too Fast | BPS: ${ActualBPS.toFixed(2)}`, 3);
 
-						let lastposit = lastpos[plname];
-						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+						lagback(pl);
 						cancelled = true;
 					};
 
 					if (deltaYaw > 1.5 && deltaXZ > .150 && AbsSquaredAccel < 1.0E-5) {
 						CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around [Strafe]`, 3);
 
-						let lastposit = lastpos[plname];
-						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+						lagback(pl);
 						cancelled = true;
 					};
 
@@ -603,9 +601,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname]) {
 					CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
 
-					let lastposit = lastpos[plname];
-					if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+					lagback(pl);
 					cancelled = true;
 				};
 
@@ -614,14 +610,12 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname]) {
+					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname] && !pl.onGround()) {
 
-					if (airTicks[plname] > 2 && !pl.onGround() && deltaY < 0 && accelY === 0) {
+					if (airTicks[plname] > 2 && deltaY < 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
 
-						let lastposit = lastpos[plname];
-						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-						pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+						lagback(pl);
 
 						cancelled = true;
 					};
@@ -636,12 +630,10 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					// 	cancelled = true;
 					// };
 
-					if (airTicks[plname] > 9 && !pl.onGround() && deltaY > 0 && accelY === 0 && !isStartJump) {
+					if (airTicks[plname] > 4 && deltaY > 0 && accelY === 0 && !isStartJump) {
 						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
 
-						let lastposit = lastpos[plname];
-						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+						lagback(pl);
 
 						cancelled = true;
 					};
@@ -649,42 +641,41 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 					if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
-						if (airTicks[plname] > 19 && !pl.onGround() && deltaY > -0.5 && deltaY < 0) {
+						if (airTicks[plname] > 19 && deltaY > -0.5 && deltaY < 0) {
 							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 3);
 
-							let lastposit = lastpos[plname];
-							if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-							pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+							lagback(pl);
 
 							cancelled = true;
 						};
 					};
 
 
-					if (!actualOnGround && deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 1) {
+					if (deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 1) {
 						CIF.failAndFlag(ni, "Fly-B", `No Y changes in mid-air`, 3);
 
-						let lastposit = lastpos[plname];
-						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+						lagback(pl);
 
 						cancelled = true;
 					};
 
 
-					if (airTicks[plname] > 4 && deltaY > 0 && !isKnockbacked[plname] && !pl.onGround() && accelY > 0/*&& accelY !== 0.4115999788045883 
+					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && accelY > 0/*&& accelY !== 0.4115999788045883 
 						&& deltaY !== 0.4115999788045883*/) {
-						CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 2);
+						CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 3);
 
-						let lastposit = lastpos[plname];
-						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+						lagback(pl);
 
 						cancelled = true;
 					};
 
-					//TODO
-					//Make Anti-Jetpack
+					if (airTicks[plname] > 4 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 3) {
+						CIF.failAndFlag(ni, `Fly-G`, `Too high Y position from the last ground`, 2);
+
+						lagback(pl);
+
+						cancelled = true;
+					};
 
 
 					//High Jump
@@ -693,9 +684,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					if (deltaY > 0.412 && accelY > 0.25 && isJoined[plname] && isJumping) {
 						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
-						let lastposit = lastpos[plname];
-						if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-						pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+						lagback(pl);
 
 						cancelled = true;
 					};
@@ -800,26 +789,28 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni) => {
 });
 
 events.levelTick.on((ev) => {
-	TPS++;
+	for (const pl of ev.level.getPlayers()) {
+		const plname = pl.getName();
+		
+		if (typeof TPS[plname] !== "number") TPS[plname ] = 0;
 
-	if (TPS === 20) {
-		for (const pl of ev.level.getPlayers()) {
-			const plname = pl.getName();
+		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
+
+		if (TPS[plname] === 20 && !CIF.wasDetected[plname]) {
+
+			if (PPS[plname] < -60) {
+				PPS[plname] = -60;
+			};
 
 			if (PPS[plname] > 26) {
 				CIF.detect(pl.getNetworkIdentifier(), "Timer", "Fast Ticking");
 
 				PPS[plname] = 20;
 			};
-
-			if (PPS[plname] < -60) {
-				PPS[plname] = -60;
-			};
-
 			PPS[plname] -= 20;
-		};
 
-		TPS -= 20;
+			TPS[plname] -= 20;
+		};
 	};
 });
 // events.playerRespawn.on((ev) => {

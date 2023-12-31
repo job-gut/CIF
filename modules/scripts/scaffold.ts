@@ -4,17 +4,6 @@ import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 
 const lastplacedblockposY: any = {};
-const scaffoldWarn: Record<string, number> = {};
-
-function warn(name: string) {
-	if (typeof scaffoldWarn[name] !== "number") scaffoldWarn[name] = 0;
-	scaffoldWarn[name]++;
-
-	setTimeout(() => {
-		scaffoldWarn[name]--;
-		if (scaffoldWarn[name] < 0) scaffoldWarn[name] = 0;
-	}, 15000);
-}
 
 events.blockPlace.on((ev) => {
 	if (CIFconfig.Modules.scaffold !== true) return;
@@ -31,32 +20,17 @@ events.blockPlace.on((ev) => {
 	const gm = player.getGameType();
 	if (gm === 1) return;
 
+	const headrotation = player.getRotation();
+	const ni = player.getNetworkIdentifier()!;
+
+	if (headrotation.x === -60) {
+		return CIF.failAndFlag(ni, "Scaffold-D", "The Y of head rotation is exactly -60", 2);
+	};	
+
 	if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
+		if (headrotation.x < 0) return CIF.failAndFlag(ni, "Scaffold-A", "Mismatch Head Rotation | Up/Down", 3);
 
-		const headrotation = player.getRotation();
-		const ni = player.getNetworkIdentifier()!;
-		if (headrotation.x < 0) {
-
-			warn(name);
-
-			if (scaffoldWarn[name] > 2) {
-				return CIF.detect(ni, "Scaffold-A", "Mismatch Head Rotation | Up/Down");
-			};
-
-			return CANCEL;
-		};
-
-		if (headrotation.x < 0) {
-			if (lastplacedblockposY[name] + 1 === blockposy) {
-				warn(name);
-
-				if (scaffoldWarn[name] > 1) {
-					return CIF.detect(ni, "Scaffold-B", "Tower : Mismatch Head Rotation");
-				};
-				
-				return CANCEL;
-			};
-		};
+		if (headrotation.x < 0 && lastplacedblockposY[name] + 1 === blockposy) return CIF.failAndFlag(ni, "Scaffold-B", "Tower : Mismatch Head Rotation", 2);
 
 		lastplacedblockposY[name] = blockposy;
 	};

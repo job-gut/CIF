@@ -18,6 +18,7 @@ import { Event } from "bdsx/eventtarget";
 import { blockDestructionStop } from "../util/EventListener";
 
 const destructionstarttime: Record<string, number | null | undefined> = {};
+const destructionStartTick: Record<string, number | null | undefined> = {};
 const getDestroySpeed = procHacker.js(
 	"?getDestroySpeed@ItemStack@@QEBAMAEBVBlock@@@Z",
 	float32_t,
@@ -28,16 +29,19 @@ const getDestroySpeed = procHacker.js(
 
 function getActualDestroyTime(player: Player, block: Block): number {
 	const haste = player.getEffect(MobEffectIds.Haste);
+
 	let hasteLevel = 0;
-	if (haste !== null) {
+
+	if (haste) {
 		hasteLevel = haste.amplifier;
 	};
-	const destroyTime = block.getDestroySpeed();
+	
+	const destroyTime = block.blockLegacy.getDestroyTime()
 	const destroySpeed = getDestroySpeed(player.getMainhandSlot(), block);
 	const realDestroyTime =
 		destroyTime / (destroySpeed * (1 + 0.2 * hasteLevel));
 
-	return realDestroyTime;
+	return realDestroyTime * 1.5;
 };
 
 events.blockDestructionStart.on(async (ev) => {
@@ -47,12 +51,15 @@ events.blockDestructionStart.on(async (ev) => {
 	const pl = ev.player!;
 	const plname = pl.getNameTag();
 	if (destructionstarttime !== null) destructionstarttime[plname] = now;
+	if (destructionstarttime !== null) destructionStartTick[plname] = pl.getLevel().getCurrentTick();
 });
 
 blockDestructionStop.on(async(ev)=> {
 	const pl = ev.player!;
 	const plname = pl.getNameTag();
 	if (destructionstarttime !== null) destructionstarttime[plname] = undefined;
+	if (destructionstarttime !== null) destructionStartTick[plname] = undefined;	
+
 });
 
 events.blockDestroy.on((ev) => {
@@ -60,8 +67,9 @@ events.blockDestroy.on((ev) => {
 
 
 	const currenttime = Date.now();
-
 	const player = ev.player;
+
+	const currentTick = player.getLevel().getCurrentTick();
 
 	const gamemode = player.getGameType();
 	if (gamemode === GameType.Creative) {
@@ -77,23 +85,23 @@ events.blockDestroy.on((ev) => {
 
 	const name = player.getName();
 
-	if (typeof destructionstarttime[name] !== "number" && getActualDestroyTime(player, block) < 0.055) {
+	if (typeof destructionstarttime[name] !== "number" && Math.floor(getActualDestroyTime(player, block)) < 0.05) {
 		destructionstarttime[name] = null;
 		return CIF.failAndFlag(player.getNetworkIdentifier(), "Instabreak-A", "No destruction start", 2);
 	};
 	
 	if (
 		currenttime - destructionstarttime[name]! < 65 &&
-		getActualDestroyTime(player, block) < 0.055
+		Math.floor(getActualDestroyTime(player, block)) < 0.05
 	) {
 		destructionstarttime[name] = null;
 		return CIF.failAndFlag(player.getNetworkIdentifier(), "Instabreak-B", "Breaks block instantly", 2);
 	};
+	
+	if (currentTick - destructionStartTick[name]! + 2 < Math.floor((getActualDestroyTime(player, block)) * 1000 / 50)) {
 
-
-	// if (currenttime - destructionstarttime[name]! + 15 < (getActualDestroyTime(player, block) + 5) * 1000) {
-	// 	return CIF.failAndFlag(player.getNetworkIdentifier(), "Fastbreak-A", "Breaks block faster than expected", 3);
-	// };
+		return CIF.failAndFlag(player.getNetworkIdentifier(), "Fastbreak-A", "Breaks block faster than expected", 3);
+	};
 
 	destructionstarttime[name] = undefined;
 });

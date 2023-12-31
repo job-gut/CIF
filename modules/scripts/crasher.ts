@@ -13,13 +13,6 @@ const spamStack: Record<string, number> = {};
 
 events.packetBefore(MinecraftPacketIds.LevelSoundEvent).on((pkt, ni) => {
     const sound = pkt.sound;
-    if (sound === 0) {
-		if (CIFconfig.Modules.crasher !== true) return;
-
-
-        CIF.ban(ni, "crasher");
-        return CIF.detect(ni, "crasher", "Invalid LevelSoundPacket");
-    };
 
 	if (pkt.extraData === -1 && !pkt.entityType === !wasJoinedIn15seconds.get(ni)) {
 		return CIF.suspect(ni, "SwingSound", "Illegal Sound on Swing Motion");
