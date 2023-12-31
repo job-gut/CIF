@@ -23,7 +23,7 @@ events.blockPlace.on((ev) => {
 	const headrotation = player.getRotation();
 	const ni = player.getNetworkIdentifier()!;
 
-	if (headrotation.x === -60) {
+	if (headrotation.x === -60 || headrotation.x === 60) {
 		return CIF.failAndFlag(ni, "Scaffold-D", "The Y of head rotation is exactly -60", 2);
 	};	
 
