@@ -23,6 +23,7 @@ give = true
 instabreak = true
 join = true
 movement = true
+player = true
 scaffold = true
 xp = true
 ban = true

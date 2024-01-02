@@ -62,6 +62,7 @@ give = true
 instabreak = true
 join = true
 movement = true
+player = true
 scaffold = true
 xp = true
 ban = true
@@ -69,7 +70,6 @@ kick = true
 blockAllPackets = true
 onlyAlert = false
 auto_update = true
-player = true
 `,
     );
     CIF.log("Generated new config file");
@@ -91,6 +91,7 @@ interface IConfiguration {
     "instabreak": boolean;
     "join": boolean;
     "movement": boolean;
+	"player": boolean;
     "scaffold": boolean;
     "xp": boolean;
     "ban": boolean;
@@ -99,7 +100,6 @@ interface IConfiguration {
     "onlyAlert": boolean;
     "auto_update": boolean;
     "log_packets": boolean;
-    "player": boolean;
 }
 
 type ConfigType = { [key in keyof IConfiguration]?: boolean };
@@ -185,4 +185,4 @@ import "../scripts";
 if (CIFconfig.Modules.Debug === true) {
     require("../../debug/debug");
     console.log("********** CIF DEBUG MODE HAS BEEN ENABLED **********".red);
-}
+};

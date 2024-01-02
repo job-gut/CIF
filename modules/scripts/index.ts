@@ -17,6 +17,9 @@ CIF.log(`Successfully Loaded ${"Join".magenta} Modules`.green);
 require("./movement");
 CIF.log(`Successfully Loaded ${"Movement".magenta} Modules`.green);
 
+require("./player");
+CIF.log(`Successfully Loaded ${"Player".magenta} Modules`.green);
+
 require("./scaffold");
 CIF.log(`Successfully Loaded ${"Scaffold".magenta} Modules`.green);
 

@@ -9,7 +9,10 @@ export const isInventoryOpen: Record<string, boolean> = {};
 const openInventoryTick: Record<string, number> = {};
 
 events.packetAfter(MinecraftPacketIds.Login).on((packet, netId, packetId) => {
-    let name = packet.connreq!.getCertificate().getId();
+	if (!packet.connreq) return;
+
+    const name = packet.connreq.getCertificate().getId();
+
     isInventoryOpen[name] = true;
 });
 
@@ -18,39 +21,41 @@ events.playerJoin.on(ev => {
 });
 
 events.packetBefore(MinecraftPacketIds.MobEquipment).on((packet, netId, packetId) => {
-    let player = netId.getActor();
+    const player = netId.getActor();
     if (!player) return;
 
     if (packet.containerId == ContainerId.Offhand && CIFconfig.Modules.player) {
-        let name = player.getName();
+
+        const name = player.getName();
+
         if (!isInventoryOpen[name]) {
-            return CIF.failAndFlag(netId, "Offhand-A", "Set offhand without open an inventory", 1);
+            return CIF.failAndFlag(netId, "Offhand-A", "Set offhand without open an inventory", 2);
         }
 
-        let openTick = openInventoryTick[name];
-        if (openTick) {
-            if (player.getLevel().getCurrentTick() - openTick < 6) {
-                return CIF.failAndFlag(netId, "Offhand-B", "Set offhand too fast", 1);
-            }
+        const openTick = openInventoryTick[name];
+
+        if (openTick && player.getLevel().getCurrentTick() - openTick < 6) {
+             return CIF.failAndFlag(netId, "Offhand-B", "Set offhand too fast", 2);
         }
     }
 });
 
 events.packetAfter(MinecraftPacketIds.ContainerClose).on((packet, netId, packetId) => {
-    let player = netId.getActor();
+    const player = netId.getActor();
     if (!player) return;
 
-    let name = player.getName();
+    const name = player.getName();
+
     openInventoryTick[name] = 0;
     isInventoryOpen[name] = false;
 });
 
 events.packetBefore(MinecraftPacketIds.Interact).on((packet, netId, packetId) => {
-    let player = netId.getActor();
+    const player = netId.getActor();
     if (!player) return;
 
     if (InteractPacket.Actions.OpenInventory == packet.action) {
-        let name = player.getName();
+        const name = player.getName();
         openInventoryTick[name] = player.getLevel().getCurrentTick();
         isInventoryOpen[name] = true;
     }
