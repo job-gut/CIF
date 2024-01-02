@@ -1,4 +1,4 @@
-export let CIFVersion = "23v12.31.1800";
+export let CIFVersion = "23v1.3.0145";
 
 
 import * as fs from "fs";
@@ -7,9 +7,7 @@ import { exec } from "child_process";
 
 
 process.on("uncaughtException", ((err)=> {
-	if (err.message.includes("ETIMEDOUT")) { 
-		console.warn("CIF 메인 서버에 연결 할 수 없습니다".red);
-	};
+	console.warn("Couldn't connect to CIF main server".red);
 }));
 
 
@@ -95,7 +93,7 @@ function download(url: string, path: string, cb: any = undefined): boolean {
 
 export async function update(isNotFirstCall: boolean | undefined = undefined): Promise<void> {
 	if (await thisACisLastestVersion() === undefined && !isNotFirstCall) {
-		console.warn("CIF 메인 서버에 연결 할 수 없습니다".red);
+		console.warn("Couldn't connect to CIF main server".red);
 		import("./modules/util/configManager");
 		import("./main");
 		return;
