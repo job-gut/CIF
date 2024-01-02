@@ -3,7 +3,6 @@ import { events } from "bdsx/event";
 import { CIF } from "../../main";
 import { CIFconfig } from "../util/configManager";
 
-const lastplacedblockposY: any = {};
 
 events.blockPlace.on((ev) => {
 	if (CIFconfig.Modules.scaffold !== true) return;
@@ -12,7 +11,7 @@ events.blockPlace.on((ev) => {
 	const player = ev.player;
 	if (!player) return;
 	if (!player.isPlayer()) return;
-	const name = player.getName()!;
+
 	const blockPos = ev.blockPos;
 	const playerPos = player.getFeetPos()!;
 	const plposy = Math.floor(playerPos.y);
@@ -23,20 +22,16 @@ events.blockPlace.on((ev) => {
 	const headrotation = player.getRotation();
 	const ni = player.getNetworkIdentifier()!;
 
-	if (headrotation.x === -60 || headrotation.x === 60) {
+	if ( headrotation.x === 60) {
 		return CIF.failAndFlag(ni, "Scaffold-D", "The Y of head rotation is exactly 60", 2);
 	};
 
-	if (headrotation.x === -90 || headrotation.x === 90) {
+	if (headrotation.x === 90) {
 		return CIF.failAndFlag(ni, "Scaffold-E", "Tower : The Y of head rotation is exactly 90", 2);
 	};	
 
 	if (plposy - 1 === blockposy || plposy - 2 === blockposy) {
 		if (headrotation.x < 0) return CIF.failAndFlag(ni, "Scaffold-A", "Mismatch Head Rotation | Up/Down", 3);
-
-		if (headrotation.x < 0 && lastplacedblockposY[name] + 1 === blockposy) return CIF.failAndFlag(ni, "Scaffold-B", "Tower : Mismatch Head Rotation", 2);
-
-		lastplacedblockposY[name] = blockposy;
 	};
 
 });

@@ -6,7 +6,6 @@ import { CIF } from "../../main";
 import { deviceIdMap, identityPublicKeyMap, nameMap } from "../scripts/join";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { red } from "colors";
-import { StringMappingType } from "typescript";
 import { CIFconfig } from "./configManager";
 import { showFlag } from "../../debug/debug";
 
