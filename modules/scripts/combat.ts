@@ -9,11 +9,12 @@ import { ActorDamageCause } from "bdsx/bds/actor";
 import { MobEffectIds } from "bdsx/bds/effects";
 import { bedrockServer } from "bdsx/launcher";
 import { RakNet } from "bdsx/bds/raknet";
-import { ComplexInventoryTransaction } from "bdsx/bds/inventory";
+import { ComplexInventoryTransaction, ContainerId } from "bdsx/bds/inventory";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { AnimatePacket } from "bdsx/bds/packets";
+import { AnimatePacket, InteractPacket } from "bdsx/bds/packets";
 
 let peer: RakNet.RakPeer;
+export const isInventoryOpen: Map<string, boolean> = new Map<string, boolean>();
 
 events.serverOpen.on(() => {
 	peer = bedrockServer.rakPeer;
@@ -242,4 +243,29 @@ events.playerAttack.on((ev) => {
 		headPos.z -= addThisPos.z;
 
 	};
+});
+
+events.packetBefore(MinecraftPacketIds.MobEquipment).on((packet, netId, packetId) => {
+    let player = netId.getActor();
+    if (player === null) return;
+
+    if (packet.containerId == ContainerId.Offhand && !isInventoryOpen.get(player.getNameTag())) {
+	return CIF.failAndFlag(netId, "Offhand-A", "Equip offhand without opening an inventory", 2);
+    }
+});
+
+events.packetBefore(MinecraftPacketIds.ContainerClose).on((packet, netId, packetId) => {
+    let player = netId.getActor();
+    if (player === null) return;
+
+    isInventoryOpen.set(player.getNameTag(), false);
+});
+
+events.packetBefore(MinecraftPacketIds.Interact).on((packet, netId, packetId) => {
+    let player = netId.getActor();
+    if (player === null) return;
+
+    if (InteractPacket.Actions.OpenInventory == packet.action) {
+        isInventoryOpen.set(player.getNameTag(), true);
+    }
 });
