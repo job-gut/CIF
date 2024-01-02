@@ -641,7 +641,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 					if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
-						if (airTicks[plname] > 19 && deltaY > -0.5 && deltaY < 0) {
+						if (airTicks[plname] > 19 && deltaY > -0.5 && deltaY < 0 && !isKnockbacked[plname]) {
 							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 3);
 
 							lagback(pl);
@@ -669,7 +669,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 4 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 3) {
+					if (airTicks[plname] > 7 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 2.5) {
 						CIF.failAndFlag(ni, `Fly-G`, `Too high Y position from the last ground`, 2);
 
 						lagback(pl);
@@ -681,13 +681,13 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					//High Jump
 
 
-					if (deltaY > 0.412 && accelY > 0.25 && isJoined[plname] && isJumping) {
-						CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
+					// if (deltaY > 0.412 && accelY > 0.25 && isJoined[plname] && isJumping) {
+					// 	CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
 
-						lagback(pl);
+					// 	lagback(pl);
 
-						cancelled = true;
-					};
+					// 	cancelled = true;
+					// };
 				};
 
 			};
@@ -745,6 +745,8 @@ events.entityKnockback.on((ev) => {
 		const now = Date.now();
 		if (now - damagedTime[plname] > 350) isKnockbacked[plname] = false;
 	}, 400);
+
+	airTicks[plname] = 0;
 });
 
 // events.fallOnBlock.on((ev)=> {
@@ -797,9 +799,11 @@ events.levelTick.on((ev) => {
 		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
 
 		if (TPS[plname] === 20 && !CIF.wasDetected[plname]) {
+			pl.sendMessage(`${PPS[plname]}`);
 
-			if (PPS[plname] < -60) {
-				PPS[plname] = -60;
+
+			if (PPS[plname] < -80) {
+				PPS[plname] = -80;
 			};
 
 			if (PPS[plname] > 26) {
@@ -807,12 +811,21 @@ events.levelTick.on((ev) => {
 
 				PPS[plname] = 20;
 			};
+
 			PPS[plname] -= 20;
 
 			TPS[plname] -= 20;
 		};
 	};
 });
+
+events.playerRespawn.on((ev)=> {
+	const pl = ev.player;
+	const plname = pl.getName();
+
+	PPS[plname] = 0;
+});
+
 // events.playerRespawn.on((ev) => {
 // 	const pl = ev.player;
 // 	const plname = pl.getName();
