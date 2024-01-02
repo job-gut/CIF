@@ -29,7 +29,7 @@ events.packetBefore(MinecraftPacketIds.MobEquipment).on((packet, netId, packetId
         const name = player.getName();
 
         if (!isInventoryOpen[name]) {
-            return CIF.failAndFlag(netId, "Offhand-A", "Set offhand without open an inventory", 2);
+            return CIF.failAndFlag(netId, "Offhand-A", "Set offhand without opening the inventory", 2);
         }
 
         const openTick = openInventoryTick[name];
