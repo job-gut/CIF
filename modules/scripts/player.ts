@@ -22,7 +22,7 @@ events.packetBefore(MinecraftPacketIds.MobEquipment).on((packet, netId, packetId
     if (!player) return;
 
     if (packet.containerId == ContainerId.Offhand && CIFconfig.Modules.player) {
-        let name = player.getNameTag();
+        let name = player.getName();
         if (!isInventoryOpen[name]) {
             return CIF.failAndFlag(netId, "Offhand-A", "Set offhand without open an inventory", 1);
         }
@@ -40,7 +40,7 @@ events.packetBefore(MinecraftPacketIds.ContainerClose).on((packet, netId, packet
     let player = netId.getActor();
     if (!player) return;
 
-    let name = player.getNameTag();
+    let name = player.getName();
     openInventoryTick[name] = 0;
     isInventoryOpen[name] = false;
 });
@@ -50,7 +50,7 @@ events.packetBefore(MinecraftPacketIds.Interact).on((packet, netId, packetId) =>
     if (!player) return;
 
     if (InteractPacket.Actions.OpenInventory == packet.action) {
-        let name = player.getNameTag();
+        let name = player.getName();
         openInventoryTick[name] = player.getLevel().getCurrentTick();
         isInventoryOpen[name] = true;
     }
