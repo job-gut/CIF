@@ -36,7 +36,7 @@ events.packetBefore(MinecraftPacketIds.MobEquipment).on((packet, netId, packetId
     }
 });
 
-events.packetBefore(MinecraftPacketIds.ContainerClose).on((packet, netId, packetId) => {
+events.packetAfter(MinecraftPacketIds.ContainerClose).on((packet, netId, packetId) => {
     let player = netId.getActor();
     if (!player) return;
 
