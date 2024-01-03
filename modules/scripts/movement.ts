@@ -651,7 +651,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 
 
-					if (deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 1) {
+					if (deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 4) {
 						CIF.failAndFlag(ni, "Fly-B", `No Y changes in mid-air`, 3);
 
 						lagback(pl);
