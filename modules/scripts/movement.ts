@@ -19,21 +19,16 @@ import { bedrockServer } from "bdsx/launcher";
 import { GameRuleId } from "bdsx/bds/gamerules";
 import { AttributeId } from "bdsx/bds/attribute";
 import { StringMappingType, parseIsolatedEntityName } from "typescript";
+import { BufferReader } from "ginkgoch-buffer-io";
 
 const UINTMAX = 0xffffffff;
 
-export const MovementType =
-	serverProperties["server-authoritative-movement"] === "client-auth"
-		? MinecraftPacketIds.MovePlayer
-		: MinecraftPacketIds.PlayerAuthInput;
-
+export const MovementType = serverProperties["server-authoritative-movement"] === "client-auth" ? MinecraftPacketIds.MovePlayer : MinecraftPacketIds.PlayerAuthInput;
 
 /** @description returns nearest value if this array's length is shorter than 20*/
-export const lastPositions: Record<string, { x: number, y: number, z: number }[]> = {};
-
+export const lastPositions: Record<string, { x: number; y: number; z: number }[]> = {};
 
 const lastBPSForExportedFunc: Record<string, number> = {};
-
 
 const lastBPS: Record<string, number> = {};
 
@@ -67,207 +62,270 @@ const isKnockbacked: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
 const pushedByPiston: Record<string, boolean> = {};
 
-
 const PPS: Record<string, number> = {};
 const TPS: Record<string, number> = {};
 
-export const lastRotations = new Map<string, { x: number; y: number }[]>();
-function appendRotationRecord(
-	player: ServerPlayer,
-	rotation: { x: number; y: number }
-) {
-	if (!player) return;
+const lastMoveActorAndTick = new Map<string, { tick: number; x: number; z: number }>();
 
-	const name = player.getName();
-	const currentRotation = lastRotations.get(name);
-	if (currentRotation === undefined) {
-		lastRotations.set(name, [rotation]);
-	} else {
-		currentRotation.unshift(rotation);
-		currentRotation.splice(3);
-		lastRotations.set(name, currentRotation);
-	}
-};
+export const lastRotations = new Map<string, { x: number; y: number }[]>();
+function appendRotationRecord(player: ServerPlayer, rotation: { x: number; y: number }) {
+    if (!player) return;
+
+    const name = player.getName();
+    const currentRotation = lastRotations.get(name);
+    if (currentRotation === undefined) {
+        lastRotations.set(name, [rotation]);
+    } else {
+        currentRotation.unshift(rotation);
+        currentRotation.splice(3);
+        lastRotations.set(name, currentRotation);
+    }
+}
 
 declare module "bdsx/bds/block" {
-	interface Block {
-		/**
-		 * Returns if mobs can be spawned on this block (Func from CIF)
-		 */
-		isSolid(): boolean;
-	}
-};
+    interface Block {
+        /**
+         * Returns if mobs can be spawned on this block (Func from CIF)
+         */
+        isSolid(): boolean;
+    }
+}
 
 Block.prototype.isSolid = procHacker.js("?isSolid@Block@@QEBA_NXZ", bool_t, {
-	this: Block,
+    this: Block,
 });
 
 declare module "bdsx/bds/player" {
-	interface Player {
-		/**
-		 * Returns if player is on ices (Func from CIF)
-		 */
-		onIce(): boolean;
+    interface Player {
+        /**
+         * Returns if player is on ices (Func from CIF)
+         */
+        onIce(): boolean;
 
-		/**
-		 * Func from CIF
-		 */
-		isSpinAttacking(): boolean;
+        /**
+         * Func from CIF
+         */
+        isSpinAttacking(): boolean;
 
-		/**
-		 * Returns player's latest speed [Meters/Second] (Func from CIF)
-		 */
-		getLastBPS(): number;
+        /**
+         * Returns player's latest speed [Meters/Second] (Func from CIF)
+         */
+        getLastBPS(): number;
 
-		/**
-		 * Returns if player is not on mid-air (Func from CIF)
-		 * @description In client-auth, onGround May Results client-side OnGround
-		 */
-		onGround(): boolean;
+        /**
+         * Returns if player is not on mid-air (Func from CIF)
+         * @description In client-auth, onGround May Results client-side OnGround
+         */
+        onGround(): boolean;
 
-		/**
-		 * Func from CIF
-		 */
-		isGlidingWithElytra(): boolean;
+        /**
+         * Func from CIF
+         */
+        isGlidingWithElytra(): boolean;
 
-		/**
-		 * Returns if player is under any blocks (Func from CIF)
-		 */
-		isUnderAnyBlock(): boolean;
+        /**
+         * Returns if player is under any blocks (Func from CIF)
+         */
+        isUnderAnyBlock(): boolean;
 
-		/**
-		 * Returns if player is on climbable blocks (Func from CIF)
-		 */
-		onClimbable(): boolean;
+        /**
+         * Returns if player is on climbable blocks (Func from CIF)
+         */
+        onClimbable(): boolean;
 
-		/**
-		 * Returns if player is on block that makes player falling slower (Func from CIF)
-		 */
-		onSlowFallingBlock(): boolean;
-	}
-};
+        /**
+         * Returns if player is on block that makes player falling slower (Func from CIF)
+         */
+        onSlowFallingBlock(): boolean;
+    }
+}
 
 Player.prototype.onIce = function () {
-	const pos = BlockPos.create(this.getFeetPos());
-	pos.y--;
-	const blockName1 = this.getRegion().getBlock(pos).getName();
+    const pos = BlockPos.create(this.getFeetPos());
+    pos.y--;
+    const blockName1 = this.getRegion().getBlock(pos).getName();
 
-	pos.y--;
-	const blockName2 = this.getRegion().getBlock(pos).getName();
-	return blockName1.includes("ice") || blockName2.includes("ice");
+    pos.y--;
+    const blockName2 = this.getRegion().getBlock(pos).getName();
+    return blockName1.includes("ice") || blockName2.includes("ice");
 };
 
 Player.prototype.isUnderAnyBlock = function () {
-	const pos = BlockPos.create(this.getPosition());
+    const pos = BlockPos.create(this.getPosition());
 
-	pos.y++;
-	const blockName1 = this.getRegion().getBlock(pos).getName();
+    pos.y++;
+    const blockName1 = this.getRegion().getBlock(pos).getName();
 
-	pos.y--;
-	const blockName2 = this.getRegion().getBlock(pos).getName();
-	return blockName1 !== "minecraft:air" || blockName2 !== "minecraft:air";
+    pos.y--;
+    const blockName2 = this.getRegion().getBlock(pos).getName();
+    return blockName1 !== "minecraft:air" || blockName2 !== "minecraft:air";
 };
 
 Player.prototype.isSpinAttacking = function () {
-	const plname = this.getName();
-	if (!isSpinAttacking[plname]) isSpinAttacking[plname] = false;
-	return isSpinAttacking[plname];
+    const plname = this.getName();
+    if (!isSpinAttacking[plname]) isSpinAttacking[plname] = false;
+    return isSpinAttacking[plname];
 };
 
 Player.prototype.getLastBPS = function () {
-	const plname = this.getName();
-	if (!lastBPSForExportedFunc[plname]) lastBPSForExportedFunc[plname] = 0;
-	return lastBPSForExportedFunc[plname];
+    const plname = this.getName();
+    if (!lastBPSForExportedFunc[plname]) lastBPSForExportedFunc[plname] = 0;
+    return lastBPSForExportedFunc[plname];
 };
 
 Player.prototype.onGround = function () {
-	const plname = this.getName();
-	if (!onGround[plname]) onGround[plname] = false;
-	return onGround[plname];
+    const plname = this.getName();
+    if (!onGround[plname]) onGround[plname] = false;
+    return onGround[plname];
 };
 
 Player.prototype.isGlidingWithElytra = function () {
-	const plname = this.getName();
-	if (!usedElytra[plname]) usedElytra[plname] = false;
-	return usedElytra[plname];
+    const plname = this.getName();
+    if (!usedElytra[plname]) usedElytra[plname] = false;
+    return usedElytra[plname];
 };
 
 Player.prototype.onClimbable = function () {
-	const player: ServerPlayer = this;
+    const player: ServerPlayer = this;
 
-	const region = player.getRegion()!;
+    const region = player.getRegion()!;
 
-	const feetPos = player.getFeetPos();
-	const headPos = player.getPosition();
+    const feetPos = player.getFeetPos();
+    const headPos = player.getPosition();
 
-	const currentPosBlock = region.getBlock(
-		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
-	);
-	const currentUnderPosBlock = region.getBlock(
-		BlockPos.create(feetPos.x, feetPos.y - 0.95, feetPos.z)
-	);
-	const currentHeadPosBlock = region.getBlock(
-		BlockPos.create(headPos.x, headPos.y, headPos.z)
-	);
+    const currentPosBlock = region.getBlock(BlockPos.create(feetPos.x, feetPos.y, feetPos.z));
+    const currentUnderPosBlock = region.getBlock(BlockPos.create(feetPos.x, feetPos.y - 0.95, feetPos.z));
+    const currentHeadPosBlock = region.getBlock(BlockPos.create(headPos.x, headPos.y, headPos.z));
 
-	if (currentPosBlock.getName().includes("ladder")
-		|| currentPosBlock.getName().includes("vine")
-		|| currentPosBlock.getName().includes("powder_snow")
-		|| currentHeadPosBlock.getName().includes("ladder")
-		|| currentHeadPosBlock.getName().includes("vine")
-		|| currentHeadPosBlock.getName().includes("powder_snow")
-		|| currentUnderPosBlock.getName().includes("ladder")
-		|| currentUnderPosBlock.getName().includes("vine")
-		|| currentUnderPosBlock.getName().includes("powder_snow")
-	) return true;
+    if (
+        currentPosBlock.getName().includes("ladder") ||
+        currentPosBlock.getName().includes("vine") ||
+        currentPosBlock.getName().includes("powder_snow") ||
+        currentHeadPosBlock.getName().includes("ladder") ||
+        currentHeadPosBlock.getName().includes("vine") ||
+        currentHeadPosBlock.getName().includes("powder_snow") ||
+        currentUnderPosBlock.getName().includes("ladder") ||
+        currentUnderPosBlock.getName().includes("vine") ||
+        currentUnderPosBlock.getName().includes("powder_snow")
+    )
+        return true;
 
-	return false;
+    return false;
 };
 
 Player.prototype.onSlowFallingBlock = function () {
-	const player: ServerPlayer = this;
+    const player: ServerPlayer = this;
 
-	const region = player.getRegion()!;
+    const region = player.getRegion()!;
 
-	const feetPos = player.getFeetPos();
-	const headPos = player.getPosition();
+    const feetPos = player.getFeetPos();
+    const headPos = player.getPosition();
 
-	const currentPosBlock = region.getBlock(
-		BlockPos.create(feetPos.x, feetPos.y, feetPos.z)
-	);
-	const currentHeadPosBlock = region.getBlock(
-		BlockPos.create(headPos.x, headPos.y, headPos.z)
-	);
+    const currentPosBlock = region.getBlock(BlockPos.create(feetPos.x, feetPos.y, feetPos.z));
+    const currentHeadPosBlock = region.getBlock(BlockPos.create(headPos.x, headPos.y, headPos.z));
 
-	if (currentPosBlock.getName().includes("honey")
-		|| currentPosBlock.getName().includes("web")
-		|| currentHeadPosBlock.getName().includes("honey")
-		|| currentHeadPosBlock.getName().includes("web")
-	) return true;
+    if (
+        currentPosBlock.getName().includes("honey") ||
+        currentPosBlock.getName().includes("web") ||
+        currentHeadPosBlock.getName().includes("honey") ||
+        currentHeadPosBlock.getName().includes("web")
+    )
+        return true;
 
-	return false;
+    return false;
 };
 
+enum MoveActorAbsolutePacketFlags {
+    Telported = 248,
+    OnGround = 249,
+}
+
+events.packetRaw(MinecraftPacketIds.MoveActorAbsolute).on((ptr, size, netId, packetId) => {
+    const bs = new BufferReader(Buffer.from(ptr.getBuffer(size)));
+
+    const id = bs.nextBuffer(size - 1 - 15);
+    const flags = bs.nextBuffer(1);
+    const x = bs.nextFloat();
+    const y = bs.nextFloat();
+    const z = bs.nextFloat();
+    // const pitch = bs.nextBuffer(1)
+    // const headYaw = bs.nextBuffer(1)
+    // const yawRespectively = bs.nextBuffer(1)
+
+    // Entity-Fly
+
+    const pos = BlockPos.allocate();
+    pos.x = x;
+    pos.y = y - 1;
+    pos.z = z;
+
+    let isInAir = true;
+
+    for (let addToX = -2; addToX <= 2; addToX++) {
+        for (let addToZ = -2; addToZ <= 2; addToZ++) {
+            const checkPos = BlockPos.allocate(pos);
+            checkPos.x += addToX;
+            checkPos.z += addToZ;
+
+            const block = netId.getActor()!.getRegion().getBlock(checkPos);
+            if (block.getName() != "minecraft:air") {
+                isInAir = false;
+                break;
+            }
+        }
+    }
+
+    if (flags[0] == MoveActorAbsolutePacketFlags.OnGround) {
+        if (isInAir) {
+            CIF.failAndFlag(netId, "EntityFly-A", "Sent MoveActorAbsolute packet with onGround flag, beeing the air", 2);
+        }
+    }
+
+    // Entity-Speed
+
+    const player = netId.getActor()!;
+
+    const last = lastMoveActorAndTick.get(player.getName());
+
+    if (last) {
+        const distance = Math.sqrt(Math.pow(x - last.x, 2) + Math.pow(z - last.z, 2));
+        const ticks = Math.abs(player.getLevel().getCurrentTick() - last.tick);
+        const BlocksPerTick = distance / ticks;
+
+        if (BlocksPerTick != Infinity && BlocksPerTick > 1.5) {
+            CIF.failAndFlag(netId, "EntitySpeed-A", "Moving faster than 1.5 blocks per tick", 2);
+        }
+    }
+
+    lastMoveActorAndTick.set(player.getName(), { tick: player.getLevel().getCurrentTick(), x: x, z: z });
+});
+
+events.entityStopRiding.on(ev => {
+    if (ev.entity.isPlayer()) {
+        lastMoveActorAndTick.delete(ev.entity.getName());
+    }
+});
+
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
-	const pl = ni.getActor()!;
-	if (!pl) return;
-	const plname = pl.getName();
-	if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack && pl.getMainhandSlot().getRawNameId().includes("trident")) {
-		isSpinAttacking[plname] = true;
-	} else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
-		setTimeout(() => {
-			isSpinAttacking[plname] = false;
-		}, 150);
-	};
+    const pl = ni.getActor()!;
+    if (!pl) return;
+    const plname = pl.getName();
+    if (pkt.action === PlayerActionPacket.Actions.StartSpinAttack && pl.getMainhandSlot().getRawNameId().includes("trident")) {
+        isSpinAttacking[plname] = true;
+    } else if (pkt.action === PlayerActionPacket.Actions.StopSpinAttack) {
+        setTimeout(() => {
+            isSpinAttacking[plname] = false;
+        }, 150);
+    }
 });
 
 function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
-	return (<MovePlayerPacket>pkt).onGround !== undefined;
-};
+    return (<MovePlayerPacket>pkt).onGround !== undefined;
+}
 
 function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
-	return (<PlayerAuthInputPacket>pkt).moveX !== undefined;
-};
+    return (<PlayerAuthInputPacket>pkt).moveX !== undefined;
+}
 
 // class FishingHook extends Actor {
 // }
@@ -290,25 +348,25 @@ function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
 // const _onRetrieve = procHacker.hooking("?retrieve@FishingHook@@QEAAHXZ", int32_t, null, FishingHook)(onRetrieve);
 
 const startGlide = procHacker.hooking(
-	"?tryStartGliding@Player@@QEAA_NXZ",
-	void_t,
-	null,
-	Player
-)((player) => {
-	usedElytra[player.getName()] = true;
-	return startGlide(player);
+    "?tryStartGliding@Player@@QEAA_NXZ",
+    void_t,
+    null,
+    Player,
+)(player => {
+    usedElytra[player.getName()] = true;
+    return startGlide(player);
 });
 
 const stopGlide = procHacker.hooking(
-	"?stopGliding@Player@@QEAAXXZ",
-	void_t,
-	null,
-	Player
-)((player) => {
-	setTimeout(() => {
-		usedElytra[player.getName()] = false;
-	}, 2000);
-	return stopGlide(player);
+    "?stopGliding@Player@@QEAAXXZ",
+    void_t,
+    null,
+    Player,
+)(player => {
+    setTimeout(() => {
+        usedElytra[player.getName()] = false;
+    }, 2000);
+    return stopGlide(player);
 });
 
 // const pistonPush = procHacker.hooking(
@@ -330,423 +388,427 @@ const stopGlide = procHacker.hooking(
 // 	return pistonPush(blockActor, actor, pos);
 // });
 
-function setLastPositions(playerName: string, lastPosition: { x: number, y: number, z: number }): void {
-	const currentValue = lastPositions[playerName];
+function setLastPositions(playerName: string, lastPosition: { x: number; y: number; z: number }): void {
+    const currentValue = lastPositions[playerName];
 
-	if (currentValue === undefined || currentValue.length !== 20) {
-		const array: { x: number, y: number, z: number }[] = [];
+    if (currentValue === undefined || currentValue.length !== 20) {
+        const array: { x: number; y: number; z: number }[] = [];
 
-		for (let i = 0; i < 20; i++) {
-			array.push(lastPosition);
-		};
+        for (let i = 0; i < 20; i++) {
+            array.push(lastPosition);
+        }
 
-		lastPositions[playerName] = array;
-		return;
-	};
+        lastPositions[playerName] = array;
+        return;
+    }
 
-	lastPositions[playerName] = lastPositions[playerName].splice(0, 19);
-	lastPositions[playerName].unshift(lastPosition);
-};
+    lastPositions[playerName] = lastPositions[playerName].splice(0, 19);
+    lastPositions[playerName].unshift(lastPosition);
+}
 
+events.playerJump.on(ev => {
+    const pl = ev.player;
+    const plname = pl.getName();
 
-events.playerJump.on((ev) => {
-	const pl = ev.player;
-	const plname = pl.getName();
+    const tick = pl.getLevel().getCurrentTick();
 
-	const tick = pl.getLevel().getCurrentTick();
+    // if (CIFconfig.Modules.movement) if (!pl.onGround() && !pl.isFlying() && pl.getGameType() !== GameType.Creative) CIF.detect(pl.getNetworkIdentifier(), "AirJump-B", "Jumps if player isn't on ground");
 
-	// if (CIFconfig.Modules.movement) if (!pl.onGround() && !pl.isFlying() && pl.getGameType() !== GameType.Creative) CIF.detect(pl.getNetworkIdentifier(), "AirJump-B", "Jumps if player isn't on ground");
-
-	jumpedTick[plname] = tick;
+    jumpedTick[plname] = tick;
 });
 
-
 function lagback(pl: ServerPlayer): void {
-	const plname = pl.getName();
+    const plname = pl.getName();
 
-	let lastposit = lastpos[plname];
-	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-};
-
+    let lastposit = lastpos[plname];
+    if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+    pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+}
 
 events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
-	const pl = ni.getActor();
-	if (!pl) return;
+    const pl = ni.getActor();
+    if (!pl) return;
 
-	pl.syncAbilities();
+    pl.syncAbilities();
 
-	const plname = pl.getName();
+    const plname = pl.getName();
 
-	const movePos = pkt.pos;
-	movePos.y -= 2.37998962402343 - 0.759979248046875;
+    const movePos = pkt.pos;
+    movePos.y -= 2.37998962402343 - 0.759979248046875;
 
-	if (typeof airTicks[plname] !== "number") airTicks[plname] = 0;
-	if (typeof groundTicks[plname] !== "number") groundTicks[plname] = 0;
-	if (typeof averageActualBPS[plname] !== "number") averageActualBPS[plname] = 0;
-	if (typeof averageMaxBPS[plname] !== "number") averageMaxBPS[plname] = 0;
-	if (typeof averageStacks[plname] !== "number") averageStacks[plname] = 0;
-	if (typeof ticksAfterTeleport[plname] !== "number") ticksAfterTeleport[plname] = 0;
+    if (typeof airTicks[plname] !== "number") airTicks[plname] = 0;
+    if (typeof groundTicks[plname] !== "number") groundTicks[plname] = 0;
+    if (typeof averageActualBPS[plname] !== "number") averageActualBPS[plname] = 0;
+    if (typeof averageMaxBPS[plname] !== "number") averageMaxBPS[plname] = 0;
+    if (typeof averageStacks[plname] !== "number") averageStacks[plname] = 0;
+    if (typeof ticksAfterTeleport[plname] !== "number") ticksAfterTeleport[plname] = 0;
 
-	if (typeof PPS[plname] !== "number") PPS[plname] = 0;
-	if (isNaN(PPS[plname])) PPS[plname] = 0;
+    if (typeof PPS[plname] !== "number") PPS[plname] = 0;
+    if (isNaN(PPS[plname])) PPS[plname] = 0;
 
-	if (isJoined[plname]) PPS[plname]++;
+    if (isJoined[plname]) PPS[plname]++;
 
-	const region = pl.getRegion()!;
+    const region = pl.getRegion()!;
 
-	let actualOnGround = false;
+    let actualOnGround = false;
 
+    if (
+        region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air"
+    ) {
+        actualOnGround = true;
+    }
 
-	if (region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.1, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.1, movePos.z - 0.299)).getName() !== "minecraft:air") {
-		actualOnGround = true;
-	};
+    if (
+        region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
+        region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air"
+    ) {
+        actualOnGround = true;
+    }
 
-	if (region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x - 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z + 0.299)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x + 0.299, movePos.y - 0.51, movePos.z)).getName() !== "minecraft:air" ||
-		region.getBlock(BlockPos.create(movePos.x, movePos.y - 0.51, movePos.z - 0.299)).getName() !== "minecraft:air") {
-		actualOnGround = true;
-	};
+    const og = actualOnGround;
 
-	const og = actualOnGround;
+    onGround[plname] = og;
 
-	onGround[plname] = og;
+    if (pl.onClimbable() || pl.onSlowFallingBlock() || pl.isInWater()) onGround[plname] = true;
 
-	if (pl.onClimbable() || pl.onSlowFallingBlock() || pl.isInWater()) onGround[plname] = true;
+    if (pl.onGround()) {
+        airTicks[plname] = 0;
+        groundTicks[plname]++;
+    } else {
+        airTicks[plname]++;
+        groundTicks[plname] = 0;
+    }
+
+    if (!lastpos[plname]) lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+
+    const rotation = {
+        x: pkt.headYaw,
+        y: pkt.pitch,
+    };
+
+    appendRotationRecord(pl, rotation);
 
-	if (pl.onGround()) {
-		airTicks[plname] = 0;
-		groundTicks[plname]++;
-	} else {
-		airTicks[plname]++;
-		groundTicks[plname] = 0;
-	};
+    const deltaXZ = Math.sqrt(pkt.delta.x ** 2 + pkt.delta.z ** 2);
+    const ZXlastDelta = lastDeltaXZ[plname];
 
-	if (!lastpos[plname]) lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+    const YlastDelta = lastDeltaY[plname];
 
-	const rotation = {
-		x: pkt.headYaw,
-		y: pkt.pitch,
-	};
+    const yaw = pkt.yaw;
+    const deltaYaw = Math.abs(yaw - lastYaw[plname]);
 
-	appendRotationRecord(pl, rotation);
+    const accel = deltaXZ - ZXlastDelta;
+    const AbsSquaredAccel = Math.abs(accel) * 100;
+    const squaredLastAccel = lastAccel[plname] * 100;
 
-	const deltaXZ = Math.sqrt(pkt.delta.x ** 2 + pkt.delta.z ** 2);
-	const ZXlastDelta = lastDeltaXZ[plname];
+    const prediction = ZXlastDelta * 0.91;
+    const predDiff = deltaXZ - prediction - 0.024;
 
-	const YlastDelta = lastDeltaY[plname];
+    const deltaY = pkt.delta.y + 0.07840000092983246;
 
-	const yaw = pkt.yaw;
-	const deltaYaw = Math.abs(yaw - lastYaw[plname]);
+    const accelY = deltaY - YlastDelta;
 
-	const accel = deltaXZ - ZXlastDelta;
-	const AbsSquaredAccel = Math.abs(accel) * 100;
-	const squaredLastAccel = lastAccel[plname] * 100;
+    const maxBPS = pl.getSpeed() * 43.5;
+    const maxJumpBPS = pl.getSpeed() * 107;
 
-	const prediction = ZXlastDelta * 0.91;
-	const predDiff = deltaXZ - prediction - 0.024;
+    const ActualBPS = ZXlastDelta * 36.65;
 
-	const deltaY = pkt.delta.y + 0.07840000092983246;
+    const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
+
+    const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
+    const isPressingJump = pkt.getInput(PlayerAuthInputPacket.InputData.JumpDown);
+    const wantJump = pkt.getInput(PlayerAuthInputPacket.InputData.WantUp);
+
+    const isStartJump = pkt.getInput(PlayerAuthInputPacket.InputData.StartJumping);
 
-	const accelY = deltaY - YlastDelta;
+    const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
+
+    const plRespawnPos = pl.getSpawnPosition();
 
-	const maxBPS = pl.getSpeed() * 43.5;
-	const maxJumpBPS = pl.getSpeed() * 107;
+    if (hasTeleportedServerSidely[plname] === true && !isTeleported) ticksAfterTeleport[plname]++;
+    else {
+        ticksAfterTeleport[plname] = 0;
+        hasTeleportedServerSidely[plname] = false;
+    }
+
+    const realBPS = Math.sqrt((movePos.x - lastpos[plname][0]) ** 2 + (movePos.z - lastpos[plname][2]) ** 2) * 20;
+
+    if (groundTicks[plname] > 4 && !isStartJump && !isJumping) {
+        averageStacks[plname]++;
+
+        if (averageStacks[plname] > 0) {
+            averageMaxBPS[plname] += maxBPS;
+            averageActualBPS[plname] += ActualBPS;
+        }
+    } else {
+        averageMaxBPS[plname] = 0;
+        averageActualBPS[plname] = 0;
+        averageStacks[plname] = -5;
+    }
+
+    let cancelled = false;
+
+    if (CIFconfig.Modules.movement) {
+        if ((pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) && isJoined[plname] && !isTeleported) {
+            //AUTOJUMP
+
+            if (isStartJump && !(isPressingJump || wantJump)) {
+                CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
+
+                lagback(pl);
+                cancelled = true;
+            }
+
+            if (
+                !pl.getAbilities().getAbility(AbilitiesIndex.MayFly).getBool() &&
+                !pl.getAbilities().getAbility(AbilitiesIndex.Flying).getBool() &&
+                !pl.isFlying() &&
+                !pl.isGlidingWithElytra() &&
+                !pl.isSpinAttacking()
+            ) {
+                //DISABLER
+
+                if (
+                    (pkt.getInput(PlayerAuthInputPacket.InputData.Up) ||
+                        pkt.getInput(PlayerAuthInputPacket.InputData.Left) ||
+                        pkt.getInput(PlayerAuthInputPacket.InputData.Right) ||
+                        pkt.getInput(PlayerAuthInputPacket.InputData.Down)) &&
+                    !isTeleported &&
+                    deltaXZ === 0 &&
+                    ZXlastDelta === 0 &&
+                    realBPS > 3
+                ) {
+                    CIF.failAndFlag(ni, "Disabler-A", "No DeltaXZ while pressing key", 5);
+
+                    lagback(pl);
+                    cancelled = true;
+                }
+
+                if (ticksAfterTeleport[plname] > Math.ceil((playerPing / 50) * 2) + 2) {
+                    CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
+
+                    lagback(pl);
+                    cancelled = true;
+                }
+
+                //SPEED
+
+                if (!pl.onClimbable()) {
+                    if (averageStacks[plname] >= 4) {
+                        const avrMaxBPS = averageMaxBPS[plname] / averageStacks[plname];
+                        const avrActualBPS = averageActualBPS[plname] / averageStacks[plname];
+
+                        averageMaxBPS[plname] = 0;
+                        averageActualBPS[plname] = 0;
+                        averageStacks[plname] = 0;
+
+                        if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname] && !pl.onIce()) {
+                            CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
+
+                            lagback(pl);
+                            cancelled = true;
+                        }
+                    }
+
+                    if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && squaredLastAccel >= 6 && !isKnockbacked[plname] && !pl.onIce()) {
+                        CIF.failAndFlag(ni, "Speed-B", `Too Fast | BPS: ${ActualBPS.toFixed(2)}`, 3);
+
+                        lagback(pl);
+                        cancelled = true;
+                    }
+
+                    if (deltaYaw > 1.5 && deltaXZ > 0.15 && AbsSquaredAccel < 1.0e-5) {
+                        CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around [Strafe]`, 3);
+
+                        lagback(pl);
+                        cancelled = true;
+                    }
+
+                    // if (predDiff > 0 && airTicks[plname] > 2 && !isKnockbacked[plname] &&!actualOnGround) {
+                    // 	CIF.failAndFlag(ni, `Speed-F`, `Invalid deceleration while being in air`, 3);
+
+                    // 	let lastposit = lastpos[plname];
+                    // 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+                    // 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+                    // 	cancelled = true;
+                    // };
+                }
 
-	const ActualBPS = ZXlastDelta * 36.65;
+                // TP
 
-	const isTeleported = pkt.getInput(PlayerAuthInputPacket.InputData.HandledTeleport);
+                if (
+                    ((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= 0.9 && !isKnockbacked[plname]) || realBPS / 20 > 4) &&
+                    !isTeleported &&
+                    movePos.distance(plRespawnPos) > 1.75 &&
+                    !pushedByPiston[plname]
+                ) {
+                    CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
 
-	const isJumping = pkt.getInput(PlayerAuthInputPacket.InputData.Jumping);
-	const isPressingJump = pkt.getInput(PlayerAuthInputPacket.InputData.JumpDown);
-	const wantJump = pkt.getInput(PlayerAuthInputPacket.InputData.WantUp);
+                    lagback(pl);
+                    cancelled = true;
+                }
 
-	const isStartJump = pkt.getInput(PlayerAuthInputPacket.InputData.StartJumping);
+                // FLY
 
-	const playerPing = bedrockServer.rakPeer.GetLastPing(ni.address);
-
-	const plRespawnPos = pl.getSpawnPosition();
-
-	if (hasTeleportedServerSidely[plname] === true && !isTeleported) ticksAfterTeleport[plname]++;
-	else {
-		ticksAfterTeleport[plname] = 0;
-		hasTeleportedServerSidely[plname] = false
-	};
-
-	const realBPS = Math.sqrt((movePos.x - lastpos[plname][0]) ** 2 + (movePos.z - lastpos[plname][2]) ** 2) * 20;
-
-	if (groundTicks[plname] > 4 && !isStartJump && !isJumping) {
-		averageStacks[plname]++;
-
-		if (averageStacks[plname] > 0) {
-			averageMaxBPS[plname] += maxBPS;
-			averageActualBPS[plname] += ActualBPS;
-		};
-	} else {
-		averageMaxBPS[plname] = 0;
-		averageActualBPS[plname] = 0;
-		averageStacks[plname] = -5;
-	};
-
-	let cancelled = false;
-
-	if (CIFconfig.Modules.movement) {
-
-		if ((pl.getGameType() === GameType.Survival || pl.getGameType() === GameType.Adventure) && isJoined[plname] && !isTeleported) {
-
-
-			//AUTOJUMP
-
-
-			if (isStartJump && !(isPressingJump || wantJump)) {
-				CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
-
-				lagback(pl);
-				cancelled = true;
-			};
-
-
-			if (!pl.getAbilities().getAbility(AbilitiesIndex.MayFly).getBool() &&
-				!pl.getAbilities().getAbility(AbilitiesIndex.Flying).getBool()
-				&& !pl.isFlying()
-				&& !pl.isGlidingWithElytra() && !pl.isSpinAttacking()) {
-
-
-				//DISABLER
-
-
-				if ((pkt.getInput(PlayerAuthInputPacket.InputData.Up) ||
-					pkt.getInput(PlayerAuthInputPacket.InputData.Left) ||
-					pkt.getInput(PlayerAuthInputPacket.InputData.Right) ||
-					pkt.getInput(PlayerAuthInputPacket.InputData.Down)) && !isTeleported && deltaXZ === 0 && ZXlastDelta === 0
-					&& realBPS > 3) {
-					CIF.failAndFlag(ni, "Disabler-A", "No DeltaXZ while pressing key", 5);
-
-					lagback(pl);
-					cancelled = true;
-				};
-
-
-				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 2) {
-					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
-
-					lagback(pl);
-					cancelled = true;
-				};
-
-
-				//SPEED
-
-
-				if (!pl.onClimbable()) {
-					if (averageStacks[plname] >= 4) {
-						const avrMaxBPS = averageMaxBPS[plname] / averageStacks[plname];
-						const avrActualBPS = averageActualBPS[plname] / averageStacks[plname];
-
-						averageMaxBPS[plname] = 0;
-						averageActualBPS[plname] = 0;
-						averageStacks[plname] = 0;
-
-						if (avrActualBPS - avrMaxBPS > 0.9 && pl.onGround() && groundTicks[plname] > 4 && !isKnockbacked[plname] && !pl.onIce()) {
-							CIF.failAndFlag(ni, "Speed-A", `Vanilla increased Speed`, 3);
-
-							lagback(pl);
-							cancelled = true;
-						};
-					};
-
-					if (ActualBPS > maxJumpBPS && maxJumpBPS > 0 && squaredLastAccel >= 6 && !isKnockbacked[plname] && !pl.onIce()) {
-						CIF.failAndFlag(ni, "Speed-B", `Too Fast | BPS: ${ActualBPS.toFixed(2)}`, 3);
-
-						lagback(pl);
-						cancelled = true;
-					};
-
-					if (deltaYaw > 1.5 && deltaXZ > .150 && AbsSquaredAccel < 1.0E-5) {
-						CIF.failAndFlag(ni, "Speed-E", `Invalid deceleration while turning around [Strafe]`, 3);
-
-						lagback(pl);
-						cancelled = true;
-					};
-
-					// if (predDiff > 0 && airTicks[plname] > 2 && !isKnockbacked[plname] &&!actualOnGround) {
-					// 	CIF.failAndFlag(ni, `Speed-F`, `Invalid deceleration while being in air`, 3);
-
-					// 	let lastposit = lastpos[plname];
-					// 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					// 	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
-					// 	cancelled = true;
-					// };
-				};
-
-
-				// TP
-
-
-				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported
-					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname]) {
-					CIF.failAndFlag(ni, "Teleport", `Moved too fast in 1 tick`, 1);
-
-					lagback(pl);
-					cancelled = true;
-				};
-
-
-				// FLY
-
-
-				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname] && !pl.onGround()) {
-
-					if (airTicks[plname] > 2 && deltaY < 0 && accelY === 0) {
-						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
-
-						lagback(pl);
-
-						cancelled = true;
-					};
-
-					// if (airTicks[plname] > 29 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5 && !isKnockbacked[plname]) {
-					// 	CIF.failAndFlag(ni, "Fly-D", `Glides less, less`, 3);
-
-					// 	let lastposit = lastpos[plname];
-					// 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-					// 	pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
-
-					// 	cancelled = true;
-					// };
-
-					if (airTicks[plname] > 4 && deltaY > 0 && accelY === 0 && !isStartJump) {
-						CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
-
-						lagback(pl);
-
-						cancelled = true;
-					};
-
-
-
-					if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
-						if (airTicks[plname] > 19 && deltaY > -0.5 && deltaY < 0 && !isKnockbacked[plname]) {
-							CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 3);
-
-							lagback(pl);
-
-							cancelled = true;
-						};
-					};
-
-
-					if (deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 1) {
-						CIF.failAndFlag(ni, "Fly-B", `No Y changes in mid-air`, 3);
-
-						lagback(pl);
-
-						cancelled = true;
-					};
-
-
-					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && accelY > 0/*&& accelY !== 0.4115999788045883 
-						&& deltaY !== 0.4115999788045883*/) {
-						CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 3);
-
-						lagback(pl);
-
-						cancelled = true;
-					};
-
-					if (airTicks[plname] > 7 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 2.5) {
-						CIF.failAndFlag(ni, `Fly-G`, `Too high Y position from the last ground`, 2);
-
-						lagback(pl);
-
-						cancelled = true;
-					};
-
-
-					//High Jump
-
-
-					// if (deltaY > 0.412 && accelY > 0.25 && isJoined[plname] && isJumping) {
-					// 	CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
-
-					// 	lagback(pl);
-
-					// 	cancelled = true;
-					// };
-				};
-
-			};
-
-		};
-
-	};
-
-	if (pl.onGround()) {
-		lagbackPos[plname] = [movePos.x, movePos.y, movePos.z];
-	};
-
-	lastDeltaXZ[plname] = deltaXZ;
-	lastDeltaY[plname] = deltaY;
-
-	lastBPSForExportedFunc[plname] = ActualBPS;
-
-	if (!cancelled) {
-		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
-		setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
-		lastAccel[plname] = accel;
-	} else {
-		lastpos[plname] = lastpos[plname];
-		lastAccel[plname] = lastAccel[plname];
-		setLastPositions(plname, { x: lastpos[plname][0], y: lastpos[plname][1], z: lastpos[plname][2] });
-	};
-
-	movePos.y += 2.37998962402343 - 0.759979248046875;
-	lastYaw[plname] = yaw;
+                if (
+                    !pl.isRiding() &&
+                    !pl.isInLava() &&
+                    !pl.isInWater() &&
+                    !pl.isInScaffolding() &&
+                    !pl.isInSnow() &&
+                    !pl.onClimbable() &&
+                    !pl.onSlowFallingBlock() &&
+                    !pl.hasEffect(MobEffectIds.Levitation) &&
+                    !pl.hasEffect(MobEffectIds.JumpBoost) &&
+                    !isTeleported &&
+                    isJoined[plname] &&
+                    !pl.onGround()
+                ) {
+                    if (airTicks[plname] > 2 && deltaY < 0 && accelY === 0) {
+                        CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
+
+                        lagback(pl);
+
+                        cancelled = true;
+                    }
+
+                    // if (airTicks[plname] > 29 && !pl.onGround() && deltaY < 0 && accelY < 0 && deltaY > -0.5 && !isKnockbacked[plname]) {
+                    // 	CIF.failAndFlag(ni, "Fly-D", `Glides less, less`, 3);
+
+                    // 	let lastposit = lastpos[plname];
+                    // 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
+                    // 	pl.runCommand(`tp ${lastposit[0]} ~ ${lastposit[2]}`);
+
+                    // 	cancelled = true;
+                    // };
+
+                    if (airTicks[plname] > 4 && deltaY > 0 && accelY === 0 && !isStartJump) {
+                        CIF.failAndFlag(ni, "Fly-C", `Flew up constantly`, 5);
+
+                        lagback(pl);
+
+                        cancelled = true;
+                    }
+
+                    if (!pl.hasEffect(MobEffectIds.SlowFalling)) {
+                        if (airTicks[plname] > 19 && deltaY > -0.5 && deltaY < 0 && !isKnockbacked[plname]) {
+                            CIF.failAndFlag(ni, "Fly-E", `Glides too slowly`, 3);
+
+                            lagback(pl);
+
+                            cancelled = true;
+                        }
+                    }
+
+                    if (deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 1) {
+                        CIF.failAndFlag(ni, "Fly-B", `No Y changes in mid-air`, 3);
+
+                        lagback(pl);
+
+                        cancelled = true;
+                    }
+
+                    if (
+                        airTicks[plname] > 9 &&
+                        deltaY > 0 &&
+                        !isKnockbacked[plname] &&
+                        accelY > 0 /*&& accelY !== 0.4115999788045883 
+						&& deltaY !== 0.4115999788045883*/
+                    ) {
+                        CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 3);
+
+                        lagback(pl);
+
+                        cancelled = true;
+                    }
+
+                    if (airTicks[plname] > 7 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 2.5) {
+                        CIF.failAndFlag(ni, `Fly-G`, `Too high Y position from the last ground`, 2);
+
+                        lagback(pl);
+
+                        cancelled = true;
+                    }
+
+                    //High Jump
+
+                    // if (deltaY > 0.412 && accelY > 0.25 && isJoined[plname] && isJumping) {
+                    // 	CIF.failAndFlag(ni, "HighJump", `Jumps too POWERFUL`, 2);
+
+                    // 	lagback(pl);
+
+                    // 	cancelled = true;
+                    // };
+                }
+            }
+        }
+    }
+
+    if (pl.onGround()) {
+        lagbackPos[plname] = [movePos.x, movePos.y, movePos.z];
+    }
+
+    lastDeltaXZ[plname] = deltaXZ;
+    lastDeltaY[plname] = deltaY;
+
+    lastBPSForExportedFunc[plname] = ActualBPS;
+
+    if (!cancelled) {
+        lastpos[plname] = [movePos.x, movePos.y, movePos.z];
+        setLastPositions(plname, { x: movePos.x, y: movePos.y, z: movePos.z });
+        lastAccel[plname] = accel;
+    } else {
+        lastpos[plname] = lastpos[plname];
+        lastAccel[plname] = lastAccel[plname];
+        setLastPositions(plname, { x: lastpos[plname][0], y: lastpos[plname][1], z: lastpos[plname][2] });
+    }
+
+    movePos.y += 2.37998962402343 - 0.759979248046875;
+    lastYaw[plname] = yaw;
 });
 
 const hasTeleport = procHacker.hooking(
-	"?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z",
-	void_t,
-	null,
-	ServerPlayer,
-	Vec3
+    "?teleportTo@Player@@UEAAXAEBVVec3@@_NHH1@Z",
+    void_t,
+    null,
+    ServerPlayer,
+    Vec3,
 )((pl, pos) => {
-	const plname = pl.getName()!;
+    const plname = pl.getName()!;
 
-	hasTeleportedServerSidely[plname] = true;
-	ticksAfterTeleport[plname] = 0;
+    hasTeleportedServerSidely[plname] = true;
+    ticksAfterTeleport[plname] = 0;
 
-	return hasTeleport(pl, pos);
+    return hasTeleport(pl, pos);
 });
 
-events.entityKnockback.on((ev) => {
-	if (!ev.target.isPlayer()) return;
+events.entityKnockback.on(ev => {
+    if (!ev.target.isPlayer()) return;
 
-	const pl = ev.target as ServerPlayer;
-	const plname = pl.getName();
-	isKnockbacked[plname] = true;
-	damagedTime[plname] = Date.now();
-	setTimeout(() => {
-		const now = Date.now();
-		if (now - damagedTime[plname] > 350) isKnockbacked[plname] = false;
-	}, 400);
+    const pl = ev.target as ServerPlayer;
+    const plname = pl.getName();
+    isKnockbacked[plname] = true;
+    damagedTime[plname] = Date.now();
+    setTimeout(() => {
+        const now = Date.now();
+        if (now - damagedTime[plname] > 350) isKnockbacked[plname] = false;
+    }, 400);
 
-	airTicks[plname] = 0;
+    airTicks[plname] = 0;
 });
 
 // events.fallOnBlock.on((ev)=> {
@@ -759,69 +821,68 @@ events.entityKnockback.on((ev) => {
 // 	if (ev.block.getName() !== "minecraft:air") airTicks[plname] = 0;
 // });
 
-events.playerJoin.on((ev) => {
-	const pl = ev.player;
-	const plname = pl.getName();
+events.playerJoin.on(ev => {
+    const pl = ev.player;
+    const plname = pl.getName();
 
-	setTimeout(() => {
-		isJoined[plname] = true;
-	}, 2000);
+    setTimeout(() => {
+        isJoined[plname] = true;
+    }, 2000);
 });
 
-events.networkDisconnected.on((ni) => {
-	const pl = ni.getActor();
-	if (!pl) return;
+events.networkDisconnected.on(ni => {
+    const pl = ni.getActor();
+    if (!pl) return;
 
-	const plname = pl.getName();
+    const plname = pl.getName();
 
-	setTimeout(() => {
-		isJoined[plname] = false;
-	}, 1000);
+    setTimeout(() => {
+        isJoined[plname] = false;
+    }, 1000);
 });
 
 events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni) => {
-	const pl = ni.getActor();
-	if (!pl) return;
+    const pl = ni.getActor();
+    if (!pl) return;
 
-	const plname = pl.getName();
+    const plname = pl.getName();
 
-	setTimeout(() => {
-		isJoined[plname] = false;
-	}, 1000);
+    setTimeout(() => {
+        isJoined[plname] = false;
+    }, 1000);
 });
 
-events.levelTick.on((ev) => {
-	for (const pl of ev.level.getPlayers()) {
-		const plname = pl.getName();
-		
-		if (typeof TPS[plname] !== "number") TPS[plname ] = 0;
+events.levelTick.on(ev => {
+    for (const pl of ev.level.getPlayers()) {
+        const plname = pl.getName();
 
-		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
+        if (typeof TPS[plname] !== "number") TPS[plname] = 0;
 
-		if (TPS[plname] === 20 && !CIF.wasDetected[plname]) {
+        if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
 
-			if (PPS[plname] < -80) {
-				PPS[plname] = -80;
-			};
+        if (TPS[plname] === 20 && !CIF.wasDetected[plname]) {
+            if (PPS[plname] < -80) {
+                PPS[plname] = -80;
+            }
 
-			if (PPS[plname] > 26) {
-				CIF.detect(pl.getNetworkIdentifier(), "Timer", "Fast Ticking");
+            if (PPS[plname] > 26) {
+                CIF.detect(pl.getNetworkIdentifier(), "Timer", "Fast Ticking");
 
-				PPS[plname] = 20;
-			};
+                PPS[plname] = 20;
+            }
 
-			PPS[plname] -= 20;
+            PPS[plname] -= 20;
 
-			TPS[plname] -= 20;
-		};
-	};
+            TPS[plname] -= 20;
+        }
+    }
 });
 
-events.playerRespawn.on((ev)=> {
-	const pl = ev.player;
-	const plname = pl.getName();
+events.playerRespawn.on(ev => {
+    const pl = ev.player;
+    const plname = pl.getName();
 
-	PPS[plname] = 0;
+    PPS[plname] = 0;
 });
 
 // events.playerRespawn.on((ev) => {
