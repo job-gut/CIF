@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/job-gut/CIF/issues"
   },
-  "homepage": "https://github.com/job-gut/CIF#readme"
+  "homepage": "https://github.com/job-gut/CIF#readme",
+  "dependencies": {
+    "ginkgoch-buffer-io": "^1.1.3"
+  }
 }
