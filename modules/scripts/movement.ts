@@ -799,8 +799,6 @@ events.levelTick.on((ev) => {
 		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
 
 		if (TPS[plname] === 20 && !CIF.wasDetected[plname]) {
-			pl.sendMessage(`${PPS[plname]}`);
-
 
 			if (PPS[plname] < -80) {
 				PPS[plname] = -80;
