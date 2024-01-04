@@ -859,7 +859,7 @@ events.levelTick.on((ev) => {
 	for (const pl of ev.level.getPlayers()) {
 		const plname = pl.getName();
 		InventoryTransactionPerTick[plname] = 0;
-
+    
 		if (typeof TPS[plname] !== "number") TPS[plname] = 0;
 
 		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;

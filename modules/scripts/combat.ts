@@ -82,6 +82,11 @@ events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni, pktid)=> {
 	const plname = pl.getName();
 	
 	if (pkt.action === AnimatePacket.Actions.SwingArm) instantSwingArmStack[plname]++;
+
+	if (instantSwingArmStack[plname] > 49) {
+		CIF.ban(ni, "AutoClicker-A");
+		return CIF.detect(ni, "AutoClicker-A", "Clicking Too Fast");
+	};
 });
 
 events.packetBefore(MinecraftPacketIds.InventoryTransaction).on((pkt, ni, pktid)=> {
@@ -220,7 +225,7 @@ events.playerAttack.on((ev) => {
 		const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
 	
 		if (
-			reach > 3.01 &&
+			reach > 3 &&
 			reach < 8
 		) {
 			headPos.x -= addThisPos.x;
