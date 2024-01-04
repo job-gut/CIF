@@ -5,7 +5,7 @@ import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot, ComplexInventoryTransaction } from "bdsx/bds/inventory";
 import { Packet } from "bdsx/bds/packet";
 import { MinecraftPacketIds } from "bdsx/bds/packetids";
-import { AnimatePacket, MovePlayerPacket, PlayerActionPacket, PlayerAuthInputPacket } from "bdsx/bds/packets";
+import { AnimatePacket, MoveActorAbsolutePacket, MovePlayerPacket, PlayerActionPacket, PlayerAuthInputPacket } from "bdsx/bds/packets";
 import { GameType, Player, ServerPlayer } from "bdsx/bds/player";
 import { events } from "bdsx/event";
 import { bool_t, int32_t, void_t } from "bdsx/nativetype";
@@ -19,7 +19,6 @@ import { bedrockServer } from "bdsx/launcher";
 import { GameRuleId } from "bdsx/bds/gamerules";
 import { AttributeId } from "bdsx/bds/attribute";
 import { StringMappingType, parseIsolatedEntityName } from "typescript";
-import { BufferReader } from "ginkgoch-buffer-io";
 
 const UINTMAX = 0xffffffff;
 
@@ -235,22 +234,11 @@ Player.prototype.onSlowFallingBlock = function () {
     return false;
 };
 
-enum MoveActorAbsolutePacketFlags {
-    Telported = 248,
-    OnGround = 249,
-}
-
-events.packetRaw(MinecraftPacketIds.MoveActorAbsolute).on((ptr, size, netId, packetId) => {
-    const bs = new BufferReader(Buffer.from(ptr.getBuffer(size)));
-
-    const id = bs.nextBuffer(size - 1 - 15);
-    const flags = bs.nextBuffer(1);
-    const x = bs.nextFloat();
-    const y = bs.nextFloat();
-    const z = bs.nextFloat();
-    // const pitch = bs.nextBuffer(1)
-    // const headYaw = bs.nextBuffer(1)
-    // const yawRespectively = bs.nextBuffer(1)
+events.packetBefore(MinecraftPacketIds.MoveActorAbsolute).on((packet, netId, packetId) => {
+    const flags = packet.flags
+    const x = packet.pos.x;
+    const y = packet.pos.y;
+    const z = packet.pos.z;
 
     // Entity-Fly
 
@@ -275,7 +263,8 @@ events.packetRaw(MinecraftPacketIds.MoveActorAbsolute).on((ptr, size, netId, pac
         }
     }
 
-    if (flags[0] == MoveActorAbsolutePacketFlags.OnGround) {
+    // FIXME: From my tests 249 is onGroung flag so it make sence here. Needs to be rewritten with normal flags
+    if (flags == 249) {
         if (isInAir) {
             CIF.failAndFlag(netId, "EntityFly-A", "Sent MoveActorAbsolute packet with onGround flag, beeing the air", 2);
         }
@@ -726,7 +715,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
                         airTicks[plname] > 9 &&
                         deltaY > 0 &&
                         !isKnockbacked[plname] &&
-                        accelY > 0 /*&& accelY !== 0.4115999788045883 
+                        accelY > 0 /*&& accelY !== 0.4115999788045883
 						&& deltaY !== 0.4115999788045883*/
                     ) {
                         CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 3);
