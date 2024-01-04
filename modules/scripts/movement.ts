@@ -512,12 +512,12 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 			//AUTOJUMP
 
 
-			if (isStartJump && !(isPressingJump || wantJump)) {
-				CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
+			// if (isStartJump && !(isPressingJump || wantJump)) {
+			// 	CIF.failAndFlag(ni, "Auto-Jump", "Jumps without pressing jump key", 2);
 
-				lagback(pl);
-				cancelled = true;
-			};
+			// 	lagback(pl);
+			// 	cancelled = true;
+			// };
 
 
 			if (!pl.getAbilities().getAbility(AbilitiesIndex.MayFly).getBool() &&
