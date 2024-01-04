@@ -20,6 +20,7 @@ import { GameRuleId } from "bdsx/bds/gamerules";
 import { AttributeId } from "bdsx/bds/attribute";
 import { StringMappingType, parseIsolatedEntityName } from "typescript";
 
+
 const UINTMAX = 0xffffffff;
 
 export const MovementType =
@@ -72,6 +73,9 @@ const PPS: Record<string, number> = {};
 const TPS: Record<string, number> = {};
 
 export const lastRotations = new Map<string, { x: number; y: number }[]>();
+
+const lastMoveActorAndTick = new Map<string, { tick: number; x: number; z: number }>();
+
 function appendRotationRecord(
 	player: ServerPlayer,
 	rotation: { x: number; y: number }
@@ -247,6 +251,67 @@ Player.prototype.onSlowFallingBlock = function () {
 
 	return false;
 };
+
+events.packetBefore(MinecraftPacketIds.MoveActorAbsolute).on((packet, netId, packetId) => {
+    const flags = packet.flags
+    const x = packet.pos.x;
+    const y = packet.pos.y;
+    const z = packet.pos.z;
+
+    // Entity-Fly
+
+    const pos = BlockPos.allocate();
+    pos.x = x;
+    pos.y = y - 1;
+    pos.z = z;
+
+    let isInAir = true;
+
+    for (let addToX = -2; addToX <= 2; addToX++) {
+        for (let addToZ = -2; addToZ <= 2; addToZ++) {
+            const checkPos = BlockPos.allocate(pos);
+            checkPos.x += addToX;
+            checkPos.z += addToZ;
+
+            const block = netId.getActor()!.getRegion().getBlock(checkPos);
+            if (block.getName() != "minecraft:air") {
+                isInAir = false;
+                break;
+            }
+        }
+    }
+
+    // FIXME: From my tests 249 is onGroung flag so it make sence here. Needs to be rewritten with normal flags
+    if (flags == 249) {
+        if (isInAir) {
+            CIF.failAndFlag(netId, "EntityFly-A", "Sent MoveActorAbsolute packet with onGround flag, beeing the air", 2);
+        }
+    }
+
+    // Entity-Speed
+
+    const player = netId.getActor()!;
+
+    const last = lastMoveActorAndTick.get(player.getName());
+
+    if (last) {
+        const distance = Math.sqrt(Math.pow(x - last.x, 2) + Math.pow(z - last.z, 2));
+        const ticks = Math.abs(player.getLevel().getCurrentTick() - last.tick);
+        const BlocksPerTick = distance / ticks;
+
+        if (BlocksPerTick != Infinity && BlocksPerTick > 1.5) {
+            CIF.failAndFlag(netId, "EntitySpeed-A", "Moving faster than 1.5 blocks per tick", 2);
+        }
+    }
+
+    lastMoveActorAndTick.set(player.getName(), { tick: player.getLevel().getCurrentTick(), x: x, z: z });
+});
+
+events.entityStopRiding.on(ev => {
+    if (ev.entity.isPlayer()) {
+        lastMoveActorAndTick.delete(ev.entity.getName());
+    }
+});
 
 events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 	const pl = ni.getActor()!;
@@ -660,7 +725,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 					};
 
 
-					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && accelY > 0/*&& accelY !== 0.4115999788045883 
+					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && accelY > 0/*&& accelY !== 0.4115999788045883
 						&& deltaY !== 0.4115999788045883*/) {
 						CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 3);
 
@@ -794,7 +859,7 @@ events.levelTick.on((ev) => {
 	for (const pl of ev.level.getPlayers()) {
 		const plname = pl.getName();
 		InventoryTransactionPerTick[plname] = 0;
-		
+    
 		if (typeof TPS[plname] !== "number") TPS[plname] = 0;
 
 		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
