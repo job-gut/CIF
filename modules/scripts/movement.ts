@@ -610,7 +610,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname] && !pl.onGround()) {
+					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname] && !pl.onGround() && movePos.y > 103) {
 
 					if (airTicks[plname] > 2 && deltaY < 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
@@ -669,7 +669,7 @@ events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 7 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 2.5) {
+					if (airTicks[plname] > 19 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 2.5) {
 						CIF.failAndFlag(ni, `Fly-G`, `Too high Y position from the last ground`, 2);
 
 						lagback(pl);
