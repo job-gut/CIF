@@ -82,6 +82,11 @@ events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni, pktid)=> {
 	const plname = pl.getName();
 	
 	if (pkt.action === AnimatePacket.Actions.SwingArm) instantSwingArmStack[plname]++;
+
+	if (instantSwingArmStack[plname] > 49) {
+		CIF.ban(ni, "AutoClicker-A");
+		return CIF.detect(ni, "AutoClicker-A", "Clicking Too Fast");
+	};
 });
 
 events.packetBefore(MinecraftPacketIds.InventoryTransaction).on((pkt, ni, pktid)=> {

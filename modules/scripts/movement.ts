@@ -793,8 +793,9 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni) => {
 events.levelTick.on((ev) => {
 	for (const pl of ev.level.getPlayers()) {
 		const plname = pl.getName();
+		InventoryTransactionPerTick[plname] = 0;
 		
-		if (typeof TPS[plname] !== "number") TPS[plname ] = 0;
+		if (typeof TPS[plname] !== "number") TPS[plname] = 0;
 
 		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
 
@@ -823,6 +824,23 @@ events.playerRespawn.on((ev)=> {
 
 	PPS[plname] = 0;
 });
+
+const InventoryTransactionPerTick: Record<string, number> = {};
+
+events.packetRaw(MinecraftPacketIds.InventoryTransaction).on((ptr, size, ni)=> {
+	if (CIFconfig.Modules.crasher !== true) return;
+
+	const pl = ni.getActor()!;
+    const plname = pl.getName()!;
+
+	InventoryTransactionPerTick[plname] = InventoryTransactionPerTick[plname] ? InventoryTransactionPerTick[plname] + 1 : 1;
+
+	if (InventoryTransactionPerTick[plname] > 99) {
+		CIF.ban(ni, "Crasher-S");
+		return CIF.detect(ni, "Crasher-S", "Crasher that made by Suni [Auto Clicker]");
+	};
+});
+
 
 // events.playerRespawn.on((ev) => {
 // 	const pl = ev.player;
