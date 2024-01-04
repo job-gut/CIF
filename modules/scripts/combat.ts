@@ -217,7 +217,7 @@ events.playerAttack.on((ev) => {
 	
 		lastAttackpl[plname] = victim.getNameTag();
 	
-		const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.5;
+		const reach = Number(Math.sqrt(result1 + result2).toFixed(2)) - 0.4;
 	
 		if (
 			reach > 3 &&
