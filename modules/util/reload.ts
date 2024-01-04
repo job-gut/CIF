@@ -12,6 +12,8 @@ let isLoading = false;
 
 events.packetBefore(77).on((pkt, ni) => {
 	const pl = ni.getActor()!;
+	const plname = pl.getName();
+
 	if (pl.getCommandPermissionLevel() > 0) {
 		if (pkt.command === "/reload") {
 			if (isLoading === true) {
@@ -23,7 +25,7 @@ events.packetBefore(77).on((pkt, ni) => {
 			isLoading = true;
 
 			exec(`cmd /c tsc --strict ${filePath}`, ((err) => {
-				CIF.announce(`§l${pl.getName()} §e> §dReloaded Development Script`);
+				CIF.announce(`§l${plname} §e> §dReloaded Development Script`);
 				isLoading = false;
 				require("../scripts/reloadedScript");
 			}));
