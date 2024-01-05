@@ -860,26 +860,26 @@ events.levelTick.on((ev) => {
 		const plname = pl.getName();
 		InventoryTransactionPerTick[plname] = 0;
     
-		if (typeof TPS[plname] !== "number") TPS[plname] = 0;
+		// if (typeof TPS[plname] !== "number") TPS[plname] = 0;
 
-		if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
+		// if (isJoined[plname] && !CIF.wasDetected[plname]) TPS[plname]++;
 
-		if (TPS[plname] === 20 && !CIF.wasDetected[plname]) {
+		// if (TPS[plname] === 20 && !CIF.wasDetected[plname]) {
 
-			if (PPS[plname] < -80) {
-				PPS[plname] = -80;
-			};
+		// 	if (PPS[plname] < -80) {
+		// 		PPS[plname] = -80;
+		// 	};
 
-			if (PPS[plname] > 26) {
-				CIF.detect(pl.getNetworkIdentifier(), "Timer", "Fast Ticking");
+		// 	if (PPS[plname] > 26) {
+		// 		CIF.detect(pl.getNetworkIdentifier(), "Timer", "Fast Ticking");
 
-				PPS[plname] = 20;
-			};
+		// 		PPS[plname] = 20;
+		// 	};
 
-			PPS[plname] -= 20;
+		// 	PPS[plname] -= 20;
 
-			TPS[plname] -= 20;
-		};
+		// 	TPS[plname] -= 20;
+		// };
 	};
 });
 
