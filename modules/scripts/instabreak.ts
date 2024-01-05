@@ -50,6 +50,7 @@ events.blockDestructionStart.on(async (ev) => {
 	const now = Date.now();
 	const pl = ev.player!;
 	const plname = pl.getNameTag();
+
 	if (destructionstarttime !== null) destructionstarttime[plname] = now;
 	if (destructionstarttime !== null) destructionStartTick[plname] = pl.getLevel().getCurrentTick();
 });
@@ -59,7 +60,6 @@ blockDestructionStop.on(async(ev)=> {
 	const plname = pl.getNameTag();
 	if (destructionstarttime !== null) destructionstarttime[plname] = undefined;
 	if (destructionstarttime !== null) destructionStartTick[plname] = undefined;	
-
 });
 
 events.blockDestroy.on((ev) => {
@@ -98,10 +98,10 @@ events.blockDestroy.on((ev) => {
 		return CIF.failAndFlag(player.getNetworkIdentifier(), "Instabreak-B", "Breaks block instantly", 2);
 	};
 	
+	destructionstarttime[name] = undefined;
+
 	if (currentTick - destructionStartTick[name]! + 2 < Math.floor((getActualDestroyTime(player, block)) * 1000 / 50)) {
 
 		return CIF.failAndFlag(player.getNetworkIdentifier(), "Fastbreak-A", "Breaks block faster than expected", 3);
 	};
-
-	destructionstarttime[name] = undefined;
 });
