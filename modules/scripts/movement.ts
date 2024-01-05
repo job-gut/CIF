@@ -252,8 +252,8 @@ Player.prototype.onSlowFallingBlock = function () {
 	return false;
 };
 
-events.packetBefore(MinecraftPacketIds.MoveActorAbsolute).on((packet, netId, packetId) => {
-    const flags = packet.flags
+events.packetBefore(MinecraftPacketIds.MoveActorAbsolute).on(async (packet, netId, packetId) => {
+    const flags = packet.flags;
     const x = packet.pos.x;
     const y = packet.pos.y;
     const z = packet.pos.z;
@@ -284,7 +284,7 @@ events.packetBefore(MinecraftPacketIds.MoveActorAbsolute).on((packet, netId, pac
     // FIXME: From my tests 249 is onGroung flag so it make sence here. Needs to be rewritten with normal flags
     if (flags == 249) {
         if (isInAir) {
-            CIF.failAndFlag(netId, "EntityFly-A", "Sent MoveActorAbsolute packet with onGround flag, beeing the air", 2);
+            CIF.failAndFlag(netId, "EntityFly-A", "Sent OnGround flag being in air", 2);
         }
     }
 
@@ -313,7 +313,7 @@ events.entityStopRiding.on(ev => {
     }
 });
 
-events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
+events.packetBefore(MinecraftPacketIds.PlayerAction).on(async (pkt, ni) => {
 	const pl = ni.getActor()!;
 	if (!pl) return;
 	const plname = pl.getName();
@@ -325,14 +325,6 @@ events.packetBefore(MinecraftPacketIds.PlayerAction).on((pkt, ni) => {
 		}, 150);
 	};
 });
-
-function isMovePlayerPacket(pkt: Packet): pkt is MovePlayerPacket {
-	return (<MovePlayerPacket>pkt).onGround !== undefined;
-};
-
-function isPlayerAuthInputPacket(pkt: Packet): pkt is PlayerAuthInputPacket {
-	return (<PlayerAuthInputPacket>pkt).moveX !== undefined;
-};
 
 // class FishingHook extends Actor {
 // }
@@ -435,7 +427,7 @@ function lagback(pl: ServerPlayer): void {
 };
 
 
-events.packetBefore(MinecraftPacketIds.PlayerAuthInput).on((pkt, ni) => {
+events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 	const pl = ni.getActor();
 	if (!pl) return;
 
@@ -844,7 +836,7 @@ events.networkDisconnected.on((ni) => {
 	}, 1000);
 });
 
-events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni) => {
+events.packetSend(MinecraftPacketIds.Disconnect).on(async (pkt, ni) => {
 	const pl = ni.getActor();
 	if (!pl) return;
 
@@ -855,7 +847,7 @@ events.packetSend(MinecraftPacketIds.Disconnect).on((pkt, ni) => {
 	}, 1000);
 });
 
-events.levelTick.on((ev) => {
+events.levelTick.on(async (ev) => {
 	for (const pl of ev.level.getPlayers()) {
 		const plname = pl.getName();
 		InventoryTransactionPerTick[plname] = 0;
