@@ -81,6 +81,8 @@ events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni, pktid)=> {
 	const pl = ni.getActor()!;
 	const plname = pl.getName();
 	
+	if (pl.getGameType() === GameType.Creative) return;
+
 	if (pkt.action === AnimatePacket.Actions.SwingArm) instantSwingArmStack[plname]++;
 
 	if (instantSwingArmStack[plname] > 49) {
