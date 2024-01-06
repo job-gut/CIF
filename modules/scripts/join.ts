@@ -115,7 +115,7 @@ events.packetAfter(MinecraftPacketIds.Login).on((pkt, ni) => {
         CIF.detect(ni, "Fake OS", "Spoofed their OS (Real: Android/IOS)");
         CIF.ban(ni, "fake-os");
     };
-    if (deviceId.length !== 32 && deviceOS !== 7 && brand !== "Switch") {
+    if (deviceId.length !== 32 && deviceOS !== 7 && brand !== "Switch" && deviceOS !== BuildPlatform.PLAYSTATION && deviceOS !== BuildPlatform.XBOX) {
         CIF.detect(ni, "Fake OS", "Spoofed their OS (Real: Windows 10)");
         CIF.ban(ni, "fake-os");
     };
