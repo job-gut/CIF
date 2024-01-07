@@ -85,14 +85,14 @@ events.blockDestroy.on((ev) => {
 
 	const name = player.getName();
 
-	if (typeof destructionstarttime[name] !== "number" && Math.floor(getActualDestroyTime(player, block)) < 0.05) {
+	if (typeof destructionstarttime[name] !== "number" && Math.floor(getActualDestroyTime(player, block)) > 0.05) {
 		destructionstarttime[name] = null;
 		return CIF.failAndFlag(player.getNetworkIdentifier(), "Instabreak-A", "No destruction start", 2);
 	};
 	
 	if (
 		currenttime - destructionstarttime[name]! < 65 &&
-		Math.floor(getActualDestroyTime(player, block)) < 0.05
+		Math.floor(getActualDestroyTime(player, block)) > 0.05
 	) {
 		destructionstarttime[name] = null;
 		return CIF.failAndFlag(player.getNetworkIdentifier(), "Instabreak-B", "Breaks block instantly", 2);
