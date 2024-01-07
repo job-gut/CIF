@@ -1,5 +1,5 @@
 import { AbilitiesIndex } from "bdsx/bds/abilities";
-import { Actor, DimensionId } from "bdsx/bds/actor";
+import { Actor, ActorType, DimensionId } from "bdsx/bds/actor";
 import { Block, BlockActor } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot, ComplexInventoryTransaction } from "bdsx/bds/inventory";
@@ -273,19 +273,22 @@ events.packetBefore(MinecraftPacketIds.MoveActorAbsolute).on(async (packet, netI
 
     let isInAir = true;
 
-    for (let addToX = -2; addToX <= 2; addToX++) {
-        for (let addToZ = -2; addToZ <= 2; addToZ++) {
-            const checkPos = BlockPos.allocate(pos);
-            checkPos.x += addToX;
-            checkPos.z += addToZ;
-
-            const block = netId.getActor()!.getRegion().getBlock(checkPos);
-            if (block.getName() != "minecraft:air") {
-                isInAir = false;
-                break;
-            }
-        }
-    }
+	for (let takeFromY = 0; takeFromY <= 1; takeFromY++){
+		for (let addToX = -2; addToX <= 2; addToX++) {
+			for (let addToZ = -2; addToZ <= 2; addToZ++) {
+				const checkPos = BlockPos.allocate(pos);
+				checkPos.x += addToX;
+				checkPos.y -= takeFromY;
+				checkPos.z += addToZ;
+	
+				const block = netId.getActor()!.getRegion().getBlock(checkPos);
+				if (block.getName() != "minecraft:air") {
+					isInAir = false;
+					break;
+				}
+			}
+		}
+	}
 
     // FIXME: From my tests 249 is onGroung flag so it make sence here. Needs to be rewritten with normal flags
     if (flags == 249) {
@@ -556,6 +559,8 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 
 	const plRespawnPos = pl.getSpawnPosition();
 
+	const nearBoat = pl.fetchNearbyActorsSorted(Vec3.create(1, 1, 1), ActorType.BoatRideable);
+
 	if (hasTeleportedServerSidely[plname] === true && !isTeleported) ticksAfterTeleport[plname]++;
 	else {
 		ticksAfterTeleport[plname] = 0;
@@ -728,7 +733,7 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 					};
 
 
-					if (deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 4) {
+					if (deltaY === 0 && deltaXZ > 0 && accelY === 0 && airTicks[plname] > 4 && nearBoat.length < 1) {
 						CIF.failAndFlag(ni, "Fly-B", `No Y changes in mid-air`, 3);
 
 						lagback(pl);
@@ -746,7 +751,7 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 						cancelled = true;
 					};
 
-					if (airTicks[plname] > 19 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 2.5) {
+					if (airTicks[plname] > 19 && deltaY > 0 && pkt.pos.y - lagbackPos[plname][1] > 2.5 && nearBoat.length < 1) {
 						CIF.failAndFlag(ni, `Fly-G`, `Too high Y position from the last ground`, 2);
 
 						lagback(pl);
