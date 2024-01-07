@@ -70,6 +70,7 @@ const pushedByPiston: Record<string, boolean> = {};
 
 const lastDimension: Record<string, DimensionId> = {};
 
+const respawnTick: Record<string, number> = {};
 
 const PPS: Record<string, number> = {};
 const TPS: Record<string, number> = {};
@@ -437,6 +438,8 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 
 	const plname = pl.getName();
 
+	const currentTick = bedrockServer.level.getCurrentTick();
+
 	const movePos = pkt.pos;
 	movePos.y -= 2.37998962402343 - 0.759979248046875;
 
@@ -657,8 +660,9 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 
 
 				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported
-					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname] && lastDimension[plname] === pl.getDimensionId()) {
-					CIF.suspect(ni, "Teleport", `Moved too fast in 1 tick` );
+					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname] && lastDimension[plname] === pl.getDimensionId()
+					&& (!respawnTick[plname] || currentTick - respawnTick[plname] > 19)) {
+					CIF.suspect(ni, "Teleport", `Moved too fast in 1 tick`);
 
 					lagback(pl);
 					cancelled = true;
@@ -884,6 +888,7 @@ events.playerRespawn.on((ev)=> {
 	const plname = pl.getName();
 
 	PPS[plname] = 0;
+	respawnTick[plname] = bedrockServer.level.getCurrentTick();
 });
 
 const InventoryTransactionPerTick: Record<string, number> = {};
