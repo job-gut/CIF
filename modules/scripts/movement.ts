@@ -70,6 +70,9 @@ const pushedByPiston: Record<string, boolean> = {};
 
 const lastDimension: Record<string, DimensionId> = {};
 
+const isStartRiding: Record<string, boolean> = {};
+const isStopRiding: Record<string, boolean> = {};
+
 const respawnTick: Record<string, number> = {};
 
 const PPS: Record<string, number> = {};
@@ -312,7 +315,17 @@ events.packetBefore(MinecraftPacketIds.MoveActorAbsolute).on(async (packet, netI
 
 events.entityStopRiding.on(ev => {
     if (ev.entity.isPlayer()) {
-        lastMoveActorAndTick.delete(ev.entity.getName());
+		const pl = ev.entity;
+
+		const plname = pl.getName();
+
+        lastMoveActorAndTick.delete(plname);
+
+		isStopRiding[plname] = true;
+
+		setTimeout(() => {
+			isStopRiding[plname] = false;
+		}, 250);
     }
 });
 
@@ -661,7 +674,8 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 
 				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported
 					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname] && lastDimension[plname] === pl.getDimensionId()
-					&& (!respawnTick[plname] || currentTick - respawnTick[plname] > 19)) {
+					&& (!respawnTick[plname] || currentTick - respawnTick[plname] > 19)
+					&& !isStartRiding[plname] && !isStopRiding[plname]) {
 					CIF.suspect(ni, "Teleport", `Moved too fast in 1 tick`);
 
 					lagback(pl);
@@ -905,6 +919,18 @@ events.packetRaw(MinecraftPacketIds.InventoryTransaction).on((ptr, size, ni)=> {
 		CIF.ban(ni, "Crasher-S");
 		return CIF.detect(ni, "Crasher-S", "Crasher that made by Suni [Auto Clicker]");
 	};
+});
+
+events.entityStartRiding.on(async (ev)=> {
+	const pl = ev.entity;
+	if (!pl.isPlayer()) return;
+
+	const plname = pl.getName();
+
+	isStartRiding[plname] = true;
+	setTimeout(() => {
+		isStartRiding[plname] = false;
+	}, 250);
 });
 
 
