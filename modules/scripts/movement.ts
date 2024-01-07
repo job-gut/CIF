@@ -1,5 +1,5 @@
 import { AbilitiesIndex } from "bdsx/bds/abilities";
-import { Actor } from "bdsx/bds/actor";
+import { Actor, DimensionId } from "bdsx/bds/actor";
 import { Block, BlockActor } from "bdsx/bds/block";
 import { BlockPos, Vec3 } from "bdsx/bds/blockpos";
 import { ArmorSlot, ComplexInventoryTransaction } from "bdsx/bds/inventory";
@@ -67,6 +67,8 @@ const haveFished: Record<string, boolean> = {};
 const isKnockbacked: Record<string, boolean> = {};
 const damagedTime: Record<string, number> = {};
 const pushedByPiston: Record<string, boolean> = {};
+
+const lastDimension: Record<string, DimensionId> = {};
 
 
 const PPS: Record<string, number> = {};
@@ -655,7 +657,7 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 
 
 				if (((realBPS / 20 > deltaXZ * 5 && realBPS / 20 >= .9 && !isKnockbacked[plname]) || realBPS / 20 > 4) && !isTeleported
-					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname]) {
+					&& movePos.distance(plRespawnPos) > 1.75 && !pushedByPiston[plname] && lastDimension[plname] === pl.getDimensionId()) {
 					CIF.suspect(ni, "Teleport", `Moved too fast in 1 tick` );
 
 					lagback(pl);
@@ -761,6 +763,8 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 	lastDeltaY[plname] = deltaY;
 
 	lastBPSForExportedFunc[plname] = ActualBPS;
+
+	lastDimension[plname] = pl.getDimensionId();
 
 	if (!cancelled) {
 		lastpos[plname] = [movePos.x, movePos.y, movePos.z];
