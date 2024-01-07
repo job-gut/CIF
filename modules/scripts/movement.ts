@@ -423,7 +423,7 @@ function lagback(pl: ServerPlayer): void {
 
 	let lastposit = lastpos[plname];
 	if (lagbackPos[plname]) lastposit = lagbackPos[plname];
-	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]}`);
+	pl.runCommand(`tp ${lastposit[0]} ${lastposit[1]} ${lastposit[2]} ~ ~`);
 };
 
 
@@ -667,7 +667,7 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 
 
 				if (!pl.isRiding() && !pl.isInLava() && !pl.isInWater() && !pl.isInScaffolding() && !pl.isInSnow() && !pl.onClimbable() && !pl.onSlowFallingBlock() &&
-					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname] && !pl.onGround() && movePos.y > 103) {
+					!pl.hasEffect(MobEffectIds.Levitation) && !pl.hasEffect(MobEffectIds.JumpBoost) && !isTeleported && isJoined[plname] && !pl.onGround() && movePos.y > -100) {
 
 					if (airTicks[plname] > 2 && deltaY < 0 && accelY === 0) {
 						CIF.failAndFlag(ni, "Fly-A", `Glides constantly`, 3);
