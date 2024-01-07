@@ -742,8 +742,7 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 					};
 
 
-					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && accelY > 0/*&& accelY !== 0.4115999788045883
-						&& deltaY !== 0.4115999788045883*/) {
+					if (airTicks[plname] > 9 && deltaY > 0 && !isKnockbacked[plname] && accelY > 0 && nearBoat.length < 1) {
 						CIF.failAndFlag(ni, `Fly-F`, `Y boost in mid-air`, 3);
 
 						lagback(pl);
