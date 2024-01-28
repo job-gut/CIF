@@ -622,7 +622,7 @@ events.packetAfter(MinecraftPacketIds.PlayerAuthInput).on(async (pkt, ni) => {
 
 
 				if (ticksAfterTeleport[plname] > Math.ceil(playerPing / 50 * 2) + 2) {
-					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 2);
+					CIF.failAndFlag(ni, "Disabler-B", "No teleport receive", 5);
 
 					lagback(pl);
 					cancelled = true;
@@ -826,8 +826,8 @@ events.entityKnockback.on((ev) => {
 	damagedTime[plname] = Date.now();
 	setTimeout(() => {
 		const now = Date.now();
-		if (now - damagedTime[plname] > 350) isKnockbacked[plname] = false;
-	}, 400);
+		if (now - damagedTime[plname] > 550) isKnockbacked[plname] = false;
+	}, 750);
 
 	airTicks[plname] = 0;
 });
