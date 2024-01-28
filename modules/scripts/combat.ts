@@ -85,7 +85,7 @@ events.packetBefore(MinecraftPacketIds.Animate).on((pkt, ni, pktid)=> {
 
 	if (pkt.action === AnimatePacket.Actions.SwingArm) instantSwingArmStack[plname]++;
 
-	if (instantSwingArmStack[plname] > 49) {
+	if (instantSwingArmStack[plname] > 99) {
 		CIF.ban(ni, "AutoClicker-A");
 		return CIF.detect(ni, "AutoClicker-A", "Clicking Too Fast");
 	};
